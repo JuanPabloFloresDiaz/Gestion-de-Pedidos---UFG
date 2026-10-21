@@ -2,44 +2,49 @@
 
 ## 1. Vista General
 
-Dos clientes —un **escritorio Windows Forms (MDI)** para la administración y una **web Blazor Web App** para el público— que hablan por HTTP con **una misma API ASP.NET Core** organizada en capas (**Clean Architecture**), que persiste en **SQL Server** con EF Core. El diagrama detalla el escritorio; la web está en §1.1.
+**Una sola interfaz (Blazor) con dos hospedajes** —un **escritorio .NET MAUI Blazor Hybrid** y una **web Blazor Web App**— que consumen **una misma API ASP.NET Core** organizada en capas (**Clean Architecture**), que persiste en **SQL Server** con EF Core. Todas las pantallas (administración y tienda) viven en una **biblioteca de componentes Razor** (`GestionPedidos.Ui`) y se escriben una sola vez.
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│  Cliente de escritorio  (Windows Forms, MDI)  — en Windows   │
-│                                                              │
-│  Vistas (Forms)  ◄── eventos ──►  Presentadores               │
-│                                        │                     │
-│                          Servicios de cliente (publicadoras) │
-│                          │  eventos: EntidadCambiada, ...    │
-│                          ▼                                   │
-│                   ApiClient (HttpClient tipado, JWT)         │
-└──────────────────────────┬───────────────────────────────────┘
-                           │ HTTPS / JSON
-┌──────────────────────────▼───────────────────────────────────┐
-│  API (ASP.NET Core)                                          │
-│  Endpoints por módulo · validación · autenticación JWT ·     │
-│  autorización por permisos · Problem Details                 │
-├──────────────────────────────────────────────────────────────┤
-│  Application   casos de uso · puertos · eventos (publicadoras)│
-│                suscriptores: Historial de actividades        │
-├──────────────────────────────────────────────────────────────┤
-│  Domain        entidades · reglas · invariantes (sin deps)   │
-├──────────────────────────────────────────────────────────────┤
-│  Infrastructure  EF Core · DbContext · migraciones · SQL     │
-└──────────────────────────┬───────────────────────────────────┘
-                           ▼
-                  SQL Server 2022 (Docker)
+┌──────────────────────────┐        ┌───────────────────────────┐
+│ Desktop                  │        │ Web                       │
+│ .NET MAUI Blazor Hybrid  │        │ Blazor Web App            │
+│ (Windows, .exe)          │        │ (Docker, navegador)       │
+└────────────┬─────────────┘        └─────────────┬─────────────┘
+             └──────────────┬─────────────────────┘
+                            ▼
+        ┌───────────────────────────────────────────┐
+        │ GestionPedidos.Ui  (Razor Class Library)  │
+        │  Páginas (.razor)  ◄─ eventos ─►  ViewModels│
+        │  Servicios de módulo (publicadoras)       │
+        │  ApiClient (HttpClient tipado, JWT)       │
+        └─────────────────────┬─────────────────────┘
+                              │ HTTP / JSON
+┌─────────────────────────────▼─────────────────────────────┐
+│  API (ASP.NET Core)                                        │
+│  Endpoints por módulo · validación · JWT · permisos ·      │
+│  Problem Details · rate limiting                           │
+├────────────────────────────────────────────────────────────┤
+│  Application   casos de uso · puertos · eventos            │
+│                suscriptores: Historial de actividades      │
+├────────────────────────────────────────────────────────────┤
+│  Domain        entidades · reglas · invariantes (sin deps) │
+├────────────────────────────────────────────────────────────┤
+│  Infrastructure  EF Core · DbContext · migraciones · SQL   │
+└─────────────────────────────┬──────────────────────────────┘
+                              ▼
+                     SQL Server 2022 (Docker)
 ```
 
-### 1.1 Cliente web
+### 1.1 Qué cambia entre los dos hospedajes
 
-```
- Navegador ──HTTPS──► Web (Blazor Web App, render de servidor) ──HTTP, JWT en el servidor──► API ──► SQL Server
-```
+| Aspecto | Desktop (MAUI Hybrid) | Web (Blazor Web App) |
+|---|---|---|
+| Dónde corren los componentes | En el equipo del usuario, dentro de un `BlazorWebView` | En el servidor (render interactivo de servidor), el navegador recibe HTML |
+| Área que se abre | **Administración** (requiere `admin.acceso`) | **Tienda pública**; el personal también puede entrar a Administración |
+| Almacén de sesión (`ISesionAlmacen`) | Memoria del proceso | `ProtectedSessionStorage` (cifrado, sobrevive a F5, se borra al cerrar la pestaña) |
+| Cómo llama a la API | `HttpClient` a la URL de `appsettings.json` | `HttpClient` desde el servidor web por la red de Docker |
 
-* La web llama a la API desde su **servidor** y entrega al navegador solo una cookie de sesión: no hay token en el navegador ni CORS ([PortalWeb.md §5](Especificaciones/PortalWeb.md)).
-* Reutiliza las mismas reglas de negocio: un pedido hecho en la web es un `Pedido` más.
+Los componentes **no** usan nada exclusivo de un hospedaje (`HttpContext`, APIs de MAUI…): lo específico entra por interfaces (`ISesionAlmacen`) registradas en cada `Program`/`MauiProgram`.
 
 ## 2. Regla de Dependencias
 
@@ -48,15 +53,16 @@ Domain  ◄──  Application  ◄──  Api
                   ▲             │
                   └─ Infrastructure (implementa los puertos; la Api la registra)
 
-Contracts (DTOs): referenciado por Api, Desktop y Web; nunca por Domain
-Desktop y Web: dependen solo de Contracts (hablan con la API, nunca con Domain/Infrastructure)
+Contracts (DTOs): referenciado por Api y Ui; nunca por Domain
+Ui (RCL): depende solo de Contracts
+Web y Desktop (hospedajes): dependen solo de Ui y Contracts
 ```
 
 * `Domain` no referencia ningún proyecto ni paquete de infraestructura.
 * `Application` referencia solo `Domain`; declara los puertos (`IClienteRepository`, `IUnitOfWork`…); el tiempo se inyecta con `TimeProvider`.
 * `Infrastructure` implementa los puertos y es la **única** que referencia EF Core.
 * `Api` es la raíz de composición de la API.
-* `Desktop` y `Web` **no** conocen el dominio del servidor: usan los DTOs de `Contracts`.
+* `Ui`, `Web` y `Desktop` **no** conocen el dominio del servidor: usan los DTOs de `Contracts` y hablan solo con la API.
 * Las reglas se verifican con pruebas de arquitectura ([Testing.md](Especificaciones/Testing.md)).
 
 ## 3. Modelo de Dominio
@@ -136,41 +142,42 @@ classDiagram
 
 ## 4. Eventos: Dónde Viven y Quién Reacciona
 
-El mecanismo es el de la materia: **delegados + `event` + `EventArgs`** ([PatronEventos.md](Especificaciones/PatronEventos.md)). Hay **cuatro niveles** de eventos, cada uno en su capa:
+El mecanismo es el de la materia: **delegados + `event` + `EventArgs`** ([PatronEventos.md](Especificaciones/PatronEventos.md)). Cuatro niveles, cada uno en su capa:
 
-| Grupo | Publicadora | Suscriptores | Para qué |
+| Nivel | Publicadora | Suscriptores | Para qué |
 |---|---|---|---|
-| **Eventos de interfaz** (controles WinForms) | Cada control (`Button.Click`, `ComboBox.SelectedIndexChanged`…) | La vista que los contiene, que los reexpone al presentador | Responder a la acción del usuario |
-| **Eventos de la vista** (propios) | La vista (`event EventHandler GuardarSolicitado`) | El presentador (`+=`) | Presentador sin depender de controles |
-| **Notificaciones de cliente** | Servicios de cliente (`ClientesService`…), **tras** confirmar la API | `Notificador` (barra de estado) y ventanas abiertas que refrescan su listado | "Notificar el ingreso, actualización o cambio de estado" (RF-03/04/05) |
+| **Eventos de interfaz** (Blazor) | Elementos HTML y componentes (`@onclick`, `@onchange`, `EventCallback<T>`) | La página que los contiene | Responder a la acción del usuario |
+| **Eventos del ViewModel** | `<Modulo>ViewModel` (`event EventHandler Cambiado`) | La página (`+=` en `OnInitialized`, `-=` en `Dispose`) | Avisar a la página de que su estado cambió para repintarla |
+| **Notificaciones de cliente** | Servicios de módulo (`ClientesService`…), **tras** confirmar la API | `Notificador` (aviso en pantalla) y ViewModels abiertos que refrescan su listado | "Notificar el ingreso, actualización o cambio de estado" (RF-03/04/05) |
 | **Eventos de aplicación** (servidor) | Casos de uso, **tras** confirmar la transacción | `HistorialSubscriber` (escribe en `Actividades`) | Historial de actividades (RF-10) |
 
 ```
-Usuario ─Click─► Form ─GuardarSolicitado─► Presenter ─► ClientesService ─► API
-                                                            │ (éxito)
-                                          EntidadCambiada ◄─┘
-                                           │              │
-                                    Notificador      FormClientes (refresca grid)
+Usuario ─@onclick─► Página ─► ViewModel ─► ClientesService ─► API
+                                               │ (éxito)
+                             EntidadCambiada ◄─┘
+                              │              │
+                       Notificador     ClientesViewModel (refresca el listado → Cambiado → Página)
 ```
 
-Reglas clave (detalle en [PautasCodigoEventos.md](Equipo/PautasCodigoEventos.md)):
-1. Un evento se dispara **solo después de que la operación fue confirmada** (respuesta exitosa de la API / transacción guardada).
-2. Quien se suscribe con `+=` se da de baja con `-=` al destruirse (evita fugas y llamadas a formularios cerrados).
-3. Los eventos no cruzan procesos: el servidor no notifica a otros clientes (sin SignalR, YAGNI).
+Reglas clave ([PautasCodigoEventos.md](Equipo/PautasCodigoEventos.md)):
+1. Un evento se dispara **solo después de que la operación fue confirmada**.
+2. Quien se suscribe con `+=` se da de baja con `-=` (en Blazor, `IDisposable.Dispose` del componente).
+3. En Blazor, un evento que llega fuera del ciclo de render se atiende con `await InvokeAsync(StateHasChanged)`.
+4. Los eventos no cruzan procesos: el servidor no notifica a otros clientes (sin SignalR, YAGNI).
 
 ## 5. Flujo Completo: Registrar un Pedido
 
 ```mermaid
 sequenceDiagram
-    participant F as FormPedidos (Vista)
-    participant P as PedidosPresenter
-    participant S as PedidosService (cliente)
+    participant P as PedidosPagina (.razor)
+    participant VM as PedidosViewModel
+    participant S as PedidosService (Ui)
     participant A as API /api/v1/pedidos
-    participant U as CrearPedido (Application)
+    participant U as RegistrarPedido (Application)
     participant D as Pedido/Producto (Domain)
     participant DB as SQL Server
-    F->>P: GuardarSolicitado (evento)
-    P->>S: CrearAsync(dto)
+    P->>VM: GuardarAsync() desde @onclick
+    VM->>S: CrearAsync(dto)
     S->>A: POST (JWT)
     A->>A: validar + autorizar (pedidos.crear)
     A->>U: ExecuteAsync(comando)
@@ -179,13 +186,13 @@ sequenceDiagram
     U->>DB: SaveChanges (una transacción)
     U-->>U: evento PedidoRegistrado → HistorialSubscriber
     A-->>S: 201 Created
-    S-->>P: resultado
+    S-->>VM: resultado
     S->>S: EntidadCambiada(Pedido, Registrada)
-    Note over S: Notificador muestra "Pedido #N registrado";<br/>listados abiertos se refrescan
-    P-->>F: mostrar resultado
+    Note over S: Notificador muestra "Pedido #N registrado";<br/>ViewModels abiertos se refrescan
+    VM-->>P: Cambiado → StateHasChanged
 ```
 
-Si el stock no alcanza: la API responde `422` con el detalle, el servicio de cliente dispara `StockInsuficiente` y el notificador avisa; **no** se modifica nada.
+Si el stock no alcanza: la API responde `422` con el detalle, el servicio dispara `StockInsuficiente` y el notificador avisa; **no** se modifica nada.
 
 ## 6. Estrategia de API
 
@@ -196,11 +203,11 @@ Si el stock no alcanza: la API responde `422` con el detalle, el servicio de cli
 * OpenAPI/UI de pruebas solo en `Development`.
 * `GET /health` y `GET /health/ready` para Docker y Dokploy.
 
-## 7. Estrategia del Cliente de Escritorio
+## 7. Estrategia de la Interfaz (Ui)
 
-* **MDI**: `MainForm` es el contenedor; cada módulo es un formulario hijo con una sola instancia abierta ([InterfazEscritorio.md](Especificaciones/InterfazEscritorio.md)).
-* **MVP pasivo**: la vista solo muestra datos y expone eventos; el presentador decide. Los presentadores se prueban sin interfaz.
-* **Nunca bloquear el hilo de la interfaz**: llamadas a la API con `async/await`, indicador de carga y cancelación.
-* **Sesión en memoria**: el token no se guarda en disco; al cerrar la aplicación se cierra la sesión ([Seguridad.md §4](Seguridad.md)).
-* Configuración (URL de la API) en `appsettings.json` junto al ejecutable, sin secretos.
+* **Página + ViewModel**: el `.razor` solo contiene marcado y enlaza eventos; el estado y la lógica de interfaz viven en un `ViewModel` (clase C# normal) que se prueba **sin navegador ni pantalla**.
+* **Un solo shell** (`MainLayout`): barra superior, menú por permisos y **pestañas de documentos** abiertos (interfaz de múltiples documentos, [InterfazUsuario.md §2](Especificaciones/InterfazUsuario.md)).
+* **Nunca bloquear la interfaz**: llamadas con `async/await`, indicador de carga y cancelación.
+* **Sesión**: JWT en memoria o en `ProtectedSessionStorage` según el hospedaje ([§1.1](#11-qué-cambia-entre-los-dos-hospedajes)).
+* Configuración (URL de la API) en `appsettings.json` del hospedaje, sin secretos.
 * **Endpoints públicos y de cliente** (`catalogo`, `auth/registro`, `mis-pedidos`, `mi-perfil`) con *rate limiting*; los de cliente filtran siempre por el cliente del token ([PortalWeb.md §4](Especificaciones/PortalWeb.md)).
