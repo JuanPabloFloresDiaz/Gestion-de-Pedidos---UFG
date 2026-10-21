@@ -1,0 +1,1138 @@
+{
+ "pais": "SV",
+ "fuente": "Ley Especial para la Reestructuración Municipal (junio 2023, vigente desde el 01/05/2024); listado de 44 municipios y 262 distritos publicado por Diario El Mundo. Verificado: 14 departamentos / 44 municipios / 262 distritos y conteo por departamento. Cada distrito es una 'Ciudad' de la aplicación.",
+ "departamentos": [
+  {
+   "codigo": "AH",
+   "nombre": "Ahuachapán",
+   "ciudades": [
+    {
+     "nombre": "Atiquizaya",
+     "municipio": "Ahuachapán Norte"
+    },
+    {
+     "nombre": "El Refugio",
+     "municipio": "Ahuachapán Norte"
+    },
+    {
+     "nombre": "San Lorenzo",
+     "municipio": "Ahuachapán Norte"
+    },
+    {
+     "nombre": "Turín",
+     "municipio": "Ahuachapán Norte"
+    },
+    {
+     "nombre": "Ahuachapán",
+     "municipio": "Ahuachapán Centro"
+    },
+    {
+     "nombre": "Apaneca",
+     "municipio": "Ahuachapán Centro"
+    },
+    {
+     "nombre": "Concepción de Ataco",
+     "municipio": "Ahuachapán Centro"
+    },
+    {
+     "nombre": "Tacuba",
+     "municipio": "Ahuachapán Centro"
+    },
+    {
+     "nombre": "Guaymango",
+     "municipio": "Ahuachapán Sur"
+    },
+    {
+     "nombre": "Jujutla",
+     "municipio": "Ahuachapán Sur"
+    },
+    {
+     "nombre": "San Francisco Menéndez",
+     "municipio": "Ahuachapán Sur"
+    },
+    {
+     "nombre": "San Pedro Puxtla",
+     "municipio": "Ahuachapán Sur"
+    }
+   ]
+  },
+  {
+   "codigo": "SS",
+   "nombre": "San Salvador",
+   "ciudades": [
+    {
+     "nombre": "Aguilares",
+     "municipio": "San Salvador Norte"
+    },
+    {
+     "nombre": "El Paisnal",
+     "municipio": "San Salvador Norte"
+    },
+    {
+     "nombre": "Guazapa",
+     "municipio": "San Salvador Norte"
+    },
+    {
+     "nombre": "Apopa",
+     "municipio": "San Salvador Oeste"
+    },
+    {
+     "nombre": "Nejapa",
+     "municipio": "San Salvador Oeste"
+    },
+    {
+     "nombre": "Ilopango",
+     "municipio": "San Salvador Este"
+    },
+    {
+     "nombre": "San Martín",
+     "municipio": "San Salvador Este"
+    },
+    {
+     "nombre": "Soyapango",
+     "municipio": "San Salvador Este"
+    },
+    {
+     "nombre": "Tonacatepeque",
+     "municipio": "San Salvador Este"
+    },
+    {
+     "nombre": "Ayutuxtepeque",
+     "municipio": "San Salvador Centro"
+    },
+    {
+     "nombre": "Mejicanos",
+     "municipio": "San Salvador Centro"
+    },
+    {
+     "nombre": "San Salvador",
+     "municipio": "San Salvador Centro"
+    },
+    {
+     "nombre": "Cuscatancingo",
+     "municipio": "San Salvador Centro"
+    },
+    {
+     "nombre": "Ciudad Delgado",
+     "municipio": "San Salvador Centro"
+    },
+    {
+     "nombre": "Panchimalco",
+     "municipio": "San Salvador Sur"
+    },
+    {
+     "nombre": "Rosario de Mora",
+     "municipio": "San Salvador Sur"
+    },
+    {
+     "nombre": "San Marcos",
+     "municipio": "San Salvador Sur"
+    },
+    {
+     "nombre": "Santo Tomás",
+     "municipio": "San Salvador Sur"
+    },
+    {
+     "nombre": "Santiago Texacuangos",
+     "municipio": "San Salvador Sur"
+    }
+   ]
+  },
+  {
+   "codigo": "LI",
+   "nombre": "La Libertad",
+   "ciudades": [
+    {
+     "nombre": "Quezaltepeque",
+     "municipio": "La Libertad Norte"
+    },
+    {
+     "nombre": "San Matías",
+     "municipio": "La Libertad Norte"
+    },
+    {
+     "nombre": "San Pablo Tacachico",
+     "municipio": "La Libertad Norte"
+    },
+    {
+     "nombre": "San Juan Opico",
+     "municipio": "La Libertad Centro"
+    },
+    {
+     "nombre": "Ciudad Arce",
+     "municipio": "La Libertad Centro"
+    },
+    {
+     "nombre": "Colón",
+     "municipio": "La Libertad Oeste"
+    },
+    {
+     "nombre": "Jayaque",
+     "municipio": "La Libertad Oeste"
+    },
+    {
+     "nombre": "Sacacoyo",
+     "municipio": "La Libertad Oeste"
+    },
+    {
+     "nombre": "Tepecoyo",
+     "municipio": "La Libertad Oeste"
+    },
+    {
+     "nombre": "Talnique",
+     "municipio": "La Libertad Oeste"
+    },
+    {
+     "nombre": "Antiguo Cuscatlán",
+     "municipio": "La Libertad Este"
+    },
+    {
+     "nombre": "Huizúcar",
+     "municipio": "La Libertad Este"
+    },
+    {
+     "nombre": "Nuevo Cuscatlán",
+     "municipio": "La Libertad Este"
+    },
+    {
+     "nombre": "San José Villanueva",
+     "municipio": "La Libertad Este"
+    },
+    {
+     "nombre": "Zaragoza",
+     "municipio": "La Libertad Este"
+    },
+    {
+     "nombre": "Chiltiupán",
+     "municipio": "La Libertad Costa"
+    },
+    {
+     "nombre": "Jicalapa",
+     "municipio": "La Libertad Costa"
+    },
+    {
+     "nombre": "La Libertad",
+     "municipio": "La Libertad Costa"
+    },
+    {
+     "nombre": "Tamanique",
+     "municipio": "La Libertad Costa"
+    },
+    {
+     "nombre": "Teotepeque",
+     "municipio": "La Libertad Costa"
+    },
+    {
+     "nombre": "Comasagua",
+     "municipio": "La Libertad Sur"
+    },
+    {
+     "nombre": "Santa Tecla",
+     "municipio": "La Libertad Sur"
+    }
+   ]
+  },
+  {
+   "codigo": "CH",
+   "nombre": "Chalatenango",
+   "ciudades": [
+    {
+     "nombre": "La Palma",
+     "municipio": "Chalatenango Norte"
+    },
+    {
+     "nombre": "Citalá",
+     "municipio": "Chalatenango Norte"
+    },
+    {
+     "nombre": "San Ignacio",
+     "municipio": "Chalatenango Norte"
+    },
+    {
+     "nombre": "Nueva Concepción",
+     "municipio": "Chalatenango Centro"
+    },
+    {
+     "nombre": "Tejutla",
+     "municipio": "Chalatenango Centro"
+    },
+    {
+     "nombre": "La Reina",
+     "municipio": "Chalatenango Centro"
+    },
+    {
+     "nombre": "Agua Caliente",
+     "municipio": "Chalatenango Centro"
+    },
+    {
+     "nombre": "Dulce Nombre de María",
+     "municipio": "Chalatenango Centro"
+    },
+    {
+     "nombre": "El Paraíso",
+     "municipio": "Chalatenango Centro"
+    },
+    {
+     "nombre": "San Fernando",
+     "municipio": "Chalatenango Centro"
+    },
+    {
+     "nombre": "San Francisco Morazán",
+     "municipio": "Chalatenango Centro"
+    },
+    {
+     "nombre": "San Rafael",
+     "municipio": "Chalatenango Centro"
+    },
+    {
+     "nombre": "Santa Rita",
+     "municipio": "Chalatenango Centro"
+    },
+    {
+     "nombre": "Chalatenango",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "Arcatao",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "Azacualpa",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "Comalapa",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "Concepción Quezaltepeque",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "El Carrizal",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "La Laguna",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "Las Vueltas",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "Nombre de Jesús",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "Nueva Trinidad",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "Ojos de Agua",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "Potónico",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "San Antonio de La Cruz",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "San Antonio Los Ranchos",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "San Francisco Lempa",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "San Isidro Labrador",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "San José Cancasque",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "San Miguel de Mercedes",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "San José Las Flores",
+     "municipio": "Chalatenango Sur"
+    },
+    {
+     "nombre": "San Luis del Carmen",
+     "municipio": "Chalatenango Sur"
+    }
+   ]
+  },
+  {
+   "codigo": "CU",
+   "nombre": "Cuscatlán",
+   "ciudades": [
+    {
+     "nombre": "Suchitoto",
+     "municipio": "Cuscatlán Norte"
+    },
+    {
+     "nombre": "San José Guayabal",
+     "municipio": "Cuscatlán Norte"
+    },
+    {
+     "nombre": "Oratorio de Concepción",
+     "municipio": "Cuscatlán Norte"
+    },
+    {
+     "nombre": "San Bartolomé Perulapía",
+     "municipio": "Cuscatlán Norte"
+    },
+    {
+     "nombre": "San Pedro Perulapán",
+     "municipio": "Cuscatlán Norte"
+    },
+    {
+     "nombre": "Cojutepeque",
+     "municipio": "Cuscatlán Sur"
+    },
+    {
+     "nombre": "San Rafael Cedros",
+     "municipio": "Cuscatlán Sur"
+    },
+    {
+     "nombre": "Candelaria",
+     "municipio": "Cuscatlán Sur"
+    },
+    {
+     "nombre": "Monte San Juan",
+     "municipio": "Cuscatlán Sur"
+    },
+    {
+     "nombre": "El Carmen",
+     "municipio": "Cuscatlán Sur"
+    },
+    {
+     "nombre": "San Cristóbal",
+     "municipio": "Cuscatlán Sur"
+    },
+    {
+     "nombre": "Santa Cruz Michapa",
+     "municipio": "Cuscatlán Sur"
+    },
+    {
+     "nombre": "San Ramón",
+     "municipio": "Cuscatlán Sur"
+    },
+    {
+     "nombre": "El Rosario",
+     "municipio": "Cuscatlán Sur"
+    },
+    {
+     "nombre": "Santa Cruz Analquito",
+     "municipio": "Cuscatlán Sur"
+    },
+    {
+     "nombre": "Tenancingo",
+     "municipio": "Cuscatlán Sur"
+    }
+   ]
+  },
+  {
+   "codigo": "CA",
+   "nombre": "Cabañas",
+   "ciudades": [
+    {
+     "nombre": "Sensuntepeque",
+     "municipio": "Cabañas Este"
+    },
+    {
+     "nombre": "Victoria",
+     "municipio": "Cabañas Este"
+    },
+    {
+     "nombre": "Dolores",
+     "municipio": "Cabañas Este"
+    },
+    {
+     "nombre": "Guacotecti",
+     "municipio": "Cabañas Este"
+    },
+    {
+     "nombre": "San Isidro",
+     "municipio": "Cabañas Este"
+    },
+    {
+     "nombre": "Ilobasco",
+     "municipio": "Cabañas Oeste"
+    },
+    {
+     "nombre": "Tejutepeque",
+     "municipio": "Cabañas Oeste"
+    },
+    {
+     "nombre": "Jutiapa",
+     "municipio": "Cabañas Oeste"
+    },
+    {
+     "nombre": "Cinquera",
+     "municipio": "Cabañas Oeste"
+    }
+   ]
+  },
+  {
+   "codigo": "PA",
+   "nombre": "La Paz",
+   "ciudades": [
+    {
+     "nombre": "Cuyultitán",
+     "municipio": "La Paz Oeste"
+    },
+    {
+     "nombre": "Olocuilta",
+     "municipio": "La Paz Oeste"
+    },
+    {
+     "nombre": "San Juan Talpa",
+     "municipio": "La Paz Oeste"
+    },
+    {
+     "nombre": "San Luis Talpa",
+     "municipio": "La Paz Oeste"
+    },
+    {
+     "nombre": "San Pedro Masahuat",
+     "municipio": "La Paz Oeste"
+    },
+    {
+     "nombre": "Tapalhuaca",
+     "municipio": "La Paz Oeste"
+    },
+    {
+     "nombre": "San Francisco Chinameca",
+     "municipio": "La Paz Oeste"
+    },
+    {
+     "nombre": "El Rosario",
+     "municipio": "La Paz Centro"
+    },
+    {
+     "nombre": "Jerusalén",
+     "municipio": "La Paz Centro"
+    },
+    {
+     "nombre": "Mercedes La Ceiba",
+     "municipio": "La Paz Centro"
+    },
+    {
+     "nombre": "Paraíso de Osorio",
+     "municipio": "La Paz Centro"
+    },
+    {
+     "nombre": "San Antonio Masahuat",
+     "municipio": "La Paz Centro"
+    },
+    {
+     "nombre": "San Emigdio",
+     "municipio": "La Paz Centro"
+    },
+    {
+     "nombre": "San Juan Tepezontes",
+     "municipio": "La Paz Centro"
+    },
+    {
+     "nombre": "San Luis La Herradura",
+     "municipio": "La Paz Centro"
+    },
+    {
+     "nombre": "San Miguel Tepezontes",
+     "municipio": "La Paz Centro"
+    },
+    {
+     "nombre": "San Pedro Nonualco",
+     "municipio": "La Paz Centro"
+    },
+    {
+     "nombre": "Santa María Ostuma",
+     "municipio": "La Paz Centro"
+    },
+    {
+     "nombre": "Santiago Nonualco",
+     "municipio": "La Paz Centro"
+    },
+    {
+     "nombre": "San Juan Nonualco",
+     "municipio": "La Paz Este"
+    },
+    {
+     "nombre": "San Rafael Obrajuelo",
+     "municipio": "La Paz Este"
+    },
+    {
+     "nombre": "Zacatecoluca",
+     "municipio": "La Paz Este"
+    }
+   ]
+  },
+  {
+   "codigo": "UN",
+   "nombre": "La Unión",
+   "ciudades": [
+    {
+     "nombre": "Anamorós",
+     "municipio": "La Unión Norte"
+    },
+    {
+     "nombre": "Bolívar",
+     "municipio": "La Unión Norte"
+    },
+    {
+     "nombre": "Concepción de Oriente",
+     "municipio": "La Unión Norte"
+    },
+    {
+     "nombre": "El Sauce",
+     "municipio": "La Unión Norte"
+    },
+    {
+     "nombre": "Lislique",
+     "municipio": "La Unión Norte"
+    },
+    {
+     "nombre": "Nueva Esparta",
+     "municipio": "La Unión Norte"
+    },
+    {
+     "nombre": "Pasaquina",
+     "municipio": "La Unión Norte"
+    },
+    {
+     "nombre": "Polorós",
+     "municipio": "La Unión Norte"
+    },
+    {
+     "nombre": "San José La Fuente",
+     "municipio": "La Unión Norte"
+    },
+    {
+     "nombre": "Santa Rosa de Lima",
+     "municipio": "La Unión Norte"
+    },
+    {
+     "nombre": "Conchagua",
+     "municipio": "La Unión Sur"
+    },
+    {
+     "nombre": "El Carmen",
+     "municipio": "La Unión Sur"
+    },
+    {
+     "nombre": "Intipucá",
+     "municipio": "La Unión Sur"
+    },
+    {
+     "nombre": "La Unión",
+     "municipio": "La Unión Sur"
+    },
+    {
+     "nombre": "Meanguera del Golfo",
+     "municipio": "La Unión Sur"
+    },
+    {
+     "nombre": "San Alejo",
+     "municipio": "La Unión Sur"
+    },
+    {
+     "nombre": "Yayantique",
+     "municipio": "La Unión Sur"
+    },
+    {
+     "nombre": "Yucuaiquín",
+     "municipio": "La Unión Sur"
+    }
+   ]
+  },
+  {
+   "codigo": "US",
+   "nombre": "Usulután",
+   "ciudades": [
+    {
+     "nombre": "Santiago de María",
+     "municipio": "Usulután Norte"
+    },
+    {
+     "nombre": "Alegría",
+     "municipio": "Usulután Norte"
+    },
+    {
+     "nombre": "Berlín",
+     "municipio": "Usulután Norte"
+    },
+    {
+     "nombre": "Mercedes Umaña",
+     "municipio": "Usulután Norte"
+    },
+    {
+     "nombre": "Jucuapa",
+     "municipio": "Usulután Norte"
+    },
+    {
+     "nombre": "El Triunfo",
+     "municipio": "Usulután Norte"
+    },
+    {
+     "nombre": "Estanzuelas",
+     "municipio": "Usulután Norte"
+    },
+    {
+     "nombre": "San Buenaventura",
+     "municipio": "Usulután Norte"
+    },
+    {
+     "nombre": "Nueva Granada",
+     "municipio": "Usulután Norte"
+    },
+    {
+     "nombre": "Usulután",
+     "municipio": "Usulután Este"
+    },
+    {
+     "nombre": "Jucuarán",
+     "municipio": "Usulután Este"
+    },
+    {
+     "nombre": "San Dionisio",
+     "municipio": "Usulután Este"
+    },
+    {
+     "nombre": "Concepción Batres",
+     "municipio": "Usulután Este"
+    },
+    {
+     "nombre": "Santa María",
+     "municipio": "Usulután Este"
+    },
+    {
+     "nombre": "Ozatlán",
+     "municipio": "Usulután Este"
+    },
+    {
+     "nombre": "Tecapán",
+     "municipio": "Usulután Este"
+    },
+    {
+     "nombre": "Santa Elena",
+     "municipio": "Usulután Este"
+    },
+    {
+     "nombre": "California",
+     "municipio": "Usulután Este"
+    },
+    {
+     "nombre": "Ereguayquín",
+     "municipio": "Usulután Este"
+    },
+    {
+     "nombre": "Jiquilisco",
+     "municipio": "Usulután Oeste"
+    },
+    {
+     "nombre": "Puerto El Triunfo",
+     "municipio": "Usulután Oeste"
+    },
+    {
+     "nombre": "San Agustín",
+     "municipio": "Usulután Oeste"
+    },
+    {
+     "nombre": "San Francisco Javier",
+     "municipio": "Usulután Oeste"
+    }
+   ]
+  },
+  {
+   "codigo": "SO",
+   "nombre": "Sonsonate",
+   "ciudades": [
+    {
+     "nombre": "Juayúa",
+     "municipio": "Sonsonate Norte"
+    },
+    {
+     "nombre": "Nahuizalco",
+     "municipio": "Sonsonate Norte"
+    },
+    {
+     "nombre": "Salcoatitán",
+     "municipio": "Sonsonate Norte"
+    },
+    {
+     "nombre": "Santa Catarina Masahuat",
+     "municipio": "Sonsonate Norte"
+    },
+    {
+     "nombre": "Sonsonate",
+     "municipio": "Sonsonate Centro"
+    },
+    {
+     "nombre": "Sonzacate",
+     "municipio": "Sonsonate Centro"
+    },
+    {
+     "nombre": "Nahulingo",
+     "municipio": "Sonsonate Centro"
+    },
+    {
+     "nombre": "San Antonio del Monte",
+     "municipio": "Sonsonate Centro"
+    },
+    {
+     "nombre": "Santo Domingo de Guzmán",
+     "municipio": "Sonsonate Centro"
+    },
+    {
+     "nombre": "Izalco",
+     "municipio": "Sonsonate Este"
+    },
+    {
+     "nombre": "Armenia",
+     "municipio": "Sonsonate Este"
+    },
+    {
+     "nombre": "Caluco",
+     "municipio": "Sonsonate Este"
+    },
+    {
+     "nombre": "San Julián",
+     "municipio": "Sonsonate Este"
+    },
+    {
+     "nombre": "Cuisnahuat",
+     "municipio": "Sonsonate Este"
+    },
+    {
+     "nombre": "Santa Isabel Ishuatán",
+     "municipio": "Sonsonate Este"
+    },
+    {
+     "nombre": "Acajutla",
+     "municipio": "Sonsonate Oeste"
+    }
+   ]
+  },
+  {
+   "codigo": "SA",
+   "nombre": "Santa Ana",
+   "ciudades": [
+    {
+     "nombre": "Masahuat",
+     "municipio": "Santa Ana Norte"
+    },
+    {
+     "nombre": "Metapán",
+     "municipio": "Santa Ana Norte"
+    },
+    {
+     "nombre": "Santa Rosa Guachipilín",
+     "municipio": "Santa Ana Norte"
+    },
+    {
+     "nombre": "Texistepeque",
+     "municipio": "Santa Ana Norte"
+    },
+    {
+     "nombre": "Santa Ana",
+     "municipio": "Santa Ana Centro"
+    },
+    {
+     "nombre": "Coatepeque",
+     "municipio": "Santa Ana Este"
+    },
+    {
+     "nombre": "El Congo",
+     "municipio": "Santa Ana Este"
+    },
+    {
+     "nombre": "Candelaria de la Frontera",
+     "municipio": "Santa Ana Oeste"
+    },
+    {
+     "nombre": "Chalchuapa",
+     "municipio": "Santa Ana Oeste"
+    },
+    {
+     "nombre": "El Porvenir",
+     "municipio": "Santa Ana Oeste"
+    },
+    {
+     "nombre": "San Antonio Pajonal",
+     "municipio": "Santa Ana Oeste"
+    },
+    {
+     "nombre": "San Sebastián Salitrillo",
+     "municipio": "Santa Ana Oeste"
+    },
+    {
+     "nombre": "Santiago de La Frontera",
+     "municipio": "Santa Ana Oeste"
+    }
+   ]
+  },
+  {
+   "codigo": "SV",
+   "nombre": "San Vicente",
+   "ciudades": [
+    {
+     "nombre": "Apastepeque",
+     "municipio": "San Vicente Norte"
+    },
+    {
+     "nombre": "Santa Clara",
+     "municipio": "San Vicente Norte"
+    },
+    {
+     "nombre": "San Ildefonso",
+     "municipio": "San Vicente Norte"
+    },
+    {
+     "nombre": "San Esteban Catarina",
+     "municipio": "San Vicente Norte"
+    },
+    {
+     "nombre": "San Sebastián",
+     "municipio": "San Vicente Norte"
+    },
+    {
+     "nombre": "San Lorenzo",
+     "municipio": "San Vicente Norte"
+    },
+    {
+     "nombre": "Santo Domingo",
+     "municipio": "San Vicente Norte"
+    },
+    {
+     "nombre": "San Vicente",
+     "municipio": "San Vicente Sur"
+    },
+    {
+     "nombre": "Guadalupe",
+     "municipio": "San Vicente Sur"
+    },
+    {
+     "nombre": "Verapaz",
+     "municipio": "San Vicente Sur"
+    },
+    {
+     "nombre": "Tepetitán",
+     "municipio": "San Vicente Sur"
+    },
+    {
+     "nombre": "Tecoluca",
+     "municipio": "San Vicente Sur"
+    },
+    {
+     "nombre": "San Cayetano Istepeque",
+     "municipio": "San Vicente Sur"
+    }
+   ]
+  },
+  {
+   "codigo": "SM",
+   "nombre": "San Miguel",
+   "ciudades": [
+    {
+     "nombre": "Ciudad Barrios",
+     "municipio": "San Miguel Norte"
+    },
+    {
+     "nombre": "Sesori",
+     "municipio": "San Miguel Norte"
+    },
+    {
+     "nombre": "Nuevo Edén de San Juan",
+     "municipio": "San Miguel Norte"
+    },
+    {
+     "nombre": "San Gerardo",
+     "municipio": "San Miguel Norte"
+    },
+    {
+     "nombre": "San Luis de La Reina",
+     "municipio": "San Miguel Norte"
+    },
+    {
+     "nombre": "Carolina",
+     "municipio": "San Miguel Norte"
+    },
+    {
+     "nombre": "San Antonio del Mosco",
+     "municipio": "San Miguel Norte"
+    },
+    {
+     "nombre": "Chapeltique",
+     "municipio": "San Miguel Norte"
+    },
+    {
+     "nombre": "San Miguel",
+     "municipio": "San Miguel Centro"
+    },
+    {
+     "nombre": "Comacarán",
+     "municipio": "San Miguel Centro"
+    },
+    {
+     "nombre": "Uluazapa",
+     "municipio": "San Miguel Centro"
+    },
+    {
+     "nombre": "Moncagua",
+     "municipio": "San Miguel Centro"
+    },
+    {
+     "nombre": "Quelepa",
+     "municipio": "San Miguel Centro"
+    },
+    {
+     "nombre": "Chirilagua",
+     "municipio": "San Miguel Centro"
+    },
+    {
+     "nombre": "Chinameca",
+     "municipio": "San Miguel Oeste"
+    },
+    {
+     "nombre": "Nueva Guadalupe",
+     "municipio": "San Miguel Oeste"
+    },
+    {
+     "nombre": "Lolotique",
+     "municipio": "San Miguel Oeste"
+    },
+    {
+     "nombre": "San Jorge",
+     "municipio": "San Miguel Oeste"
+    },
+    {
+     "nombre": "San Rafael Oriente",
+     "municipio": "San Miguel Oeste"
+    },
+    {
+     "nombre": "El Tránsito",
+     "municipio": "San Miguel Oeste"
+    }
+   ]
+  },
+  {
+   "codigo": "MO",
+   "nombre": "Morazán",
+   "ciudades": [
+    {
+     "nombre": "Arambala",
+     "municipio": "Morazán Norte"
+    },
+    {
+     "nombre": "Cacaopera",
+     "municipio": "Morazán Norte"
+    },
+    {
+     "nombre": "Corinto",
+     "municipio": "Morazán Norte"
+    },
+    {
+     "nombre": "El Rosario",
+     "municipio": "Morazán Norte"
+    },
+    {
+     "nombre": "Joateca",
+     "municipio": "Morazán Norte"
+    },
+    {
+     "nombre": "Jocoaitique",
+     "municipio": "Morazán Norte"
+    },
+    {
+     "nombre": "Meanguera",
+     "municipio": "Morazán Norte"
+    },
+    {
+     "nombre": "Perquín",
+     "municipio": "Morazán Norte"
+    },
+    {
+     "nombre": "San Fernando",
+     "municipio": "Morazán Norte"
+    },
+    {
+     "nombre": "San Isidro",
+     "municipio": "Morazán Norte"
+    },
+    {
+     "nombre": "Torola",
+     "municipio": "Morazán Norte"
+    },
+    {
+     "nombre": "Chilanga",
+     "municipio": "Morazán Sur"
+    },
+    {
+     "nombre": "Delicias de Concepción",
+     "municipio": "Morazán Sur"
+    },
+    {
+     "nombre": "El Divisadero",
+     "municipio": "Morazán Sur"
+    },
+    {
+     "nombre": "Gualococti",
+     "municipio": "Morazán Sur"
+    },
+    {
+     "nombre": "Guatajiagua",
+     "municipio": "Morazán Sur"
+    },
+    {
+     "nombre": "Jocoro",
+     "municipio": "Morazán Sur"
+    },
+    {
+     "nombre": "Lolotiquillo",
+     "municipio": "Morazán Sur"
+    },
+    {
+     "nombre": "Osicala",
+     "municipio": "Morazán Sur"
+    },
+    {
+     "nombre": "San Carlos",
+     "municipio": "Morazán Sur"
+    },
+    {
+     "nombre": "San Francisco Gotera",
+     "municipio": "Morazán Sur"
+    },
+    {
+     "nombre": "San Simón",
+     "municipio": "Morazán Sur"
+    },
+    {
+     "nombre": "Sensembra",
+     "municipio": "Morazán Sur"
+    },
+    {
+     "nombre": "Sociedad",
+     "municipio": "Morazán Sur"
+    },
+    {
+     "nombre": "Yamabal",
+     "municipio": "Morazán Sur"
+    },
+    {
+     "nombre": "Yoloaiquín",
+     "municipio": "Morazán Sur"
+    }
+   ]
+  }
+ ]
+}
