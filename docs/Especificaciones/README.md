@@ -6,7 +6,7 @@ Specs por módulo bajo **Spec Driven Documentation**: cada módulo se especifica
 |---|---|---|---|
 | [PatronEventos.md](PatronEventos.md) | RT-06 | Transversal | 🟡 Borrador |
 | [AutenticacionYPermisos.md](AutenticacionYPermisos.md) | RF-08 | 1 | 🟡 Borrador |
-| [InterfazEscritorio.md](InterfazEscritorio.md) | RF-01, RF-07, RF-09 | 0–1 | 🟡 Borrador |
+| [InterfazUsuario.md](InterfazUsuario.md) | RF-01, RF-07, RF-09 | 0–1 | 🟡 Borrador |
 | [Clientes.md](Clientes.md) | RF-03 | 2 | 🟡 Borrador |
 | [Productos.md](Productos.md) | RF-04 | 2 | 🟡 Borrador |
 | [Pedidos.md](Pedidos.md) | RF-05 | 3 | 🟡 Borrador |
@@ -27,7 +27,7 @@ Documentos para el equipo (no son specs de módulo): [PautasCodigoEventos.md](..
 ## 3. Casos de uso (entrada, resultado, errores)
 ## 4. API (rutas, permisos, códigos de estado)
 ## 5. Eventos que emite/consume
-## 6. Interfaz (formulario, eventos de controles)
-## 7. Plan de pruebas (dominio / integración / API / presentador)
+## 6. Interfaz (página, eventos)
+## 7. Plan de pruebas (dominio / integración / API / ViewModel)
 ## 8. Decisiones abiertas
 ```
