@@ -1,29 +1,31 @@
 # 🧰 Evaluación Tecnológica - Gestión de Pedidos (UFG)
 
-> **Restricción del ingeniero: .NET 8 como máximo** (no se usa .NET 9 ni .NET 10). Todas las versiones de paquetes se eligen compatibles con .NET 8 y se anclan en `global.json` y `Directory.Packages.props` en la Fase 0.
+> **Versión del proyecto: .NET 8.** El ingeniero exige .NET 8 en parciales y laboratorios; se arranca así y **se deja preparada la migración a .NET 10** (§5) por si confirma que se permite. Todas las versiones de paquetes se eligen compatibles con .NET 8 y se anclan en `global.json` y `Directory.Packages.props` en la Fase 0.
 
 ## 1. Matriz de Stack
 
 | Capa | Tecnología | Justificación |
 |---|---|---|
 | Lenguaje / runtime | **C# 12 / .NET 8 (LTS)** | Versión máxima permitida por el ingeniero |
-| Cliente de escritorio (administración) | **Windows Forms (.NET 8) con MDI**, interfaz **construida en código** | Lo pide el enunciado y la rúbrica; sin diseñador para controlar el aspecto de los controles ([§3](#3-decisión-clientes)) |
-| Cliente web (público) | **Blazor Web App** (.NET 8), render interactivo de servidor | Tienda en línea para los clientes; misma API; tecnología .NET aceptada por el ingeniero |
-| Patrón de interfaz (escritorio) | **MVP (*Passive View*)** con eventos | Formularios delgados; lógica en presentadores probables sin interfaz gráfica |
+| Interfaz (única) | **Blazor** en una **Razor Class Library** (`Ui`) | Una sola implementación de todas las pantallas, para escritorio y web |
+| Hospedaje de escritorio | **.NET MAUI Blazor Hybrid** (target Windows) | Aplicación de escritorio de la familia .NET que reutiliza la `Ui` |
+| Hospedaje web | **Blazor Web App** (.NET 8, render interactivo de servidor) | La misma `Ui` en el navegador; se despliega en Docker |
+| Patrón de interfaz | **Página (.razor) + ViewModel** con eventos | Marcado sin lógica; el ViewModel se prueba sin pantalla |
+| Componentes visuales | **MudBlazor** (MIT) con un tema central | Interfaz amigable y consistente sin escribir todo el CSS; versión compatible con .NET 8 a validar en la Fase 0 |
 | API | **ASP.NET Core 8** (Minimal APIs agrupadas por módulo) | Un solo backend para los dos clientes |
 | ORM | **Entity Framework Core 8** (SQL Server) | Requisito del equipo; migraciones y consultas parametrizadas por construcción |
 | Base de datos | **SQL Server 2022** (imagen oficial Linux) | Enunciado |
 | Autenticación | **JWT** de 60 min (`Microsoft.AspNetCore.Authentication.JwtBearer` 8.x), sin *refresh tokens* | Simplicidad; ver [Seguridad.md](Seguridad.md) |
 | Hash de contraseñas | `PasswordHasher<T>` (`Microsoft.Extensions.Identity.Core`, PBKDF2) | Estándar mantenido por Microsoft |
 | Documentación de la API | **Swashbuckle.AspNetCore** (OpenAPI/Swagger UI) solo en `Development` | En .NET 8 no existe el generador integrado de OpenAPI (llegó con .NET 9) |
-| Validación | **FluentValidation** | Reglas declarativas en la API; reglas básicas espejadas en el formulario |
+| Validación | **FluentValidation** | Reglas declarativas en la API; reglas básicas espejadas en la interfaz |
 | Cliente HTTP | `HttpClient` tipado vía `IHttpClientFactory` | Sin librerías extra (YAGNI) |
 | Tiempo | `TimeProvider` (incluido en .NET 8) + `FakeTimeProvider` en pruebas | Tiempo inyectable sin crear interfaces propias |
-| Inyección de dependencias | `Microsoft.Extensions.Hosting` (también en WinForms) | Mismo contenedor y estilo en toda la solución |
+| Inyección de dependencias | `Microsoft.Extensions.Hosting` (también en MAUI) | Mismo contenedor y estilo en toda la solución |
 | Mapeo | Manual (métodos de extensión) | Sin magia ni dependencias (KISS) |
-| Pruebas | **xUnit** + **Testcontainers for .NET** (SQL Server) + **Respawn** + **NetArchTest** (+ bUnit para la web si hace falta) | Sin SQL Server instalado en el host ([Testing.md](Especificaciones/Testing.md)) |
+| Pruebas | **xUnit** + **Testcontainers for .NET** (SQL Server) + **Respawn** + **NetArchTest** + **bUnit** (componentes) | Sin SQL Server instalado en el host ([Testing.md](Especificaciones/Testing.md)) |
 | Contenedores | **Docker + Docker Compose** (API, web y base de datos) | Decisión del equipo |
-| Editor | **VS Code** (o Antigravity, que es un derivado de VS Code) con **C# Dev Kit** y SDK de .NET 8 | Decisión del equipo; sin Visual Studio |
+| Editor | **VS Code** (o Antigravity, derivado de VS Code) con **C# Dev Kit** y la extensión **.NET MAUI**; SDK de .NET 8 y la carga de trabajo `maui` | Decisión del equipo; sin Visual Studio |
 | CI | **GitHub Actions** | Ver [GuiaCI.md](Equipo/GuiaCI.md) |
 
 Formato de solución: **`.sln`** (el formato `.slnx` requiere el SDK de .NET 9 o superior). Imágenes base: `mcr.microsoft.com/dotnet/sdk:8.0` y `aspnet:8.0`.
@@ -34,8 +36,8 @@ Formato de solución: **`.sln`** (el formato `.slnx` requiere el SDK de .NET 9 o
 
 ### 2.1 API y EF Core entre los clientes y SQL Server
 * **Seguridad**: la cadena de conexión y las credenciales de la BD **nunca viajan en un ejecutable** ni en el navegador (criterio de "conexiones seguras").
-* **Dos clientes, un backend**: el escritorio (administración) y la web (público) consumen la misma API y las mismas reglas de negocio.
-* **Aprobado por el ingeniero**: la única condición es que sean tecnologías de la familia .NET.
+* **Dos hospedajes, un backend**: el escritorio y la web consumen la misma API y las mismas reglas de negocio.
+* **Aprobado por el ingeniero**: la tecnología es libre mientras funcione y sea de la familia .NET.
 
 ### 2.2 Minimal APIs
 Un `MapGroup` por módulo (`/api/v1/clientes`, …). La lógica vive en `Application`; si se prefieren controladores, el cambio es local a la capa `Api`.
@@ -49,23 +51,35 @@ Añaden indirección y, según la versión, licencias comerciales. Un caso de us
 ### 2.5 Entero como clave primaria
 `INT IDENTITY` en lugar de `Guid`: legible en pantalla, más eficiente y suficiente. Como los identificadores son secuenciales, la seguridad **no depende de ocultarlos** sino de la autorización en cada endpoint (en la web pública, cada cliente solo ve **sus** pedidos).
 
-## 3. Decisión: Clientes
+## 3. Decisión: una Interfaz Blazor, Dos Hospedajes
 
-**Escritorio = Windows Forms con MDI** (administración y operación). El enunciado dice textualmente *"Desarrolle una aplicación de Windows Form en código c#"* y la rúbrica puntúa *"Aplicación de escritorio de interfaz de múltiples documentos"* y *"Codifica los diferentes eventos de la interfaz gráfica"*.
+El ingeniero aclaró que los criterios del enunciado **no son cerrados**: la tecnología es libre mientras **funcione** y sea de la **familia .NET**. **.NET MAUI Blazor Hybrid y Blazor Web App son .NET**, así que se descarta tener dos interfaces distintas.
 
-**Web = Blazor Web App** (parte pública). Una tienda se usa sobre todo en la web y nadie descarga una aplicación de escritorio para comprar; el ingeniero aceptó web siempre que sea tecnología .NET. En .NET 8, *Blazor Web App* es la plantilla unificada con modos de render de servidor, WebAssembly y automático.
+```
+        ┌──────────────────────────────────────────┐
+        │ GestionPedidos.Ui (Razor Class Library)  │  ← se escribe UNA vez
+        └───────────────┬──────────────────────────┘
+          ┌─────────────┴─────────────┐
+          ▼                           ▼
+ Desktop (MAUI Blazor Hybrid)   Web (Blazor Web App)
+ Windows, .exe                  Docker, navegador
+```
 
 | Opción | Pros | Contras | Veredicto |
 |---|---|---|---|
-| **WinForms (escritorio) + Blazor Web App (público)** | Cumple el enunciado y da una tienda usable en la web | Dos interfaces distintas (no se comparten pantallas) | ✅ Elegida |
-| .NET MAUI Blazor Hybrid | Una UI para escritorio y web | No es Windows Forms ni tiene MDI; MAUI para Windows no se compila en Docker | Descartada |
-| WPF | Mejor estilo visual | No es "Windows Form" | Descartada |
+| **Blazor (`Ui`) en MAUI Hybrid + Blazor Web App** | Una sola implementación; escritorio real y web; HTML/CSS para personalizar el aspecto | MAUI para Windows no se compila en Docker/Linux; el aspecto "MDI clásico" se logra con pestañas | ✅ Elegida |
+| Windows Forms (escritorio) + Blazor (web) | Cumple al pie de la letra el texto del enunciado y el MDI | Dos interfaces que mantener | Descartada (complica sin necesidad) |
+| Solo Blazor Web App | Todo en Docker | No es una aplicación de escritorio | Descartada |
 
-### 3.1 Windows Forms sin diseñador, con VS Code
-* La interfaz se **escribe en código** (no hay arrastrar y soltar): cada formulario construye sus controles en un método `ConstruirInterfaz()` dentro de un archivo parcial `<Modulo>Form.Interfaz.cs`. No existen archivos `.Designer.cs` ni `.resx`.
-* Un **kit de controles propio** (`Comun/Controles`) y un **tema central** (`Comun/Tema`: paleta, fuentes, espaciados) permiten personalizar el aspecto de los componentes de Windows Forms en un solo lugar ([InterfazEscritorio.md §9](Especificaciones/InterfazEscritorio.md)).
-* Se ejecuta con `dotnet run` en **Windows** (el SDK de .NET 8 instalado en Windows). Compilar el proyecto en Linux/Docker es posible con `<EnableWindowsTargeting>true</EnableWindowsTargeting>`; **se valida en la Fase 0** (incluida la publicación autocontenida para `win-x64`).
-* Las **pruebas** de presentadores no necesitan Windows ni interfaz gráfica (vistas falsas).
+### 3.1 Cómo se trabaja con MAUI Blazor Hybrid y VS Code
+* El host `Desktop` es una capa **delgada** (un `BlazorWebView` que carga la `Ui`); casi todo el trabajo se hace y se prueba en el hospedaje **web** (Docker) y se ve igual en escritorio.
+* Se compila y ejecuta en **Windows** con el SDK de .NET 8, la carga de trabajo (`dotnet workload install maui`) y el target `net8.0-windows10.0.19041.0`. **El desarrollo diario, la compilación y la depuración del host `Desktop` desde VS Code se validan en la Fase 0**; si algo no funciona sin Visual Studio, ese único proyecto se abre con Visual Studio y el resto sigue en VS Code.
+* **No se puede compilar en Docker ni en Linux**: el CI compila `Desktop` en un *runner* de Windows ([GuiaCI.md](Equipo/GuiaCI.md)).
+* La `Ui` **no usa** APIs exclusivas de un hospedaje; lo específico entra por interfaces (`ISesionAlmacen`).
+* Las **pruebas** de ViewModels y servicios no necesitan Windows ni navegador.
+* **Plan B** si MAUI diera problemas serios en los equipos del grupo: hospedar la misma `Ui` en un `BlazorWebView` dentro de **Windows Forms o WPF** (también .NET); la `Ui` no cambia.
+
+> **Nota de soporte**: .NET MAUI 8 ya terminó su soporte (mayo de 2025) y .NET 8 lo termina el 10/11/2026; para este proyecto académico no es un impedimento. Si el ingeniero levanta también el límite de .NET 8, conviene pasar a .NET 10 (soporte hasta 2028).
 
 ## 4. SQL Server en Docker
 
@@ -75,3 +89,32 @@ Añaden indirección y, según la versión, licencias comerciales. Un caso de us
 * Requiere `ACCEPT_EULA=Y` y `MSSQL_SA_PASSWORD` con complejidad (≥ 8 caracteres con mayúsculas, minúsculas, dígitos y símbolos).
 * Herramientas en la imagen 2022: `/opt/mssql-tools18/bin/sqlcmd` (con `-C` para confiar en el certificado autofirmado en desarrollo).
 * Alojarla en un servidor con poca RAM: ver [Infraestructura.md §4](Infraestructura.md) (despliegue pospuesto).
+
+## 5. Posible Migración a .NET 10 (opcional, a decidir tras consultar al ingeniero)
+
+**Estado:** el proyecto arranca en **.NET 8**. Pablo consultará al ingeniero si se permite .NET 10; hasta que lo confirme **no se cambia nada**.
+
+**Por qué conviene considerarla**
+* .NET 8 y .NET 9 terminan su soporte el **10/11/2026**; .NET 10 (LTS) tiene soporte hasta noviembre de 2028.
+* .NET MAUI 8 ya no recibe soporte; MAUI 10 sí.
+* Nada de la arquitectura, el dominio ni la documentación depende de funciones exclusivas de .NET 8.
+
+**Qué cambiaría (acotado)**
+
+| Qué | Cambio |
+|---|---|
+| `global.json` y `<TargetFramework>` | `net8.0` → `net10.0` (y `net10.0-windows10.0.19041.0` en `Desktop`) |
+| Paquetes (`Directory.Packages.props`) | EF Core 8 → 10, `JwtBearer` 8 → 10, MudBlazor y demás a versiones que soporten .NET 10 |
+| Imágenes Docker | `sdk:8.0`/`aspnet:8.0` → `sdk:10.0`/`aspnet:10.0` |
+| CI (`GuiaCI.md`) | Versión del SDK en `global.json`; carga de trabajo `maui` de la versión 10 |
+| OpenAPI | Se puede reemplazar Swashbuckle por el generador integrado (`Microsoft.AspNetCore.OpenApi`); opcional |
+| Formato de solución | Se puede adoptar `.slnx`; opcional |
+| Migraciones de EF Core | Regenerar el *snapshot* o verificar que no cambió el modelo; ninguna tabla cambia |
+
+**Cómo mantener barata la migración desde el primer día**
+* Versiones de paquetes y de SDK **solo** en `global.json`, `Directory.Build.props` y `Directory.Packages.props` (un único lugar).
+* No usar APIs marcadas como obsoletas ni funciones de vista previa; el CI trata las advertencias como errores.
+* Una sola rama de migración (`chore/net10`) que cambia esos archivos, corrige lo que no compile y pasa toda la batería de pruebas.
+* Mejor **hacerla temprano** (antes de tener muchos módulos) que tarde; si el ingeniero responde pronto, el costo es de horas, no de días.
+
+**Compatibilidad con los equipos del laboratorio**: .NET 8 y .NET 10 se publican autocontenidos ([Infraestructura.md §5](Infraestructura.md)); en ambos casos lo ya instalado de .NET Framework es irrelevante. WebView2 y una versión reciente de Windows son necesarios con cualquiera de las dos.
