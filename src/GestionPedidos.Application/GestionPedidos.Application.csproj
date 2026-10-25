@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Casos de uso y puertos. Referencia solo Domain y Contracts (DTOs de entrada/salida). -->
+  <ItemGroup>
+    <ProjectReference Include="..\GestionPedidos.Domain\GestionPedidos.Domain.csproj" />
+    <ProjectReference Include="..\GestionPedidos.Contracts\GestionPedidos.Contracts.csproj" />
+  </ItemGroup>
+</Project>
