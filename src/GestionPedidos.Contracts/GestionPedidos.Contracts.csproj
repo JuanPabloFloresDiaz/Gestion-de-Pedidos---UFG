@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- DTOs compartidos entre la API, la interfaz (Ui) y la capa de aplicación. Sin dependencias. -->
+</Project>
