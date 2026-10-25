@@ -1,0 +1,10 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "Levantar entorno (Docker)", "type": "shell", "command": "./scripts/up.sh", "problemMatcher": [] },
+    { "label": "Apagar entorno (Docker)", "type": "shell", "command": "./scripts/down.sh", "problemMatcher": [] },
+    { "label": "Pruebas (todas, en Docker)", "type": "shell", "command": "./scripts/test-docker.sh", "group": "test", "problemMatcher": [] },
+    { "label": "Pruebas de extremo a extremo (Playwright)", "type": "shell", "command": "./scripts/e2e-docker.sh", "group": "test", "problemMatcher": [] },
+    { "label": "Escritorio: ejecutar (solo Windows)", "type": "shell", "command": "dotnet run -f net8.0-windows10.0.19041.0 --project src/GestionPedidos.Desktop", "problemMatcher": [] }
+  ]
+}

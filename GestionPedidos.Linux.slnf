@@ -1,0 +1,20 @@
+{
+  "solution": {
+    "path": "GestionPedidos.sln",
+    "projects": [
+      "src/GestionPedidos.Domain/GestionPedidos.Domain.csproj",
+      "src/GestionPedidos.Contracts/GestionPedidos.Contracts.csproj",
+      "src/GestionPedidos.Application/GestionPedidos.Application.csproj",
+      "src/GestionPedidos.Infrastructure/GestionPedidos.Infrastructure.csproj",
+      "src/GestionPedidos.Api/GestionPedidos.Api.csproj",
+      "src/GestionPedidos.Ui/GestionPedidos.Ui.csproj",
+      "src/GestionPedidos.Web/GestionPedidos.Web.csproj",
+      "tests/GestionPedidos.Domain.Tests/GestionPedidos.Domain.Tests.csproj",
+      "tests/GestionPedidos.Application.Tests/GestionPedidos.Application.Tests.csproj",
+      "tests/GestionPedidos.Infrastructure.Tests/GestionPedidos.Infrastructure.Tests.csproj",
+      "tests/GestionPedidos.Api.Tests/GestionPedidos.Api.Tests.csproj",
+      "tests/GestionPedidos.Ui.Tests/GestionPedidos.Ui.Tests.csproj",
+      "tests/GestionPedidos.Architecture.Tests/GestionPedidos.Architecture.Tests.csproj"
+    ]
+  }
+}
