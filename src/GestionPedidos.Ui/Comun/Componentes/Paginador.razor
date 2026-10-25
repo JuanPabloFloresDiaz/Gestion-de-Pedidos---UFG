@@ -1,0 +1,24 @@
+@* Paginador del kit: « ‹ página 2 de 9 › » *@
+@if (TotalPaginas > 0)
+{
+    <nav class="paginador" aria-label="Paginación">
+        <button class="boton boton-secundario" disabled="@(Pagina <= 1)" @onclick="() => Ir(1)" aria-label="Primera página">«</button>
+        <button class="boton boton-secundario" disabled="@(Pagina <= 1)" @onclick="() => Ir(Pagina - 1)" aria-label="Página anterior">‹</button>
+        <span>Página @Pagina de @TotalPaginas · @Total resultado@(Total == 1 ? "" : "s")</span>
+        <button class="boton boton-secundario" disabled="@(Pagina >= TotalPaginas)" @onclick="() => Ir(Pagina + 1)" aria-label="Página siguiente">›</button>
+        <button class="boton boton-secundario" disabled="@(Pagina >= TotalPaginas)" @onclick="() => Ir(TotalPaginas)" aria-label="Última página">»</button>
+    </nav>
+}
+
+@code {
+    /// <summary>Página actual (desde 1).</summary>
+    [Parameter] public int Pagina { get; set; } = 1;
+    /// <summary>Total de páginas.</summary>
+    [Parameter] public int TotalPaginas { get; set; }
+    /// <summary>Total de resultados.</summary>
+    [Parameter] public int Total { get; set; }
+    /// <summary>Se produce al pedir otra página (recibe el número).</summary>
+    [Parameter] public EventCallback<int> PaginaCambiada { get; set; }
+
+    private Task Ir(int pagina) => PaginaCambiada.InvokeAsync(Math.Clamp(pagina, 1, Math.Max(TotalPaginas, 1)));
+}

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <!-- Razor Class Library: ÚNICA interfaz del sistema (administración y tienda).
+       La muestran el hospedaje de escritorio (MAUI Blazor Hybrid) y el web (Blazor Web App).
+       Referencia solo Contracts: nunca el dominio ni la infraestructura. -->
+  <PropertyGroup>
+    <!-- El código generado por Razor no lleva comentarios XML; los .cs propios sí los llevan por convención -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\GestionPedidos.Contracts\GestionPedidos.Contracts.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+  </ItemGroup>
+</Project>

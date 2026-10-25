@@ -1,0 +1,13 @@
+@* RF-09: carnet y nombre completo de todos los integrantes del equipo. *@
+<section class="modulo">
+    <header class="modulo-cabecera"><h1>Integrantes del equipo</h1></header>
+    <div class="tarjeta">
+        <p><strong>@DatosEquipo.Asignatura</strong> · Ciclo @DatosEquipo.Ciclo</p>
+        <p>@DatosEquipo.Institucion</p>
+        <p>Docente: @DatosEquipo.Docente</p>
+    </div>
+    <TablaDatos T="Integrante" Items="DatosEquipo.Integrantes">
+        <Encabezado><th>Carnet</th><th>Nombre completo</th></Encabezado>
+        <Fila Context="i"><td>@i.Carnet</td><td>@i.Nombre</td></Fila>
+    </TablaDatos>
+</section>

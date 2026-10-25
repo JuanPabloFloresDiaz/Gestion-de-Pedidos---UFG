@@ -1,0 +1,24 @@
+@* Diseño base de todas las páginas: restaura la sesión guardada al primer render y aloja los avisos. *@
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject SesionService Sesion
+
+<div class="app-raiz">
+    @Body
+    <AvisosHost />
+</div>
+
+@code {
+    protected override void OnInitialized() => Sesion.Restaurada += Sesion_Restaurada;
+
+    // En la web la sesión vive en ProtectedSessionStorage, que solo se puede leer después del primer render.
+    protected override async Task OnAfterRenderAsync(bool primerRender)
+    {
+        if (primerRender) await Sesion.RestaurarAsync();
+    }
+
+    private void Sesion_Restaurada(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de la suscripción.</summary>
+    public void Dispose() => Sesion.Restaurada -= Sesion_Restaurada;
+}

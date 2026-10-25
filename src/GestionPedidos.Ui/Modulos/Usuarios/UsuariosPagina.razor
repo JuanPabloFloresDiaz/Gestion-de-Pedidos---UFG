@@ -1,0 +1,104 @@
+@* Administración de usuarios del personal. Solo marcado y enlace de eventos: el estado y la lógica
+   están en UsuariosViewModel. *@
+@implements IDisposable
+@inject UsuariosViewModel Vm
+@inject SesionService Sesion
+
+<PaginaModulo Titulo="Usuarios" Error="@Vm.Error" PanelVisible="Vm.Editando">
+    <Acciones>
+        @if (Sesion.TienePermiso(Permisos.UsuariosCrear))
+        {
+            <Boton Variante="Primario" AlHacerClic="Vm.Nuevo">+ Nuevo usuario</Boton>
+        }
+    </Acciones>
+    <Filtros>
+        <CampoTexto Etiqueta="Buscar" Placeholder="Usuario, nombre o correo" @bind-Valor="Vm.TextoBusqueda" AlPresionarEnter="Vm.BuscarAsync" />
+        <CampoSelector Etiqueta="Rol" @bind-Valor="Vm.FiltroRolId" TextoVacio="Todos" Opciones="Vm.Roles.Select(r => (r.Id, r.Nombre))" />
+        <CampoSelector Etiqueta="Estado" Valor="@EstadoComoNumero" ValorChanged="AlCambiarEstado" TextoVacio="Todos"
+                       Opciones="@(new[] { (1, "Activos"), (0, "Inactivos") })" />
+        <div class="filtros-botones">
+            <Boton Variante="Primario" Cargando="Vm.Cargando" AlHacerClic="Vm.BuscarAsync">Buscar</Boton>
+            <Boton AlHacerClic="Vm.LimpiarAsync">Limpiar</Boton>
+        </div>
+    </Filtros>
+    <Tabla>
+        <TablaDatos T="UsuarioDto" Items="Vm.Pagina?.Elementos" Cargando="Vm.Cargando" EsInactiva="u => !u.Activo"
+                    AlSeleccionar="AlSeleccionar" TextoVacio="No hay usuarios con esos filtros.">
+            <Encabezado><th>Usuario</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Último acceso</th><th></th></Encabezado>
+            <Fila Context="u">
+                <td>@u.NombreUsuario</td>
+                <td>@u.NombreCompleto</td>
+                <td>@u.Correo</td>
+                <td><span class="etiqueta">@u.Rol</span></td>
+                <td>@(u.Activo ? "Activo" : "Inactivo")</td>
+                <td>@(u.UltimoAcceso?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—")</td>
+                <td class="celda-acciones">
+                    @if (Sesion.TienePermiso(Permisos.UsuariosEditar) && u.Activo)
+                    {
+                        <button class="enlace" @onclick="() => Vm.Editar(u)">Editar</button>
+                    }
+                    @if (Sesion.TienePermiso(Permisos.UsuariosDesactivar))
+                    {
+                        <button class="enlace @(u.Activo ? "enlace-peligro" : "")" @onclick="() => Vm.CambiarEstadoAsync(u)">@(u.Activo ? "Dar de baja" : "Reactivar")</button>
+                    }
+                </td>
+            </Fila>
+        </TablaDatos>
+    </Tabla>
+    <Pie>
+        <Paginador Pagina="Vm.Pagina?.Pagina ?? 1" TotalPaginas="Vm.Pagina?.TotalPaginas ?? 0" Total="Vm.Pagina?.Total ?? 0"
+                   PaginaCambiada="Vm.IrAPaginaAsync" />
+    </Pie>
+    <Panel>
+        @if (Vm.Editando)
+        {
+            <form @onsubmit="Vm.GuardarAsync" @onsubmit:preventDefault>
+                <h2>@(Vm.Original is null ? "Nuevo usuario" : $"Editar {Vm.Original.NombreUsuario}")</h2>
+                @if (Vm.Original is null)
+                {
+                    <CampoTexto Etiqueta="Nombre de usuario" @bind-Valor="Vm.NombreUsuario" Error="@Vm.ErrorDe(nameof(Vm.NombreUsuario))" />
+                }
+                <CampoTexto Etiqueta="Nombre completo" @bind-Valor="Vm.NombreCompleto" Error="@Vm.ErrorDe(nameof(Vm.NombreCompleto))" />
+                <CampoTexto Etiqueta="Correo" Tipo="email" @bind-Valor="Vm.Correo" Error="@Vm.ErrorDe(nameof(Vm.Correo))" />
+                <CampoSelector Etiqueta="Rol" @bind-Valor="Vm.RolId" Error="@Vm.ErrorDe(nameof(Vm.RolId))"
+                               Opciones="RolesDelPersonal" />
+                @if (Vm.Original is null)
+                {
+                    <CampoTexto Etiqueta="Contraseña inicial (temporal, mínimo 10)" Tipo="password" @bind-Valor="Vm.ClaveInicial"
+                                Error="@Vm.ErrorDe(nameof(Vm.ClaveInicial))" Autocompletar="new-password" />
+                    <small class="nota">La persona deberá cambiarla al ingresar por primera vez.</small>
+                }
+                <div class="fila-botones">
+                    <Boton AlHacerClic="Vm.Cancelar">Cancelar</Boton>
+                    <Boton Variante="Primario" Tipo="submit" Cargando="Vm.Cargando">Guardar</Boton>
+                </div>
+            </form>
+        }
+    </Panel>
+</PaginaModulo>
+
+@code {
+    // El rol Cliente es solo para la tienda web: no se ofrece al crear o editar personal.
+    private IEnumerable<(int, string)> RolesDelPersonal => Vm.Roles.Where(r => r.Nombre != "Cliente").Select(r => (r.Id, r.Nombre));
+
+    private int? EstadoComoNumero => Vm.FiltroActivo is null ? null : (Vm.FiltroActivo.Value ? 1 : 0);
+
+    protected override async Task OnInitializedAsync()
+    {
+        Vm.Cambiado += Vm_Cambiado;     // suscripción con +=
+        await Vm.IniciarAsync();
+    }
+
+    private void AlCambiarEstado(int? valor) => Vm.FiltroActivo = valor is null ? null : valor == 1;
+
+    private void AlSeleccionar(UsuarioDto u)
+    {
+        if (u.Activo && Sesion.TienePermiso(Permisos.UsuariosEditar)) Vm.Editar(u);
+    }
+
+    // El evento puede llegar fuera del ciclo de render: se repinta con InvokeAsync.
+    private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de la suscripción y liberación del ViewModel al cerrar la pestaña.</summary>
+    public void Dispose() => Vm.Cambiado -= Vm_Cambiado;
+}

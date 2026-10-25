@@ -1,0 +1,42 @@
+@* Pinta los avisos no bloqueantes (snackbar). Se suscribe al servicio de avisos y se da de baja al cerrar. *@
+@implements IDisposable
+@inject AvisosService Avisos
+
+<div class="avisos" aria-live="polite">
+    @foreach (var aviso in _visibles)
+    {
+        <div class="aviso aviso-@aviso.Tipo.ToString().ToLowerInvariant()" role="status" @key="aviso.Id">
+            <span class="aviso-icono">@Icono(aviso.Tipo)</span>
+            <span>@aviso.Texto</span>
+            <button class="aviso-cerrar" aria-label="Cerrar aviso" @onclick="() => Quitar(aviso)">×</button>
+        </div>
+    }
+</div>
+
+@code {
+    private readonly List<Aviso> _visibles = new();
+
+    protected override void OnInitialized() => Avisos.Mostrado += Avisos_Mostrado;
+
+    // Puede llegar fuera del ciclo de render: se repinta con InvokeAsync.
+    private void Avisos_Mostrado(object? sender, Aviso aviso) => _ = InvokeAsync(async () =>
+    {
+        _visibles.Add(aviso);
+        StateHasChanged();
+        await Task.Delay(aviso.Tipo == TipoAviso.Error ? 9000 : 5000);
+        Quitar(aviso);
+    });
+
+    private void Quitar(Aviso aviso)
+    {
+        if (_visibles.Remove(aviso)) StateHasChanged();
+    }
+
+    private static string Icono(TipoAviso tipo) => tipo switch
+    {
+        TipoAviso.Exito => "✔", TipoAviso.Advertencia => "⚠", TipoAviso.Error => "✖", _ => "ℹ",
+    };
+
+    /// <summary>Baja de la suscripción.</summary>
+    public void Dispose() => Avisos.Mostrado -= Avisos_Mostrado;
+}

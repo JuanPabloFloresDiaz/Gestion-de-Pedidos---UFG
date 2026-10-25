@@ -1,0 +1,60 @@
+@* Pantalla de inicio de sesión. Toda la lógica vive en LoginViewModel. *@
+@page "/ingresar"
+@implements IDisposable
+@inject LoginViewModel Vm
+@inject SesionService Sesion
+@inject NavigationManager Nav
+@inject UiOptions Opciones
+
+<div class="login-fondo">
+    <form class="login-tarjeta" @onsubmit="Ingresar" @onsubmit:preventDefault>
+        <div class="login-marca" aria-hidden="true">GP</div>
+        <h1>Gestión de Pedidos</h1>
+        <p class="login-sub">@(Opciones.EsEscritorio ? "Administración" : "Ingrese a su cuenta")</p>
+
+        @if (_sesionVencida)
+        {
+            <div class="alerta alerta-advertencia" role="alert">Su sesión venció. Inicie sesión de nuevo.</div>
+        }
+        @if (!string.IsNullOrEmpty(Vm.Error))
+        {
+            <div class="alerta alerta-error" role="alert">@Vm.Error</div>
+        }
+
+        <CampoTexto Etiqueta="Usuario o correo" @bind-Valor="Vm.Identificador" Autocompletar="username" Deshabilitado="Vm.Cargando" />
+        <CampoTexto Etiqueta="Contraseña" Tipo="password" @bind-Valor="Vm.Clave" Autocompletar="current-password"
+                    Deshabilitado="Vm.Cargando" AlPresionarEnter="Ingresar" />
+        <Boton Variante="Primario" Tipo="submit" Cargando="Vm.Cargando">Ingresar</Boton>
+    </form>
+</div>
+
+@code {
+    private bool _sesionVencida;
+
+    protected override void OnInitialized()
+    {
+        Vm.Cambiado += Vm_Cambiado;                       // suscripción con +=
+        Sesion.SesionExpirada += Sesion_Expirada;
+        var consulta = new Uri(Nav.Uri).Query;
+        _sesionVencida = consulta.Contains("vencida=1");
+    }
+
+    private async Task Ingresar()
+    {
+        var sesion = await Vm.IniciarAsync();
+        if (sesion is null) return;
+        if (sesion.DebeCambiarClave) Nav.NavigateTo("/cambiar-clave");
+        else Nav.NavigateTo(sesion.Usuario.Permisos.Contains(Permisos.AdminAcceso) ? "/admin" : "/");
+    }
+
+    // El evento puede llegar fuera del ciclo de render: se repinta con InvokeAsync.
+    private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+    private void Sesion_Expirada(object sender, SesionEventArgs e) => _ = InvokeAsync(() => { _sesionVencida = true; StateHasChanged(); });
+
+    /// <summary>Baja de las suscripciones.</summary>
+    public void Dispose()
+    {
+        Vm.Cambiado -= Vm_Cambiado;
+        Sesion.SesionExpirada -= Sesion_Expirada;
+    }
+}

@@ -1,0 +1,21 @@
+@* Botón del kit: estilos del tema, estado de carga y deshabilitado. *@
+<button type="@Tipo" class="boton boton-@Variante.ToLowerInvariant() @(Cargando ? "cargando" : "")"
+        disabled="@(Deshabilitado || Cargando)" @onclick="AlHacerClic" aria-busy="@Cargando">
+    @if (Cargando) { <span class="girar" aria-hidden="true"></span> }
+    @ChildContent
+</button>
+
+@code {
+    /// <summary>Variante visual: Primario, Secundario o Peligro.</summary>
+    [Parameter] public string Variante { get; set; } = "Secundario";
+    /// <summary>Tipo HTML del botón (<c>button</c> o <c>submit</c>).</summary>
+    [Parameter] public string Tipo { get; set; } = "button";
+    /// <summary>Muestra el indicador de carga y bloquea el botón.</summary>
+    [Parameter] public bool Cargando { get; set; }
+    /// <summary>Bloquea el botón.</summary>
+    [Parameter] public bool Deshabilitado { get; set; }
+    /// <summary>Se produce al hacer clic.</summary>
+    [Parameter] public EventCallback<MouseEventArgs> AlHacerClic { get; set; }
+    /// <summary>Texto o contenido del botón.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

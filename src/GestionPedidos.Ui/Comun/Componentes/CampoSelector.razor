@@ -1,0 +1,35 @@
+@* Selector del kit (lista desplegable) con valores enteros opcionales. *@
+@{ var id = _id; }
+<div class="campo @(string.IsNullOrEmpty(Error) ? "" : "campo-error")">
+    <label for="@id">@Etiqueta</label>
+    <select id="@id" disabled="@Deshabilitado" @onchange="AlCambiar" aria-invalid="@(!string.IsNullOrEmpty(Error))">
+        @if (TextoVacio is not null) { <option value="" selected="@(Valor is null)">@TextoVacio</option> }
+        @foreach (var (valor, texto) in Opciones)
+        {
+            <option value="@valor" selected="@(Valor == valor)">@texto</option>
+        }
+    </select>
+    @if (!string.IsNullOrEmpty(Error)) { <small class="mensaje-error" role="alert">@Error</small> }
+</div>
+
+@code {
+    private readonly string _id = "s" + Guid.NewGuid().ToString("N")[..8];
+
+    /// <summary>Texto de la etiqueta.</summary>
+    [Parameter] public string Etiqueta { get; set; } = "";
+    /// <summary>Valor seleccionado (admite <c>@bind-Valor</c>).</summary>
+    [Parameter] public int? Valor { get; set; }
+    /// <summary>Se produce al cambiar la selección.</summary>
+    [Parameter] public EventCallback<int?> ValorChanged { get; set; }
+    /// <summary>Opciones: valor y texto.</summary>
+    [Parameter] public IEnumerable<(int Valor, string Texto)> Opciones { get; set; } = Array.Empty<(int, string)>();
+    /// <summary>Texto de la opción vacía; <c>null</c> = no hay opción vacía.</summary>
+    [Parameter] public string? TextoVacio { get; set; } = "Seleccione…";
+    /// <summary>Mensaje de error visible bajo el campo.</summary>
+    [Parameter] public string? Error { get; set; }
+    /// <summary>Bloquea el selector.</summary>
+    [Parameter] public bool Deshabilitado { get; set; }
+
+    private Task AlCambiar(ChangeEventArgs e) =>
+        ValorChanged.InvokeAsync(int.TryParse(e.Value?.ToString(), out var v) ? v : null);
+}

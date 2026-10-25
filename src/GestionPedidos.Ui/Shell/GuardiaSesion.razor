@@ -1,0 +1,64 @@
+@* Protege una página: espera a restaurar la sesión, redirige al login si no hay sesión o al cambio de clave
+   si es obligatorio, y muestra un aviso si falta el permiso. La barrera real de seguridad es siempre la API. *@
+@implements IDisposable
+@inject SesionService Sesion
+@inject NavigationManager Nav
+
+@if (!Sesion.Lista)
+{
+    <div class="centrado"><p class="cargando">Cargando…</p></div>
+}
+else if (!Sesion.Autenticada)
+{
+    <div class="centrado"><p class="cargando">Redirigiendo al inicio de sesión…</p></div>
+}
+else if (!string.IsNullOrEmpty(RequierePermiso) && !Sesion.TienePermiso(RequierePermiso))
+{
+    <div class="centrado">
+        <h1>Sin permiso</h1>
+        <p>Su rol no permite entrar a esta sección.</p>
+        <a href="/ingresar">Cambiar de usuario</a>
+    </div>
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    /// <summary>Permiso necesario para ver el contenido; vacío = basta con tener sesión.</summary>
+    [Parameter] public string? RequierePermiso { get; set; }
+
+    /// <summary>Si es <c>true</c>, deja pasar aunque la sesión exija cambiar la contraseña (la propia pantalla de cambio).</summary>
+    [Parameter] public bool PermiteDebeCambiarClave { get; set; }
+
+    /// <summary>Contenido protegido.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Sesion.Restaurada += Sesion_Cambio;
+        Sesion.SesionCerrada += Sesion_CambioConDatos;
+        Sesion.SesionExpirada += Sesion_CambioConDatos;
+    }
+
+    protected override void OnParametersSet() => Redirigir();
+
+    private void Redirigir()
+    {
+        if (!Sesion.Lista) return;
+        if (!Sesion.Autenticada) Nav.NavigateTo("/ingresar", replace: true);
+        else if (Sesion.Actual!.DebeCambiarClave && !PermiteDebeCambiarClave) Nav.NavigateTo("/cambiar-clave", replace: true);
+    }
+
+    private void Sesion_Cambio(object? sender, EventArgs e) => _ = InvokeAsync(() => { Redirigir(); StateHasChanged(); });
+    private void Sesion_CambioConDatos(object sender, SesionEventArgs e) => Sesion_Cambio(sender, e);
+
+    /// <summary>Baja de las suscripciones.</summary>
+    public void Dispose()
+    {
+        Sesion.Restaurada -= Sesion_Cambio;
+        Sesion.SesionCerrada -= Sesion_CambioConDatos;
+        Sesion.SesionExpirada -= Sesion_CambioConDatos;
+    }
+}

@@ -1,0 +1,35 @@
+@* Disposición estándar de una pantalla de módulo: filtros, tabla, panel de edición y paginador. *@
+<section class="modulo">
+    <header class="modulo-cabecera">
+        <h1>@Titulo</h1>
+        <div class="modulo-acciones">@Acciones</div>
+    </header>
+    @if (!string.IsNullOrEmpty(Error))
+    {
+        <div class="alerta alerta-error" role="alert">@Error</div>
+    }
+    <div class="filtros">@Filtros</div>
+    <div class="modulo-cuerpo @(PanelVisible ? "con-panel" : "")">
+        <div class="modulo-tabla">@Tabla @Pie</div>
+        @if (PanelVisible && Panel is not null) { <aside class="panel-edicion">@Panel</aside> }
+    </div>
+</section>
+
+@code {
+    /// <summary>Título del módulo.</summary>
+    [Parameter] public string Titulo { get; set; } = "";
+    /// <summary>Error visible en la parte superior.</summary>
+    [Parameter] public string? Error { get; set; }
+    /// <summary>Botones de la cabecera (por ejemplo, "Nuevo").</summary>
+    [Parameter] public RenderFragment? Acciones { get; set; }
+    /// <summary>Filtros de búsqueda.</summary>
+    [Parameter] public RenderFragment? Filtros { get; set; }
+    /// <summary>Tabla de resultados.</summary>
+    [Parameter] public RenderFragment? Tabla { get; set; }
+    /// <summary>Paginador u otro pie.</summary>
+    [Parameter] public RenderFragment? Pie { get; set; }
+    /// <summary>Panel de edición (se muestra solo si <see cref="PanelVisible"/> es verdadero).</summary>
+    [Parameter] public RenderFragment? Panel { get; set; }
+    /// <summary>Indica si el panel de edición está abierto; cerrado, la tabla ocupa todo el ancho.</summary>
+    [Parameter] public bool PanelVisible { get; set; }
+}

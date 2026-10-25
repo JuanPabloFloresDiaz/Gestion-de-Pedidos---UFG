@@ -1,0 +1,11 @@
+@* Enrutador de la interfaz: lo usan igual el hospedaje web y el de escritorio (MAUI Blazor Hybrid). *@
+<Router AppAssembly="typeof(Routes).Assembly">
+    <Found Context="ruta">
+        <RouteView RouteData="ruta" DefaultLayout="typeof(LayoutBasico)" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="typeof(LayoutBasico)">
+            <div class="centrado"><h1>Página no encontrada</h1><a href="/">Volver al inicio</a></div>
+        </LayoutView>
+    </NotFound>
+</Router>

@@ -1,0 +1,39 @@
+@* Campo de texto del kit: etiqueta + entrada + mensaje de error integrado. *@
+@{ var id = _id; }
+<div class="campo @(string.IsNullOrEmpty(Error) ? "" : "campo-error")">
+    <label for="@id">@Etiqueta</label>
+    <input id="@id" type="@Tipo" value="@Valor" placeholder="@Placeholder" disabled="@Deshabilitado"
+           autocomplete="@Autocompletar" aria-invalid="@(!string.IsNullOrEmpty(Error))"
+           @oninput="AlEscribir" @onkeydown="AlTeclear" />
+    @if (!string.IsNullOrEmpty(Error)) { <small class="mensaje-error" role="alert">@Error</small> }
+</div>
+
+@code {
+    private readonly string _id = "c" + Guid.NewGuid().ToString("N")[..8];
+
+    /// <summary>Texto de la etiqueta.</summary>
+    [Parameter] public string Etiqueta { get; set; } = "";
+    /// <summary>Valor actual (admite <c>@bind-Valor</c>).</summary>
+    [Parameter] public string? Valor { get; set; }
+    /// <summary>Se produce al cambiar el valor.</summary>
+    [Parameter] public EventCallback<string?> ValorChanged { get; set; }
+    /// <summary>Tipo HTML: <c>text</c>, <c>password</c>, <c>email</c>…</summary>
+    [Parameter] public string Tipo { get; set; } = "text";
+    /// <summary>Texto de ayuda dentro del campo.</summary>
+    [Parameter] public string? Placeholder { get; set; }
+    /// <summary>Mensaje de error visible bajo el campo.</summary>
+    [Parameter] public string? Error { get; set; }
+    /// <summary>Bloquea el campo.</summary>
+    [Parameter] public bool Deshabilitado { get; set; }
+    /// <summary>Valor del atributo <c>autocomplete</c>.</summary>
+    [Parameter] public string Autocompletar { get; set; } = "off";
+    /// <summary>Se produce al pulsar Enter dentro del campo.</summary>
+    [Parameter] public EventCallback AlPresionarEnter { get; set; }
+
+    private Task AlEscribir(ChangeEventArgs e) => ValorChanged.InvokeAsync(e.Value?.ToString());
+
+    private async Task AlTeclear(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await AlPresionarEnter.InvokeAsync();
+    }
+}

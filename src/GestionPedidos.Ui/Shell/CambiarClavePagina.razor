@@ -1,0 +1,46 @@
+@* Cambio de contraseña (voluntario, o forzado si la sesión lo exige). *@
+@page "/cambiar-clave"
+@implements IDisposable
+@inject CambiarClaveViewModel Vm
+@inject NavigationManager Nav
+@inject IAvisos Avisos
+
+<GuardiaSesion PermiteDebeCambiarClave="true">
+    <div class="login-fondo">
+        <form class="login-tarjeta" @onsubmit="Cambiar" @onsubmit:preventDefault>
+            <h1>Cambiar contraseña</h1>
+            @if (Vm.Obligatorio)
+            {
+                <div class="alerta alerta-advertencia" role="alert">Por seguridad debe cambiar su contraseña antes de continuar.</div>
+            }
+            @if (!string.IsNullOrEmpty(Vm.Error)) { <div class="alerta alerta-error" role="alert">@Vm.Error</div> }
+
+            <CampoTexto Etiqueta="Contraseña actual" Tipo="password" @bind-Valor="Vm.ClaveActual" Autocompletar="current-password" Deshabilitado="Vm.Cargando" />
+            <CampoTexto Etiqueta="Contraseña nueva (mínimo 10 caracteres)" Tipo="password" @bind-Valor="Vm.ClaveNueva" Autocompletar="new-password" Deshabilitado="Vm.Cargando" />
+            <CampoTexto Etiqueta="Repita la contraseña nueva" Tipo="password" @bind-Valor="Vm.Confirmacion" Autocompletar="new-password"
+                        Deshabilitado="Vm.Cargando" AlPresionarEnter="Cambiar" />
+            <div class="fila-botones">
+                @if (!Vm.Obligatorio) { <Boton AlHacerClic="Volver">Cancelar</Boton> }
+                <Boton Variante="Primario" Tipo="submit" Cargando="Vm.Cargando">Guardar contraseña</Boton>
+            </div>
+        </form>
+    </div>
+</GuardiaSesion>
+
+@code {
+    protected override void OnInitialized() => Vm.Cambiado += Vm_Cambiado;
+
+    private async Task Cambiar()
+    {
+        if (!await Vm.CambiarAsync()) return;
+        Avisos.Exito("Contraseña actualizada.");
+        Volver();
+    }
+
+    private void Volver() => Nav.NavigateTo("/admin");
+
+    private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de la suscripción.</summary>
+    public void Dispose() => Vm.Cambiado -= Vm_Cambiado;
+}

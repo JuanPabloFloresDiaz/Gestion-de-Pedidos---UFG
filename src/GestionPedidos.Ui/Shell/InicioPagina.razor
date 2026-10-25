@@ -1,0 +1,53 @@
+@* Pantalla de inicio. En el escritorio lleva directo al login; en la web será la portada de la tienda (Fase Web). *@
+@page "/"
+@implements IDisposable
+@inject SesionService Sesion
+@inject NavigationManager Nav
+@inject UiOptions Opciones
+
+@if (!Sesion.Lista)
+{
+    <div class="centrado"><p class="cargando">Cargando…</p></div>
+}
+else
+{
+    <div class="login-fondo">
+        <div class="login-tarjeta">
+            <div class="login-marca" aria-hidden="true">GP</div>
+            <h1>Gestión de Pedidos</h1>
+            <p class="login-sub">Universidad Francisco Gavidia</p>
+            @if (Sesion.Autenticada)
+            {
+                <p>Hola, <strong>@Sesion.Usuario!.NombreCompleto</strong>.</p>
+                <p class="nota">La tienda en línea estará disponible próximamente.</p>
+                <Boton AlHacerClic="Salir">Cerrar sesión</Boton>
+            }
+            else
+            {
+                <p class="nota">La tienda en línea estará disponible próximamente. El personal puede ingresar a la administración.</p>
+                <a class="boton boton-primario" href="/ingresar">Ingresar</a>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Sesion.Restaurada += Sesion_Restaurada;
+
+    protected override void OnParametersSet() => Decidir();
+
+    // Escritorio: siempre al login o a la administración. Web con personal conectado: a la administración.
+    private void Decidir()
+    {
+        if (!Sesion.Lista) return;
+        if (Sesion.Autenticada && Sesion.TienePermiso(Permisos.AdminAcceso)) Nav.NavigateTo("/admin", replace: true);
+        else if (Opciones.EsEscritorio) Nav.NavigateTo("/ingresar", replace: true);
+    }
+
+    private async Task Salir() { await Sesion.CerrarAsync(); StateHasChanged(); }
+
+    private void Sesion_Restaurada(object? sender, EventArgs e) => _ = InvokeAsync(() => { Decidir(); StateHasChanged(); });
+
+    /// <summary>Baja de la suscripción.</summary>
+    public void Dispose() => Sesion.Restaurada -= Sesion_Restaurada;
+}

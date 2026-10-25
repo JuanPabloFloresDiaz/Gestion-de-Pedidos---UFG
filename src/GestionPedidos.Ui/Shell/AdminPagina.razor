@@ -1,0 +1,166 @@
+@* Shell de Administración: menú por permisos, pestañas de documentos (interfaz de múltiples documentos),
+   barra de estado y avisos. Cada módulo se abre en su propia pestaña y conserva su estado mientras siga abierta. *@
+@page "/admin"
+@implements IDisposable
+@inject SesionService Sesion
+@inject DocumentosService Documentos
+@inject AvisosService Avisos
+@inject Notificador Notificador
+@inject NavigationManager Nav
+
+<GuardiaSesion RequierePermiso="@Permisos.AdminAcceso">
+    <div class="shell" @onkeydown="AlTeclear" tabindex="0">
+        <header class="barra-superior">
+            <div class="marca"><span class="marca-logo" aria-hidden="true">GP</span> Gestión de Pedidos</div>
+            <nav class="menu" aria-label="Menú principal">
+                @foreach (var grupo in GruposVisibles())
+                {
+                    <div class="menu-grupo">
+                        <button class="menu-boton" aria-haspopup="true" aria-expanded="@(_menuAbierto == grupo.Key)"
+                                @onclick="() => AlternarMenu(grupo.Key)">@grupo.Key ▾</button>
+                        @if (_menuAbierto == grupo.Key)
+                        {
+                            <div class="menu-lista" role="menu">
+                                @foreach (var modulo in grupo)
+                                {
+                                    <button role="menuitem" @onclick="() => Abrir(modulo.Documento)">@modulo.Documento.Titulo</button>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </nav>
+            <div class="menu-grupo menu-usuario">
+                <button class="menu-boton" aria-haspopup="true" @onclick="@(() => AlternarMenu("__usuario"))">
+                    @Sesion.Usuario?.NombreCompleto ▾
+                </button>
+                @if (_menuAbierto == "__usuario")
+                {
+                    <div class="menu-lista menu-lista-derecha" role="menu">
+                        <button role="menuitem" @onclick="CambiarClave">Cambiar contraseña</button>
+                        <button role="menuitem" @onclick="CerrarSesion">Cerrar sesión</button>
+                    </div>
+                }
+            </div>
+        </header>
+
+        <div class="pestanas" role="tablist" aria-label="Documentos abiertos">
+            @foreach (var doc in Documentos.Abiertos)
+            {
+                <div class="pestana @(doc == Documentos.Activo ? "activa" : "")" role="tab" aria-selected="@(doc == Documentos.Activo)" @key="doc.Clave">
+                    <button class="pestana-titulo" @onclick="() => Documentos.Activar(doc.Clave)">@doc.Titulo</button>
+                    <button class="pestana-cerrar" aria-label="Cerrar @doc.Titulo" @onclick="() => Documentos.Cerrar(doc.Clave)">×</button>
+                </div>
+            }
+        </div>
+
+        <main class="documentos" @onclick="CerrarMenus">
+            @if (!Documentos.Abiertos.Any())
+            {
+                <div class="bienvenida">
+                    <h1>Bienvenido, @Sesion.Usuario?.NombreCompleto</h1>
+                    <p>Elija una opción del menú para abrir un módulo. Puede tener varios abiertos a la vez.</p>
+                    <div class="atajos">
+                        @foreach (var modulo in ModulosAdmin.Todos.Where(Permitido))
+                        {
+                            <button class="atajo" @onclick="() => Abrir(modulo.Documento)">@modulo.Documento.Titulo</button>
+                        }
+                    </div>
+                </div>
+            }
+            @* Todas las pestañas abiertas siguen montadas (solo se oculta la inactiva) para conservar su estado *@
+            @foreach (var doc in Documentos.Abiertos)
+            {
+                <div class="documento" hidden="@(doc != Documentos.Activo)" @key="doc.Clave">
+                    <DynamicComponent Type="doc.Tipo" />
+                </div>
+            }
+        </main>
+
+        <footer class="barra-estado">
+            <span>Usuario: <strong>@Sesion.Usuario?.NombreUsuario</strong> · Rol: <strong>@Sesion.Usuario?.Rol</strong></span>
+            <span class="estado-mensaje">@(Avisos.Ultimo is { } ultimo ? $"{(ultimo.Tipo == TipoAviso.Exito ? "✔ " : "")}{ultimo.Texto}" : "")</span>
+            <span>Sesión hasta las @(Sesion.Actual?.ExpiraEn.ToLocalTime().ToString("HH:mm"))</span>
+        </footer>
+    </div>
+</GuardiaSesion>
+
+@code {
+    private string? _menuAbierto;
+
+    protected override void OnInitialized()
+    {
+        // Suscripciones con +=; todas se liberan en Dispose.
+        Documentos.DocumentoAbierto += Documentos_Cambio;
+        Documentos.DocumentoCerrado += Documentos_Cambio;
+        Documentos.DocumentoActivado += Documentos_Cambio;
+        Sesion.SesionPorExpirar += Sesion_PorExpirar;
+        Sesion.SesionExpirada += Sesion_Expirada;
+        Sesion.SesionCerrada += Sesion_Cerrada;
+        Avisos.Mostrado += Avisos_Mostrado;
+    }
+
+    private bool Permitido(ModuloAdmin m) => m.Permiso is null || Sesion.TienePermiso(m.Permiso);
+
+    private IEnumerable<IGrouping<string, ModuloAdmin>> GruposVisibles() =>
+        ModulosAdmin.Todos.Where(Permitido).GroupBy(m => m.Grupo);
+
+    private void AlternarMenu(string grupo) => _menuAbierto = _menuAbierto == grupo ? null : grupo;
+    private void CerrarMenus() => _menuAbierto = null;
+
+    private void Abrir(Documento documento) { _menuAbierto = null; Documentos.Abrir(documento); }
+
+    private void CambiarClave() { _menuAbierto = null; Nav.NavigateTo("/cambiar-clave"); }
+
+    private async Task CerrarSesion()
+    {
+        _menuAbierto = null;
+        await Sesion.CerrarAsync();
+    }
+
+    // Atajos: Alt+W cierra la pestaña activa; Alt+→ / Alt+← cambian de pestaña.
+    private void AlTeclear(KeyboardEventArgs e)
+    {
+        if (!e.AltKey) return;
+        var lista = Documentos.Abiertos;
+        var indice = Documentos.Activo is null ? -1 : lista.ToList().FindIndex(d => d == Documentos.Activo);
+        switch (e.Key)
+        {
+            case "w" or "W" when Documentos.Activo is not null: Documentos.Cerrar(Documentos.Activo.Clave); break;
+            case "ArrowRight" when lista.Count > 0: Documentos.Activar(lista[(indice + 1) % lista.Count].Clave); break;
+            case "ArrowLeft" when lista.Count > 0: Documentos.Activar(lista[(indice - 1 + lista.Count) % lista.Count].Clave); break;
+        }
+    }
+
+    // Estos eventos pueden llegar fuera del ciclo de render: se repinta con InvokeAsync.
+    private void Documentos_Cambio(object sender, DocumentoEventArgs e) => _ = InvokeAsync(StateHasChanged);
+    private void Avisos_Mostrado(object? sender, Aviso e) => _ = InvokeAsync(StateHasChanged);
+
+    private void Sesion_PorExpirar(object sender, SesionEventArgs e) =>
+        _ = InvokeAsync(() => Avisos.Advertencia($"Su sesión vence en {Math.Max(e.MinutosRestantes, 1)} minuto(s). Guarde su trabajo."));
+
+    private void Sesion_Expirada(object sender, SesionEventArgs e) => _ = InvokeAsync(() =>
+    {
+        Documentos.CerrarTodas();
+        Nav.NavigateTo("/ingresar?vencida=1", replace: true);
+    });
+
+    private void Sesion_Cerrada(object sender, SesionEventArgs e) => _ = InvokeAsync(() =>
+    {
+        Documentos.CerrarTodas();
+        Nav.NavigateTo("/ingresar", replace: true);
+    });
+
+    /// <summary>Baja de todas las suscripciones (par obligatorio del +=).</summary>
+    public void Dispose()
+    {
+        Documentos.DocumentoAbierto -= Documentos_Cambio;
+        Documentos.DocumentoCerrado -= Documentos_Cambio;
+        Documentos.DocumentoActivado -= Documentos_Cambio;
+        Sesion.SesionPorExpirar -= Sesion_PorExpirar;
+        Sesion.SesionExpirada -= Sesion_Expirada;
+        Sesion.SesionCerrada -= Sesion_Cerrada;
+        Avisos.Mostrado -= Avisos_Mostrado;
+        Notificador.Dispose();
+    }
+}

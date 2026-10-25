@@ -1,0 +1,47 @@
+@* Tabla de solo lectura del kit: filas alternas, filas inactivas en gris y selección con doble clic o Enter. *@
+@typeparam T
+
+<div class="tabla-contenedor">
+    <table class="tabla">
+        <thead><tr>@Encabezado</tr></thead>
+        <tbody>
+            @if (Items is null || !Items.Any())
+            {
+                <tr><td colspan="99" class="tabla-vacia">@(Cargando ? "Cargando…" : TextoVacio)</td></tr>
+            }
+            else
+            {
+                @foreach (var item in Items)
+                {
+                    <tr class="@(EsInactiva?.Invoke(item) == true ? "fila-inactiva" : "")" tabindex="0"
+                        @ondblclick="() => AlSeleccionar.InvokeAsync(item)"
+                        @onkeydown="e => AlTeclear(e, item)">
+                        @Fila(item)
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    /// <summary>Elementos a mostrar.</summary>
+    [Parameter] public IEnumerable<T>? Items { get; set; }
+    /// <summary>Celdas del encabezado (<c>&lt;th&gt;</c>).</summary>
+    [Parameter] public RenderFragment? Encabezado { get; set; }
+    /// <summary>Celdas de cada fila (<c>&lt;td&gt;</c>).</summary>
+    [Parameter] public RenderFragment<T> Fila { get; set; } = _ => _ => { };
+    /// <summary>Indica si una fila se pinta como inactiva (en gris).</summary>
+    [Parameter] public Func<T, bool>? EsInactiva { get; set; }
+    /// <summary>Se produce al seleccionar una fila (doble clic o Enter).</summary>
+    [Parameter] public EventCallback<T> AlSeleccionar { get; set; }
+    /// <summary>Texto cuando no hay resultados.</summary>
+    [Parameter] public string TextoVacio { get; set; } = "No hay resultados.";
+    /// <summary>Muestra "Cargando…" en lugar del texto vacío.</summary>
+    [Parameter] public bool Cargando { get; set; }
+
+    private async Task AlTeclear(KeyboardEventArgs e, T item)
+    {
+        if (e.Key == "Enter") await AlSeleccionar.InvokeAsync(item);
+    }
+}
