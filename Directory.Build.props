@@ -1,0 +1,15 @@
+<Project>
+  <!-- Propiedades comunes de TODOS los proyectos. La versión de .NET vive solo aquí y en global.json
+       (así migrar a .NET 10 es cambiar estos archivos; ver docs/Tecnologia.md §5). -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Comentarios XML obligatorios (requisito de la materia): un público sin comentar es error CS1591 -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Deterministic>true</Deterministic>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+</Project>

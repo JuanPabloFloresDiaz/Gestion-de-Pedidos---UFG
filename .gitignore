@@ -55,3 +55,9 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Salidas de scripts
+dist/
+e2e/node_modules/
+e2e/resultados/
+e2e/capturas/
