@@ -2,7 +2,7 @@
 
 Sistema de gestión de pedidos para la materia **Programación Orientada a Eventos** (Facultad de Ingeniería y Sistemas, UFG, ciclo 02-2026). Una **única interfaz Blazor** hospedada en un **escritorio .NET MAUI Blazor Hybrid** y en una **web Blazor Web App**, sobre una misma **API ASP.NET Core** y una base de datos **SQL Server**. Usa **delegados y eventos** de C# como mecanismo de notificación.
 
-> **Estado:** documentación base lista; el código se inicia en la Fase 0 ([plan](docs/Implementacion.md)).
+> **Estado:** Fases 0, 0.5 y 1 terminadas (esqueleto, 11 tablas con migraciones, autenticación, usuarios, roles y permisos). Siguen Clientes, Productos y Pedidos ([plan](docs/Implementacion.md), [tareas](docs/Equipo/Tareas.md)).
 
 ## Equipo
 
@@ -15,7 +15,7 @@ Sistema de gestión de pedidos para la materia **Programación Orientada a Event
 
 ## Stack
 
-C# 12 / **.NET 8** · Blazor (Razor Class Library) · .NET MAUI Blazor Hybrid (escritorio) · Blazor Web App (web) · ASP.NET Core · Entity Framework Core · SQL Server 2022 · JWT · Docker · GitHub Actions · VS Code.
+C# 12 / **.NET 8** · Blazor (Razor Class Library) · .NET MAUI Blazor Hybrid (escritorio) · Blazor Web App (web) · ASP.NET Core · Entity Framework Core · SQL Server 2022 · JWT · Docker · Playwright · VS Code.
 
 ## Documentación (`docs/`)
 
@@ -33,10 +33,25 @@ C# 12 / **.NET 8** · Blazor (Razor Class Library) · .NET MAUI Blazor Hybrid (e
 | [Especificaciones/](docs/Especificaciones/README.md) | Una spec por módulo (clientes, productos, pedidos, portal web…) |
 | [Equipo/PautasCodigoEventos.md](docs/Equipo/PautasCodigoEventos.md) | **Pautas de código para delegados y eventos (leer antes de programar)** |
 | [Equipo/Tareas.md](docs/Equipo/Tareas.md) | Tablero de tareas por módulo |
-| [Equipo/GuiaCI.md](docs/Equipo/GuiaCI.md) | Mini guía de integración continua |
+| [Equipo/PrimerosPasos.md](docs/Equipo/PrimerosPasos.md) | **Cómo levantar, probar y construir un módulo nuevo** |
 
 Reglas para agentes de IA: [AGENTS.md](AGENTS.md).
 
-## Ejecución (disponible desde la Fase 0)
+## Ejecución rápida
 
-La **API, la web y la base de datos** corren en **Docker**; el hospedaje de escritorio (MAUI) se ejecuta en Windows con VS Code, el SDK de .NET 8 y la carga de trabajo `maui`. Las instrucciones paso a paso se añadirán aquí al cerrar la Fase 0 ([Infraestructura.md](docs/Infraestructura.md)).
+```bash
+./scripts/up.sh                 # SQL Server + API + web en Docker (crea .env la primera vez)
+./scripts/test-docker.sh        # todas las pruebas (unitarias, integración con SQL Server real, arquitectura)
+./scripts/e2e-docker.sh         # extremo a extremo en navegador (Playwright)
+```
+
+| Qué | Dónde |
+|---|---|
+| Web | http://localhost:4392 |
+| API / Swagger | http://localhost:4390/swagger |
+| SQL Server | `localhost,4391` |
+| Administrador inicial | `admin` / `ADMIN_INITIAL_PASSWORD` de `.env` (pide cambiarla al ingresar) |
+
+**Escritorio** (Windows, no corre en Docker): `dotnet run -f net8.0-windows10.0.19041.0 --project src/GestionPedidos.Desktop` — ver [PrimerosPasos.md §4](docs/Equipo/PrimerosPasos.md).
+
+**Script SQL con todas las tablas**: [`scripts/sql/GestionPedidos_esquema.sql`](scripts/sql/GestionPedidos_esquema.sql).

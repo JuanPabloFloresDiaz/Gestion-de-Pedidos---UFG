@@ -356,7 +356,7 @@ El enunciado exige **comentar el código explicando qué hace o cómo funciona**
 
 ## 10. Lista de Verificación de un Pull Request
 
-- [ ] Compila sin advertencias; las pruebas pasan; el CI está en verde.
+- [ ] Compila sin advertencias; `./scripts/test-docker.sh` pasa en verde (no hay CI).
 - [ ] Hay pruebas del dominio, del caso de uso, de la API y del ViewModel (según corresponda) y **pruebas de eventos** ([Testing.md §3](../Especificaciones/Testing.md)).
 - [ ] Las páginas no tienen lógica; los ViewModels no referencian Blazor.
 - [ ] Cada evento: delegado `XEventHandler`, `XEventArgs` inmutable, método `OnX` con `?.Invoke`, publicado **después** del éxito.

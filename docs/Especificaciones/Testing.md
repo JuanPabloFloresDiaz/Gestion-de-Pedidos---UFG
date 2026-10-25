@@ -12,6 +12,7 @@
 | **Integración HTTP** | `Api.Tests` | Endpoints, validación, 401/403, Problem Details | `WebApplicationFactory` + SQL Server real |
 | **Interfaz** | `Ui.Tests` | **ViewModels** y servicios de módulo con un `HttpMessageHandler` falso (publicación y baja de eventos); **componentes** con **bUnit** (kit, validación, eventos) | Ninguna (sin navegador ni Windows) |
 | **Arquitectura** | `Architecture.Tests` | Reglas de dependencias de [Arquitectura.md §2](../Arquitectura.md) | Ninguna |
+| **Extremo a extremo** | `e2e/` (Playwright) | Recorridos reales en navegador contra el entorno de Docker: login, cambio de clave, pestañas, alta de usuario, permisos del operador | Entorno completo (`./scripts/up.sh`) |
 | **Aceptación manual** | Lista de verificación | Las pantallas reales por rol en **escritorio y web** | Aplicación en Windows y navegador |
 
 ## 2. Reglas
@@ -21,7 +22,7 @@
 * Dominio y reglas puras: **100 % de cobertura de ramas**; en el resto, la cobertura es un indicador.
 * Tiempo y fechas mediante `TimeProvider` inyectado (`FakeTimeProvider` en pruebas); nada de `DateTime.Now` en lógica.
 * Cada bug corregido añade una prueba que lo reproduce.
-* **Las páginas no llevan lógica**, por eso casi todo se prueba en ViewModels y servicios; los componentes con bUnit y las pantallas completas, manualmente.
+* **Las páginas no llevan lógica**, por eso casi todo se prueba en ViewModels y servicios; las pantallas completas, con Playwright (web) y a mano (escritorio).
 
 ## 3. Pruebas de Eventos (obligatorias en cada módulo)
 
@@ -34,7 +35,7 @@
 
 ## 4. Harness de Integración
 
-* `AbstractIntegrationTest` levanta **un contenedor SQL Server por ejecución** (fixture compartida), aplica las migraciones reales y limpia datos con **Respawn** entre pruebas.
+* Cada proyecto de integración levanta **un contenedor SQL Server por ejecución** (fixture compartida: `BaseDeDatosFixture` y `ApiFixture`) y aplica las migraciones reales; las pruebas usan datos con nombre único para no pisarse.
 * Dentro de contenedores: socket de Docker montado y `TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal` en Docker Desktop.
 * Para probar permisos de BD (por ejemplo, que `pedidos_app` no pueda actualizar `Actividades`) se ejecuta con ese usuario.
 
@@ -48,6 +49,19 @@
 * **Baja lógica**: no hay `DELETE` físico de clientes, productos, pedidos ni usuarios.
 * **Respaldo**: la restauración reproduce los conteos de filas ([RespaldoYEntrega.md](RespaldoYEntrega.md)).
 
-## 6. Integración Continua
+## 6. Cómo se Ejecutan (sin CI/CD)
 
-CI ejecuta, en contenedor: formato (`dotnet format --verify-no-changes`), compilación con advertencias como errores (el host `Desktop` se compila aparte en un *runner* de Windows), todas las pruebas, auditoría de paquetes vulnerables y escaneo de secretos. Un PR no se fusiona con CI en rojo ([GuiaCI.md](../Equipo/GuiaCI.md)).
+El equipo decidió **no usar CI/CD** para avanzar más rápido: la verificación es local y manual, pero obligatoria antes de subir cambios.
+
+```bash
+./scripts/test-docker.sh          # unitarias + integración (SQL Server real) + arquitectura, todo en Docker
+./scripts/up.sh && ./scripts/e2e-docker.sh   # extremo a extremo con Playwright (si se tocó la interfaz)
+```
+
+* Si no se tiene Docker a mano, con el SDK instalado: `dotnet test tests/GestionPedidos.<Proyecto>.Tests` (las de integración necesitan Docker igualmente).
+* El proyecto `Desktop` (MAUI) no se compila en Linux; se verifica a mano en Windows ([PrimerosPasos.md §4](../Equipo/PrimerosPasos.md)).
+* Una prueba en rojo bloquea el PR por acuerdo del equipo (la revisión lo comprueba).
+
+## 7. Pruebas de Extremo a Extremo (Playwright)
+
+Viven en `e2e/` (TypeScript) y corren en una imagen oficial de Playwright con `./scripts/e2e-docker.sh`; no hay que instalar Node ni navegadores. Cubren los recorridos que más importan en la defensa y **guardan capturas** en `e2e/capturas/`. Un módulo nuevo añade su `*.spec.ts` con su recorrido principal.

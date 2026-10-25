@@ -66,7 +66,7 @@ Este documento fija las reglas que se revisan en cada Pull Request. Cada princip
 
 ## 7. Convenciones de Código
 
-* **Estilo**: `.editorconfig` en la raíz con las reglas de .NET; `dotnet format` verificado en CI (dentro de Docker).
+* **Estilo**: `.editorconfig` en la raíz con las reglas de .NET; `dotnet format` antes de subir cambios (con `./scripts/dotnet-docker.sh format GestionPedidos.Linux.slnf`).
 * **Nullable reference types** activos (`<Nullable>enable</Nullable>`) y **advertencias como errores** (`TreatWarningsAsErrors`).
 * **Nombres**: tipos y miembros públicos en `PascalCase`, privados `_camelCase`, interfaces con prefijo `I`, métodos asíncronos con sufijo `Async` y siempre con `CancellationToken`.
 * **Idioma**: el **dominio y la UI usan español** (`Pedido`, `Cliente`, `Producto`) por ser el lenguaje de la materia (lenguaje ubicuo); el código de infraestructura y los identificadores técnicos usan inglés estándar (`Repository`, `Handler`, `Options`). Se mantiene esa línea sin mezclar dentro de un mismo concepto.

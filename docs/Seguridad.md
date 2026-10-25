@@ -15,7 +15,7 @@
 | Pedidos / stock | Carreras y doble envío | Concurrencia optimista (`RowVersion`), transacciones |
 | Historial | Alteración | Usuario de BD sin `UPDATE/DELETE` sobre `Actividades` |
 | Contenedores | Escalada | Usuario no root, imágenes oficiales con etiqueta fija |
-| Dependencias | Paquetes vulnerables | `dotnet list package --vulnerable` en CI, Dependabot |
+| Dependencias | Paquetes vulnerables | `dotnet list package --vulnerable --include-transitive` antes de cada entrega y versiones centralizadas en `Directory.Packages.props` |
 
 ## 2. Reglas de Código Seguro
 
@@ -58,7 +58,7 @@ Detalle en [AutenticacionYPermisos.md](Especificaciones/AutenticacionYPermisos.m
 * `.env.example` sin valores reales; `.env` en `.gitignore`.
 * Local: `.env` + Compose. Servidor: variables de Dokploy.
 * Secretos de desarrollo distintos de los de producción.
-* CI con escaneo de secretos (Gitleaks) en cada push ([GuiaCI.md](Equipo/GuiaCI.md)).
+* Antes de subir cambios, revisar que no haya secretos (`git diff --cached`); `.env` está en `.gitignore` y `.env.example` solo trae valores de desarrollo.
 
 ## 7. Datos Personales
 

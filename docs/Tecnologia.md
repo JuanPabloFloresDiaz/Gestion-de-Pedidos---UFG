@@ -11,22 +11,22 @@
 | Hospedaje de escritorio | **.NET MAUI Blazor Hybrid** (target Windows) | Aplicación de escritorio de la familia .NET que reutiliza la `Ui` |
 | Hospedaje web | **Blazor Web App** (.NET 8, render interactivo de servidor) | La misma `Ui` en el navegador; se despliega en Docker |
 | Patrón de interfaz | **Página (.razor) + ViewModel** con eventos | Marcado sin lógica; el ViewModel se prueba sin pantalla |
-| Componentes visuales | **MudBlazor** (MIT) con un tema central | Interfaz amigable y consistente sin escribir todo el CSS; versión compatible con .NET 8 a validar en la Fase 0 |
+| Componentes visuales | **Kit propio** (`Ui/Comun/Componentes`) + tema CSS central | Se evaluó MudBlazor y se descartó: el kit propio es pequeño, sin dependencias, se personaliza en un solo archivo (`tema.css`) y evita problemas de versión con .NET 8 |
 | API | **ASP.NET Core 8** (Minimal APIs agrupadas por módulo) | Un solo backend para los dos clientes |
 | ORM | **Entity Framework Core 8** (SQL Server) | Requisito del equipo; migraciones y consultas parametrizadas por construcción |
 | Base de datos | **SQL Server 2022** (imagen oficial Linux) | Enunciado |
 | Autenticación | **JWT** de 60 min (`Microsoft.AspNetCore.Authentication.JwtBearer` 8.x), sin *refresh tokens* | Simplicidad; ver [Seguridad.md](Seguridad.md) |
 | Hash de contraseñas | `PasswordHasher<T>` (`Microsoft.Extensions.Identity.Core`, PBKDF2) | Estándar mantenido por Microsoft |
 | Documentación de la API | **Swashbuckle.AspNetCore** (OpenAPI/Swagger UI) solo en `Development` | En .NET 8 no existe el generador integrado de OpenAPI (llegó con .NET 9) |
-| Validación | **FluentValidation** | Reglas declarativas en la API; reglas básicas espejadas en la interfaz |
+| Validación | Reglas propias componibles (delegados): `Validaciones` en la API y `Validacion` en la interfaz | Sin dependencias (YAGNI); la API siempre vuelve a validar |
 | Cliente HTTP | `HttpClient` tipado vía `IHttpClientFactory` | Sin librerías extra (YAGNI) |
 | Tiempo | `TimeProvider` (incluido en .NET 8) + `FakeTimeProvider` en pruebas | Tiempo inyectable sin crear interfaces propias |
 | Inyección de dependencias | `Microsoft.Extensions.Hosting` (también en MAUI) | Mismo contenedor y estilo en toda la solución |
 | Mapeo | Manual (métodos de extensión) | Sin magia ni dependencias (KISS) |
-| Pruebas | **xUnit** + **Testcontainers for .NET** (SQL Server) + **Respawn** + **NetArchTest** + **bUnit** (componentes) | Sin SQL Server instalado en el host ([Testing.md](Especificaciones/Testing.md)) |
+| Pruebas | **xUnit** + **Testcontainers for .NET** (SQL Server real) + **NetArchTest** + **Playwright** (extremo a extremo) | Sin SQL Server ni navegadores instalados en el host ([Testing.md](Especificaciones/Testing.md)) |
 | Contenedores | **Docker + Docker Compose** (API, web y base de datos) | Decisión del equipo |
 | Editor | **VS Code** (o Antigravity, derivado de VS Code) con **C# Dev Kit** y la extensión **.NET MAUI**; SDK de .NET 8 y la carga de trabajo `maui` | Decisión del equipo; sin Visual Studio |
-| CI | **GitHub Actions** | Ver [GuiaCI.md](Equipo/GuiaCI.md) |
+| CI/CD | **Ninguno** (decisión del equipo) | Se prefiere avanzar rápido; la verificación es `./scripts/test-docker.sh` antes de subir ([Testing.md §6](Especificaciones/Testing.md)) |
 
 Formato de solución: **`.sln`** (el formato `.slnx` requiere el SDK de .NET 9 o superior). Imágenes base: `mcr.microsoft.com/dotnet/sdk:8.0` y `aspnet:8.0`.
 
@@ -74,7 +74,7 @@ El ingeniero aclaró que los criterios del enunciado **no son cerrados**: la tec
 ### 3.1 Cómo se trabaja con MAUI Blazor Hybrid y VS Code
 * El host `Desktop` es una capa **delgada** (un `BlazorWebView` que carga la `Ui`); casi todo el trabajo se hace y se prueba en el hospedaje **web** (Docker) y se ve igual en escritorio.
 * Se compila y ejecuta en **Windows** con el SDK de .NET 8, la carga de trabajo (`dotnet workload install maui`) y el target `net8.0-windows10.0.19041.0`. **El desarrollo diario, la compilación y la depuración del host `Desktop` desde VS Code se validan en la Fase 0**; si algo no funciona sin Visual Studio, ese único proyecto se abre con Visual Studio y el resto sigue en VS Code.
-* **No se puede compilar en Docker ni en Linux**: el CI compila `Desktop` en un *runner* de Windows ([GuiaCI.md](Equipo/GuiaCI.md)).
+* **No se puede compilar en Docker ni en Linux**: por eso existe `GestionPedidos.Linux.slnf` (la solución sin `Desktop`), que usan los scripts de Docker; `Desktop` se compila en Windows.
 * La `Ui` **no usa** APIs exclusivas de un hospedaje; lo específico entra por interfaces (`ISesionAlmacen`).
 * Las **pruebas** de ViewModels y servicios no necesitan Windows ni navegador.
 * **Plan B** si MAUI diera problemas serios en los equipos del grupo: hospedar la misma `Ui` en un `BlazorWebView` dentro de **Windows Forms o WPF** (también .NET); la `Ui` no cambia.
@@ -104,16 +104,16 @@ El ingeniero aclaró que los criterios del enunciado **no son cerrados**: la tec
 | Qué | Cambio |
 |---|---|
 | `global.json` y `<TargetFramework>` | `net8.0` → `net10.0` (y `net10.0-windows10.0.19041.0` en `Desktop`) |
-| Paquetes (`Directory.Packages.props`) | EF Core 8 → 10, `JwtBearer` 8 → 10, MudBlazor y demás a versiones que soporten .NET 10 |
+| Paquetes (`Directory.Packages.props`) | EF Core 8 → 10, `JwtBearer` 8 → 10, los demás a versiones que soporten .NET 10 |
 | Imágenes Docker | `sdk:8.0`/`aspnet:8.0` → `sdk:10.0`/`aspnet:10.0` |
-| CI (`GuiaCI.md`) | Versión del SDK en `global.json`; carga de trabajo `maui` de la versión 10 |
+| Imágenes y scripts | `sdk:8.0`/`aspnet:8.0` → `10.0` en los `Dockerfile` y en `scripts/*-docker.sh`; carga de trabajo `maui` de la versión 10 |
 | OpenAPI | Se puede reemplazar Swashbuckle por el generador integrado (`Microsoft.AspNetCore.OpenApi`); opcional |
 | Formato de solución | Se puede adoptar `.slnx`; opcional |
 | Migraciones de EF Core | Regenerar el *snapshot* o verificar que no cambió el modelo; ninguna tabla cambia |
 
 **Cómo mantener barata la migración desde el primer día**
 * Versiones de paquetes y de SDK **solo** en `global.json`, `Directory.Build.props` y `Directory.Packages.props` (un único lugar).
-* No usar APIs marcadas como obsoletas ni funciones de vista previa; el CI trata las advertencias como errores.
+* No usar APIs marcadas como obsoletas ni funciones de vista previa; las advertencias son errores de compilación.
 * Una sola rama de migración (`chore/net10`) que cambia esos archivos, corrige lo que no compile y pasa toda la batería de pruebas.
 * Mejor **hacerla temprano** (antes de tener muchos módulos) que tarde; si el ingeniero responde pronto, el costo es de horas, no de días.
 

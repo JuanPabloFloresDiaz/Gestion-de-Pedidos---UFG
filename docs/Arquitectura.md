@@ -53,13 +53,13 @@ Domain  ◄──  Application  ◄──  Api
                   ▲             │
                   └─ Infrastructure (implementa los puertos; la Api la registra)
 
-Contracts (DTOs): referenciado por Api y Ui; nunca por Domain
+Contracts (DTOs): referenciado por Application, Api y Ui; nunca por Domain
 Ui (RCL): depende solo de Contracts
 Web y Desktop (hospedajes): dependen solo de Ui y Contracts
 ```
 
 * `Domain` no referencia ningún proyecto ni paquete de infraestructura.
-* `Application` referencia solo `Domain`; declara los puertos (`IClienteRepository`, `IUnitOfWork`…); el tiempo se inyecta con `TimeProvider`.
+* `Application` referencia `Domain` y `Contracts` (los DTOs son su entrada y salida, así no se duplican modelos); declara los puertos (`IClienteRepository`, `IUnitOfWork`…); el tiempo se inyecta con `TimeProvider`.
 * `Infrastructure` implementa los puertos y es la **única** que referencia EF Core.
 * `Api` es la raíz de composición de la API.
 * `Ui`, `Web` y `Desktop` **no** conocen el dominio del servidor: usan los DTOs de `Contracts` y hablan solo con la API.

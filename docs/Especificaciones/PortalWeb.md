@@ -72,7 +72,7 @@ El catálogo devuelve un DTO **distinto** al de administración (sin stock exact
 
 * **API**: catálogo anónimo (sin stock exacto, solo activos), `mis-pedidos` sin sesión (401), con rol de personal (403), y **acceso al pedido de otro cliente denegado** (404/403).
 * **Integración**: registro transaccional y enlace de cliente existente; pedido web descuenta stock; cancelación repone.
-* **Ui**: componentes clave con bUnit (carrito, formulario de registro) y recorrido manual completo para la defensa.
+* **Extremo a extremo** (Playwright): registro, pedido desde el navegador y cancelación; más el recorrido manual completo para la defensa.
 
 ## 8. Despliegue
 

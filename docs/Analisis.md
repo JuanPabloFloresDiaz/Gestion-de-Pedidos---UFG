@@ -62,7 +62,7 @@ La rúbrica tiene 10 criterios de 1 a 4 puntos (máximo 40). Esta tabla es la li
 | Desarrolla interfaces gráficas de **mantenimiento** de BD | Formularios de alta/edición/baja y listados de Clientes, Productos, Pedidos, Usuarios | Specs de cada módulo |
 | Demostración y defensa | Guion de demostración y datos de demostración preparados; todos dominan toda la arquitectura | [RespaldoYEntrega.md §4](Especificaciones/RespaldoYEntrega.md) |
 | **Sentencias parametrizadas o procedimientos almacenados** | EF Core parametriza todas las consultas y la búsqueda de pedidos usa un procedimiento almacenado | [BaseDatos.md §6](BaseDatos.md) |
-| Ejecución correcta sin errores | Pruebas automáticas, manejo de errores uniforme, CI | [Testing.md](Especificaciones/Testing.md) |
+| Ejecución correcta sin errores | Pruebas automáticas (unitarias, integración con SQL Server real, arquitectura y extremo a extremo con Playwright), manejo de errores uniforme | [Testing.md](Especificaciones/Testing.md) |
 | Funcionalidad de la aplicación | Todos los RF más pruebas de aceptación | Este documento |
 | Trabajo en equipo | Reparto de tareas, ramas, revisiones y guías comunes | [Implementacion.md §4](Implementacion.md), [Tareas.md](Equipo/Tareas.md) |
 

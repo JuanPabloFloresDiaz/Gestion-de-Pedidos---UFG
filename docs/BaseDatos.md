@@ -223,7 +223,7 @@ Se crean mediante `migrationBuilder.Sql(...)` en una migración propia (versiona
 
 ## 8. Migraciones
 
-* Se generan y aplican **dentro de Docker** con `scripts/ef-docker.sh`, nunca con herramientas instaladas en el host.
+* Se generan y aplican **dentro de Docker** con `./scripts/ef-docker.sh migrations add <Nombre>`, nunca con herramientas instaladas en el host. Tras cada migración se regenera el script completo con `./scripts/generar-script-sql.sh` ([`scripts/sql/GestionPedidos_esquema.sql`](../scripts/sql/GestionPedidos_esquema.sql): las 11 tablas, restricciones, índices, semillas, vista y procedimiento; idempotente).
 * **Una migración por cambio lógico**, con nombre descriptivo en PascalCase, revisada (se lee el SQL generado) antes de integrarla.
 * Las migraciones ya integradas a `main` **no se editan**: se crea una nueva.
 * **Solo una persona a la vez integra migraciones**: dos ramas con migraciones simultáneas generan conflicto en `ModelSnapshot`. Regla: la segunda rama hace *rebase*, borra su migración y la regenera ([Implementacion.md §4](Implementacion.md)).

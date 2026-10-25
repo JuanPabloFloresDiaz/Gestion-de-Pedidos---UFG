@@ -6,7 +6,7 @@
 * **Licencias de software**:
   - **.NET, ASP.NET Core, EF Core, Blazor, .NET MAUI**: MIT (uso libre).
   - **SQL Server Developer**: gratuita **solo para desarrollo y pruebas**; producción exige licencia o la edición Express (con límites de tamaño/recursos). Verificar los términos vigentes de Microsoft antes de desplegar.
-  - Librerías de terceros (FluentValidation, Testcontainers, xUnit…): revisar la licencia de cada paquete antes de añadirlo (algunas populares han cambiado a licencias comerciales; por eso se evita MediatR/AutoMapper, [Tecnologia.md §2.2](Tecnologia.md)).
+  - Librerías de terceros (Testcontainers, xUnit, Playwright…): revisar la licencia de cada paquete antes de añadirlo (algunas populares han cambiado a licencias comerciales; por eso se evita MediatR/AutoMapper, [Tecnologia.md §2.2](Tecnologia.md)).
 * **Propiedad intelectual**: el repositorio ya incluye `LICENSE`; confirmar con el ingeniero si la materia impone condiciones sobre la entrega.
 
 > Este documento fija criterios técnicos; no reemplaza asesoría legal.

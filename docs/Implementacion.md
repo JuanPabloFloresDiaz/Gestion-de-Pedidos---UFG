@@ -6,44 +6,45 @@
 
 | Elemento | Estado |
 |---|---|
-| Requerimientos oficiales | ✅ Recibidos y analizados ([Analisis.md](Analisis.md)) |
-| Patrón de eventos | ✅ Delegados y eventos de C# ([PatronEventos.md](Especificaciones/PatronEventos.md)) |
-| Documentación base y specs de módulos | 🟡 Borrador completo, pendiente de aprobación |
-| Código | ⛔ Aún no iniciado |
+| Requerimientos oficiales y patrón de eventos | ✅ Analizados ([Analisis.md](Analisis.md), [PatronEventos.md](Especificaciones/PatronEventos.md)) |
+| Documentación y specs de módulos | ✅ Completa |
+| **Fase 0** — Esqueleto, Docker, interfaz y pruebas | ✅ Hecha (excepto validar el escritorio MAUI en Windows) |
+| **Fase 0.5** — Persistencia: 11 tablas, migraciones, semillas, script SQL, respaldo | ✅ Hecha |
+| **Fase 1** — Autenticación, usuarios, roles y permisos (API + Ui) | ✅ Hecha |
+| Fases 2 a 5 (Clientes, Productos, Pedidos, búsquedas, historial, entrega) | 🕓 Pendientes: ver [Tareas.md](Equipo/Tareas.md) |
+
+**Calidad actual**: 109 pruebas automáticas (unitarias, integración con SQL Server real en Docker, arquitectura) + 3 pruebas de extremo a extremo con Playwright. No hay CI/CD: se corre `./scripts/test-docker.sh` antes de subir cambios ([Testing.md §6](Especificaciones/Testing.md)).
 
 ## 2. Fases
 
-### Fase 0 — Esqueleto, Docker y CI *(a cargo de Pablo, con asistente)*
-- [ ] Solución `.sln` (el formato `.slnx` exige .NET 9+), `global.json` con el SDK **8.0**, `Directory.Build.props` (nullable, advertencias como errores, **XML docs activados**), `Directory.Packages.props`, `.editorconfig`.
-- [ ] Proyectos vacíos por capa con las referencias de [Arquitectura.md §2](Arquitectura.md) y `Architecture.Tests` que las verifica.
-- [ ] `docker-compose.yml` (`sqlserver` + `api`; `web` llega con la Fase Web), `docker-compose.dokploy.yml`, healthchecks, `.env.example`, Dockerfile multi-etapa.
-- [ ] Scripts `scripts/*-docker.sh` para la API, la web, las migraciones y las pruebas (el host `Desktop` no se compila en Docker; ver la validación de MAUI más abajo).
-- [ ] `GET /health` y `/health/ready`; manejo global de errores con Problem Details.
-- [ ] Harness de pruebas: `AbstractIntegrationTest` con Testcontainers (SQL Server) + Respawn.
-- [ ] Esqueleto de la interfaz: proyecto `Ui` (Razor Class Library) con `MainLayout` y pestañas de documentos, tema, kit de componentes (`Boton`, `CampoTexto`, `TablaDatos`, `Paginador`, `PaginaModulo`), `ApiClient` base e `ISesionAlmacen`; hospedajes `Web` (Blazor Web App) y `Desktop` (MAUI Blazor Hybrid) que cargan la misma `Ui`.
-- [ ] **Validación de MAUI Blazor Hybrid con VS Code** en Windows: `dotnet workload install maui`, compilar, ejecutar y depurar el host `Desktop`; si no funciona sin Visual Studio, se documenta la excepción para ese único proyecto ([Tecnologia.md §3.1](Tecnologia.md)). Decidir si se usa MudBlazor y fijar su versión compatible con .NET 8.
-- [ ] Configuración de **VS Code** compartida: `.vscode/extensions.json` (C# Dev Kit, .NET MAUI), `launch.json` y `tasks.json` para la API, la web y el escritorio.
-- [ ] CI en GitHub Actions ([GuiaCI.md](Equipo/GuiaCI.md)) y `AGENTS.md`.
-- **Hecho cuando**: `docker compose up` deja la API sana, `test-docker.sh` pasa en verde, el `.exe` de escritorio y la web abren el shell con la misma `Ui` y el CI está en verde.
+### Fase 0 — Esqueleto, Docker, interfaz y pruebas ✅
+- [x] Solución `.sln` (+ filtro `GestionPedidos.Linux.slnf` sin `Desktop`), `global.json` (SDK 8.0), `Directory.Build.props` (nullable, advertencias como errores, **XML docs obligatorios**), `Directory.Packages.props`, `.editorconfig`.
+- [x] Proyectos por capa con las referencias de [Arquitectura.md §2](Arquitectura.md), verificadas por `Architecture.Tests`.
+- [x] `docker-compose.yml` (`sqlserver` + `db-init` + `api` + `web`) con healthchecks, `.env.example`, Dockerfiles multi-etapa, puertos 4390–4392.
+- [x] Scripts: `up.sh`, `down.sh`, `dotnet-docker.sh`, `ef-docker.sh`, `test-docker.sh`, `e2e-docker.sh`, `db-backup.sh`, `db-restore.sh`, `generar-script-sql.sh`.
+- [x] `GET /health` y `/health/ready`; errores con Problem Details; *rate limiting* en login y registro.
+- [x] Interfaz (`Ui`): shell con pestañas de documentos, tema, kit de componentes (propio, sin MudBlazor), `ApiClient`, sesión, avisos; hospedajes `Web` y `Desktop` (MAUI) que cargan la misma `Ui`.
+- [x] Harness de pruebas con Testcontainers (SQL Server real) y Playwright para extremo a extremo.
+- [ ] **Validar el escritorio en Windows**: el proyecto `Desktop` está escrito y configurado, pero **no se pudo compilar desde el entorno donde se creó** (Linux); falta ejecutar `dotnet workload install maui` y `dotnet run -f net8.0-windows10.0.19041.0` en Windows con VS Code ([PrimerosPasos.md §4](Equipo/PrimerosPasos.md)) y corregir lo que aparezca.
+- [ ] Probar el `.exe` publicado en un equipo del laboratorio (Windows y WebView2).
 
-### Fase 0.5 — Persistencia base *(Pablo, con asistente)*
-- [ ] `GestionPedidosDbContext` con convenciones globales (decimales, longitudes, `RowVersion`, `CreadoEn/ActualizadoEn`).
-- [ ] **Todas** las configuraciones de entidad y la migración `CrearEsquemaInicial` con las tablas de [BaseDatos.md §4](BaseDatos.md) (aunque sus módulos lleguen después).
-- [ ] Procedimiento `usp_Pedidos_Buscar` y vista `vw_PedidosResumen` (migración propia).
-- [ ] `scripts/sql/init-usuarios.sql` (usuarios `pedidos_app` y `pedidos_migrator`).
-- [ ] Semillas obligatorias: roles (incluye `Cliente`), permisos, matriz, departamentos y ciudades desde `seed/el-salvador-geo.json`, administrador inicial.
-- [ ] `db-backup.sh` y `db-restore.sh` con prueba de restauración ([RespaldoYEntrega.md](Especificaciones/RespaldoYEntrega.md)).
-- **Hecho cuando**: la BD se crea desde cero con una migración, las pruebas de integración verifican restricciones (`CHECK`, `UNIQUE`, FK) y la restauración funciona.
+### Fase 0.5 — Persistencia base ✅
+- [x] `GestionPedidosDbContext` con convenciones globales (decimales `(18,2)`, fechas UTC, longitudes, `RowVersion`, `CreadoEn/ActualizadoEn` automáticos).
+- [x] Configuración de **las 11 tablas** y migración `CrearEsquemaInicial` ([BaseDatos.md §4](BaseDatos.md)), con restricciones `CHECK`, `UNIQUE` (incluidos los índices únicos filtrados) y FK.
+- [x] Migración `AgregarBusquedaDePedidosYPermisosDeBD`: vista `vw_PedidosResumen`, procedimiento `usp_Pedidos_Buscar` y permisos del usuario de la aplicación (el historial queda inalterable).
+- [x] `scripts/sql/init-usuarios.sql` (usuarios `pedidos_app` y `pedidos_migrator`).
+- [x] Semillas: roles, 25 permisos, matriz, 14 departamentos y 262 distritos; administrador inicial al arrancar.
+- [x] **Script SQL con todas las tablas**: [`scripts/sql/GestionPedidos_esquema.sql`](../scripts/sql/GestionPedidos_esquema.sql) (generado desde las migraciones; idempotente).
+- [x] `db-backup.sh` y `db-restore.sh` con verificación de conteos ([RespaldoYEntrega.md](Especificaciones/RespaldoYEntrega.md)).
 
-### Fase 1 — Autenticación, usuarios, roles y permisos *(Pablo, con asistente)*
-- [ ] Login con **JWT de 60 min** (sin *refresh tokens*), comprobación de usuario activo, bloqueo, cambio de clave obligatorio y registro web de clientes ([AutenticacionYPermisos.md](Especificaciones/AutenticacionYPermisos.md)).
-- [ ] CRUD de **Usuarios** (con baja lógica) y consulta/gestión de **Roles y Permisos**.
-- [ ] Política de autorización por permisos en la API.
-- [ ] `Ui`: página de login, sesión (`SesionService`), shell con **menú según permisos** y pestañas, módulo de Usuarios, **Integrantes**, cierre de sesión; visibles en ambos hospedajes.
-- [ ] Eventos `SesionIniciada`, `SesionCerrada`, `SesionPorExpirar` y `SesionExpirada` ([PatronEventos.md §5](Especificaciones/PatronEventos.md)).
-- **Hecho cuando**: un administrador y un operador inician sesión y ven menús distintos, la API rechaza con `403` lo no permitido y todo tiene pruebas.
+### Fase 1 — Autenticación, usuarios, roles y permisos ✅
+- [x] Login con **JWT de 60 min** (sin *refresh tokens*), usuario activo comprobado en cada petición (caché 60 s), bloqueo tras 5 fallos, cambio de clave obligatorio y registro web de clientes con enlace por teléfono ([AutenticacionYPermisos.md](Especificaciones/AutenticacionYPermisos.md)).
+- [x] CRUD de **Usuarios** con baja lógica, reglas del último administrador y concurrencia optimista; consulta de **Roles y permisos**.
+- [x] Autorización por permisos en la API (política por cada permiso del catálogo).
+- [x] `Ui`: login, cambio de contraseña, shell con **menú por permisos** y pestañas, módulo de Usuarios, **Integrantes**, cierre de sesión; funciona igual en web y escritorio.
+- [x] Eventos `SesionIniciada`, `SesionCerrada`, `SesionPorExpirar`, `SesionExpirada`, `EntidadCambiada`, `DocumentoAbierto/Cerrado/Activado` ([PatronEventos.md](Especificaciones/PatronEventos.md)) y el historial como suscriptor.
 
-> Al cerrar la Fase 1 queda un **módulo completo de referencia** (Usuarios) que sirve de plantilla real para los demás.
+> **Usuarios es el módulo de referencia**: para un módulo nuevo se copia su estructura ([PrimerosPasos.md §5](Equipo/PrimerosPasos.md)).
 
 ### Fase 2 — Clientes y Productos *(repartida entre el equipo)*
 Módulos independientes entre sí; se trabajan en paralelo. Incluye los catálogos Departamentos/Ciudades dentro de Clientes. Specs: [Clientes.md](Especificaciones/Clientes.md), [Productos.md](Especificaciones/Productos.md).
@@ -72,7 +73,7 @@ gantt
     section Preparación
     Aprobación de documentación        :a0, 2026-10-03, 3d
     section Base (Pablo)
-    Fase 0 Esqueleto y CI              :f0, 2026-10-06, 4d
+    Fase 0 Esqueleto y Docker          :f0, 2026-10-06, 4d
     Fase 0.5 Persistencia              :f05, 2026-10-12, 3d
     Fase 1 Auth y usuarios             :f1, 2026-10-15, 9d
     Fase Web Tienda pública            :fw, 2026-10-24, 15d
@@ -92,7 +93,7 @@ gantt
 
 ## 4. Trabajo en Equipo
 
-* **Ramas**: `main` protegida (solo por Pull Request con CI en verde y **una revisión** de otro integrante). Ramas `feat/<modulo>-<tema>` (ej. `feat/clientes-pagina`), `fix/…`, `docs/…`.
+* **Ramas**: una por módulo o apartado (`feat/<modulo>-<tema>`, ej. `feat/clientes-pagina`), `fix/…`, `docs/…`; se integran a `main` por Pull Request con **una revisión** de otro integrante. **Sin CI/CD**: antes de abrir el PR quien lo escribe corre `./scripts/test-docker.sh` (y `./scripts/e2e-docker.sh` si tocó la interfaz) y lo anota en el PR.
 * **Commits granulares**: uno por apartado revisable (entidad, configuración EF, caso de uso, endpoint, ViewModel, página…), con título y descripción; cada commit deja el repositorio compilando y con pruebas en verde. Formato: `tipo(modulo): resumen` (`feat(clientes): agregar caso de uso RegistrarCliente`).
 * **Un módulo = un dueño** de principio a fin (API + escritorio + pruebas + spec). Cada módulo vive en sus propias carpetas ([Estructura.md §2](Estructura.md)) para evitar conflictos.
 * **Archivos compartidos** (modificar con cuidado y en PR pequeños): `DbContext`, `Program.cs`, `MainLayout` (menú), `Contracts`. Cada módulo se registra con un método de extensión propio (`AddClientes()`, `MapClientes()`) para que `Program.cs` solo cambie una línea.

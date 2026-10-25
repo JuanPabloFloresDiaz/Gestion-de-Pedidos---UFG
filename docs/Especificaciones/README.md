@@ -16,7 +16,7 @@ Specs por módulo bajo **Spec Driven Documentation**: cada módulo se especifica
 | [Testing.md](Testing.md) | RNF | Transversal | 🟡 Borrador |
 | [RespaldoYEntrega.md](RespaldoYEntrega.md) | RE-02 a RE-04 | 5 | 🟡 Borrador |
 
-Documentos para el equipo (no son specs de módulo): [PautasCodigoEventos.md](../Equipo/PautasCodigoEventos.md), [GuiaCI.md](../Equipo/GuiaCI.md), [Tareas.md](../Equipo/Tareas.md).
+Documentos para el equipo (no son specs de módulo): [PrimerosPasos.md](../Equipo/PrimerosPasos.md), [PautasCodigoEventos.md](../Equipo/PautasCodigoEventos.md), [Tareas.md](../Equipo/Tareas.md).
 
 ## Plantilla de una Spec de Módulo
 

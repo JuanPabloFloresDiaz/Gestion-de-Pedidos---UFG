@@ -23,8 +23,8 @@
 
 | ID | Tarea | Talla | Depende de | Responsable |
 |---|---|---|---|---|
-| C-01 | Entidad `Cliente` con reglas (campos obligatorios, formato de teléfono) y pruebas unitarias | S | Fase 0.5 | |
-| C-02 | Catálogos `Departamento` y `Ciudad`: entidades, carga de la semilla desde `seed/el-salvador-geo.json` (14 departamentos y 262 ciudades; el archivo ya está en el repositorio), endpoints de lectura | M | Fase 0.5 | |
+| C-01 | Reglas del dominio de `Cliente` (campos obligatorios, formato de teléfono; la entidad y su tabla ya existen) y pruebas unitarias | S | — | |
+| C-02 | Endpoints de lectura de los catálogos: `GET /departamentos` y `/departamentos/{id}/ciudades` (con búsqueda por nombre y caché en memoria). Las entidades y los 14 + 262 registros **ya existen** (Fase 0.5) | S | — | |
 | C-03 | Repositorio de clientes e integración con EF (consultas con filtros) y pruebas de integración | S | C-01 | |
 | C-04 | Casos de uso `RegistrarCliente`, `ActualizarCliente`, `CambiarEstadoCliente` (con la regla de pedidos pendientes) y eventos de aplicación | M | C-01, C-03 | |
 | C-05 | DTOs en `Contracts` y endpoints `/api/v1/clientes` con validación, permisos y pruebas de API | M | C-04 | |
@@ -69,7 +69,7 @@
 
 | ID | Tarea | Talla | Depende de | Responsable |
 |---|---|---|---|---|
-| H-01 | `HistorialSubscriber` (suscriptor de eventos de aplicación → tabla `Actividades`) con pruebas | M | Fase 1 | |
+| H-01 | El `HistorialSubscriber` **ya existe** (Fase 1) y escucha `EntidadCambiada`: verificar que cada caso de uso nuevo de Clientes, Productos y Pedidos lo publique y que quede la fila en `Actividades` (prueba de integración por módulo) | S | Fase 1 | |
 | H-02 | Endpoint y `HistorialPagina` (solo administrador) con filtros por usuario, entidad y fechas | M | H-01 | |
 | H-03 | `Notificador` de barra de estado y suscripción de listados abiertos para refrescarse (`EntidadCambiada`) | M | C-06 | |
 | H-04 | Verificar que los menús y botones de cada módulo respetan los permisos; prueba manual por rol | S | C-08, P-07 | |
@@ -91,10 +91,10 @@
 | ID | Tarea | Talla | Depende de | Responsable |
 |---|---|---|---|---|
 | W-01 | Endpoints públicos y de cliente en la API: `catalogo`, `auth/registro`, `mis-pedidos`, `mi-perfil`, con *rate limiting* y pruebas (incluye acceso a datos ajenos denegado) | L | Fase 1, C-05, P-04, D-07 | Pablo |
-| W-02 | Área `Tienda/` en la `Ui` y sesión de la web con `ProtectedSessionStorage` | M | Fase 0 | Pablo |
+| W-02 | Área `Tienda/` en la `Ui` (la sesión de la web con `ProtectedSessionStorage` y el `ApiClient` **ya existen**) | S | — | Pablo |
 | W-03 | Diseño base: layout, navegación, tema | M | W-02 | Pablo |
 | W-04 | Catálogo: listado paginado con búsqueda y detalle de producto | M | W-01, W-03 | Pablo |
 | W-05 | Registro e inicio de sesión de clientes (departamento → ciudad) | M | W-01, W-03 | Pablo |
 | W-06 | Carrito y "Hacer pedido" | L | W-04, W-05 | Pablo |
 | W-07 | Mis pedidos (lista, detalle, cancelar) y perfil | M | W-06 | Pablo |
-| W-08 | `Dockerfile` y servicio `web` en los compose; pruebas con bUnit y recorrido manual | M | W-07 | Pablo |
+| W-08 | `Dockerfile` y servicio `web` en los compose; prueba Playwright del recorrido y recorrido manual | M | W-07 | Pablo |

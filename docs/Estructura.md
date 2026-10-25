@@ -6,7 +6,8 @@
 
 ```
 Gestion-de-Pedidos---UFG/
-├── GestionPedidos.sln
+├── GestionPedidos.sln                   # todo
+├── GestionPedidos.Linux.slnf            # filtro sin Desktop (lo que compila en Linux/Docker)
 ├── global.json                          # fija la versión del SDK
 ├── Directory.Build.props                # Nullable, TreatWarningsAsErrors, XML docs, analizadores
 ├── Directory.Packages.props             # versiones centralizadas de NuGet
@@ -14,24 +15,25 @@ Gestion-de-Pedidos---UFG/
 ├── .env.example                         # variables de ejemplo (sin secretos)
 ├── seed/el-salvador-geo.json            # departamentos y ciudades de El Salvador (catálogo completo)
 ├── docker-compose.yml                   # local: sqlserver + api + web
-├── docker-compose.dokploy.yml           # despliegue (expose, sin ports)
 ├── AGENTS.md                            # reglas cortas para agentes de IA (apunta a docs/)
 ├── README.md
 ├── docs/                                # documentación (SDD)
 │   ├── Apoyo/                           # enunciado y material del ingeniero
 │   ├── Especificaciones/                # una spec por módulo
-│   └── Equipo/                          # pautas de código, guía de CI, tareas
+│   └── Equipo/                          # primeros pasos, pautas de código, tareas
 ├── scripts/                             # todo corre dentro de Docker
-│   ├── dotnet-docker.sh                 # `dotnet ...` en el contenedor SDK
-│   ├── ef-docker.sh                     # migraciones de EF Core
-│   ├── test-docker.sh                   # batería de pruebas
-│   ├── db-backup.sh / db-restore.sh     # respaldo FULL y restauración
-│   └── sql/init-usuarios.sql            # usuarios de BD con mínimo privilegio
+│   ├── up.sh / down.sh                  # levanta / apaga SQL Server + API + web
+│   ├── dotnet-docker.sh · ef-docker.sh  # `dotnet ...` y migraciones de EF Core en contenedor
+│   ├── test-docker.sh · e2e-docker.sh   # pruebas (unitarias, integración, arquitectura) y extremo a extremo
+│   ├── db-backup.sh · db-restore.sh     # respaldo FULL y restauración verificada
+│   ├── generar-script-sql.sh            # regenera scripts/sql/GestionPedidos_esquema.sql
+│   └── sql/                             # init-usuarios.sql y GestionPedidos_esquema.sql (todas las tablas)
+├── e2e/                                 # pruebas de extremo a extremo (Playwright, TypeScript)
 ├── src/
 │   ├── GestionPedidos.Domain/           # entidades, reglas
 │   ├── GestionPedidos.Application/      # casos de uso, puertos, eventos de aplicación
 │   ├── GestionPedidos.Infrastructure/   # EF Core, migraciones, adaptadores
-│   ├── GestionPedidos.Contracts/        # DTOs compartidos Api ↔ Ui
+│   ├── GestionPedidos.Contracts/        # DTOs compartidos Api ↔ Application ↔ Ui
 │   ├── GestionPedidos.Api/              # endpoints, auth, composición de DI
 │   ├── GestionPedidos.Ui/               # Razor Class Library: TODAS las pantallas (administración y tienda)
 │   ├── GestionPedidos.Web/              # Hospedaje web: Blazor Web App (Docker)
@@ -41,7 +43,7 @@ Gestion-de-Pedidos---UFG/
     ├── GestionPedidos.Application.Tests/
     ├── GestionPedidos.Infrastructure.Tests/   # Testcontainers (SQL Server)
     ├── GestionPedidos.Api.Tests/              # WebApplicationFactory
-    ├── GestionPedidos.Ui.Tests/               # ViewModels y servicios de cliente; componentes con bUnit
+    ├── GestionPedidos.Ui.Tests/               # ViewModels, servicios, sesión y pestañas (sin navegador)
     └── GestionPedidos.Architecture.Tests/
 ```
 
@@ -99,7 +101,9 @@ GestionPedidos.Ui/                       # Razor Class Library (la única interf
 │   ├── Sesion/                          # SesionService, ISesionAlmacen
 │   ├── Notificaciones/                  # Notificador + componente de avisos
 │   └── Componentes/                     # kit propio: Boton, CampoTexto, TablaDatos, Paginador, Dialogo…
-└── wwwroot/                             # tema (CSS/variables), imágenes
+├── ModulosAdmin.cs                      # registro de módulos del menú: cada módulo nuevo añade UNA línea
+├── ServiciosUi.cs                       # AddGestionPedidosUi(): registro de servicios y ViewModels
+└── wwwroot/css/tema.css                 # el ÚNICO lugar con colores, fuentes y espaciados
 
 GestionPedidos.Web/                      # Program.cs, App.razor, appsettings.json (hospedaje web)
 GestionPedidos.Desktop/                  # MauiProgram.cs, MainPage.xaml con BlazorWebView, appsettings.json

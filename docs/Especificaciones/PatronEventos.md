@@ -83,7 +83,7 @@ Usos previstos en el proyecto (detalle y plantillas en [PautasCodigoEventos.md �
 * Un suscriptor falso (`+=` con una lambda) captura el evento y se verifica `sender` y datos.
 * Sin suscriptores no ocurre ninguna excepción (`?.Invoke`).
 * Un ViewModel reacciona a los eventos de un **servicio falso** (se disparan manualmente) y no depende de componentes ni de pantalla.
-* Un componente (bUnit) se repinta al recibir `Cambiado` y se da de baja en `Dispose`.
+* En la interfaz real (Playwright) se comprueba que el aviso aparece tras una operación y que el listado se refresca.
 * Tras cerrar la pestaña (`Dispose`), la página y su ViewModel ya no reciben eventos (se dio de baja con `-=`).
 * Ver [Testing.md](Testing.md).
 

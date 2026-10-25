@@ -17,22 +17,28 @@ La **API, la web y SQL Server** corren en contenedores; el único requisito para
 
 | Servicio | Imagen / build | Puerto host → contenedor | Notas |
 |---|---|---|---|
-| `sqlserver` | `mcr.microsoft.com/mssql/server:2022-latest` | `127.0.0.1:4391 → 1433` | Volumen nombrado, `healthcheck` con `sqlcmd`, `ACCEPT_EULA=Y`, `MSSQL_PID` y `MSSQL_MEMORY_LIMIT_MB` configurables |
-| `api` | Dockerfile multi-etapa (`sdk:8.0` → `aspnet:8.0`) | `4390 → 8080` | Espera a `sqlserver` *healthy*; aplica migraciones solo en `Development` |
-| `web` | Dockerfile multi-etapa (`sdk:8.0` → `aspnet:8.0`) | `4392 → 8080` | Blazor Web App con la `Ui`; llama a `api` por la red interna. Se añade con la Fase Web |
+| `sqlserver` | `mcr.microsoft.com/mssql/server:2022-latest` | `127.0.0.1:4391 → 1433` | Volumen nombrado, `healthcheck` con `sqlcmd`, `ACCEPT_EULA=Y`, `MSSQL_PID` y `MSSQL_MEMORY_LIMIT_MB` (1536 por defecto) |
+| `db-init` | misma imagen de SQL Server | — | **Un solo uso**: crea la base `GestionPedidos` y los usuarios `pedidos_migrator` y `pedidos_app` ([BaseDatos.md §7](BaseDatos.md)) |
+| `api` | `src/GestionPedidos.Api/Dockerfile` (`sdk:8.0` → `aspnet:8.0`) | `4390 → 8080` | Espera a `db-init`; al arrancar aplica las migraciones con `pedidos_migrator` y siembra al administrador; conecta con `pedidos_app` |
+| `web` | `src/GestionPedidos.Web/Dockerfile` | `4392 → 8080` | Blazor Web App con la `Ui`; llama a `api` por la red interna (`http://api:8080`) |
 
 * **Puertos del ecosistema del equipo**: `4390` (API), `4391` (SQL Server) y `4392` (web), los siguientes libres; verificados el 2026-10-01. Configurables (`${API_PORT:-4390}`).
 * SQL Server se publica **solo en `127.0.0.1`** y nunca hacia la red.
 * Contenedores con usuario **no root**.
-* `.env.example` documenta: `MSSQL_SA_PASSWORD`, `PEDIDOS_APP_PASSWORD`, `PEDIDOS_MIGRATOR_PASSWORD`, `JWT_SIGNING_KEY`, `ADMIN_INITIAL_PASSWORD`, `MSSQL_PID`, `MSSQL_MEMORY_LIMIT_MB`.
+* `.env.example` documenta: puertos (`API_PORT`, `SQL_PORT`, `WEB_PORT`), `MSSQL_SA_PASSWORD`, `PEDIDOS_APP_PASSWORD`, `PEDIDOS_MIGRATOR_PASSWORD`, `JWT_SIGNING_KEY`, `ADMIN_INITIAL_PASSWORD`, `MSSQL_PID` y `MSSQL_MEMORY_LIMIT_MB`. `.env` está en `.gitignore`.
+* Swagger queda **activo** en el entorno local de Docker (`SWAGGER_HABILITADO`, por defecto `true`); en un despliegue real debe ir en `false`.
 
 ## 3. Scripts de Desarrollo
 
 | Script | Qué hace |
 |---|---|
-| `scripts/dotnet-docker.sh <args>` | `dotnet <args>` en `mcr.microsoft.com/dotnet/sdk:8.0` montando el repo y una caché de NuGet; usa `--user "$(id -u):$(id -g)"` |
-| `scripts/ef-docker.sh <args>` | Igual, con `dotnet-ef` 8, conectado a la red de Compose para migraciones |
-| `scripts/test-docker.sh` | Pruebas unitarias, de integración (Testcontainers con el socket de Docker) y de arquitectura |
+| `scripts/up.sh [--limpio]` | Crea `.env` si falta, avisa si un puerto está ocupado, levanta SQL Server + API + web y espera a que estén sanos; `--limpio` borra antes los datos |
+| `scripts/down.sh [--datos]` | Apaga el entorno; `--datos` también borra la base |
+| `scripts/dotnet-docker.sh <args>` | `dotnet <args>` en el SDK 8 en Docker con caché de NuGet (ej. `build GestionPedidos.Linux.slnf`) |
+| `scripts/ef-docker.sh <args>` | Comandos de EF Core en Docker (ej. `migrations add NombreDeLaMigracion`) |
+| `scripts/test-docker.sh` | Todas las pruebas (unitarias, integración con SQL Server real, arquitectura) |
+| `scripts/e2e-docker.sh` | Pruebas de extremo a extremo con Playwright; guarda capturas en `e2e/capturas/` |
+| `scripts/generar-script-sql.sh` | Regenera `scripts/sql/GestionPedidos_esquema.sql` desde las migraciones |
 | `scripts/db-backup.sh` / `db-restore.sh` | Respaldo FULL y restauración verificada ([RespaldoYEntrega.md](Especificaciones/RespaldoYEntrega.md)) |
 
 > Testcontainers dentro de un contenedor necesita el socket de Docker montado y, en Docker Desktop, `TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal`.
@@ -43,7 +49,7 @@ La **API, la web y SQL Server** corren en contenedores; el único requisito para
 **Por ahora todo corre en local** (API, web y base de datos en Docker). Motivo: SQL Server —obligatorio por el enunciado— necesita **≥ 2 GB de RAM libres** y el servidor de Pablo tiene ~1,4 GiB libres (3,82 GiB en total, ~2,4 en uso, 8 GB de *swap*, que lo volvería muy lento). Pablo consultará al ingeniero si puede usarse un motor más liviano (MySQL/MariaDB o PostgreSQL); si lo autoriza, el despliegue se retoma ([BaseDatos.md §11](BaseDatos.md) detalla qué cambiaría).
 
 ### 4.2 Qué queda preparado
-* `docker-compose.dokploy.yml` con **`expose`** (nunca `ports`; el *Container Port* en Dokploy es el interno `8080`), detrás de Traefik con **TLS**, y secretos como variables de entorno de Dokploy.
+* Cuando se retome: un `docker-compose.dokploy.yml` con **`expose`** (nunca `ports`; el *Container Port* en Dokploy es el interno `8080`), detrás de Traefik con **TLS**, y secretos como variables de entorno de Dokploy. **Todavía no existe**: se crea a partir de `docker-compose.yml` cuando haya dónde desplegar.
 * La base se configura solo con `ConnectionStrings__Default`: cambiar de lugar la base no toca el código.
 
 ### 4.3 Caminos si cambian las condiciones
