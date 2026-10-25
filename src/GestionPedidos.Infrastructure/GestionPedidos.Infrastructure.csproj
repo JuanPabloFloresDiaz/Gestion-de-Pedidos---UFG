@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- EF Core, migraciones y adaptadores de los puertos. Única capa que referencia EF Core. -->
+  <ItemGroup>
+    <ProjectReference Include="..\GestionPedidos.Application\GestionPedidos.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Catálogo geográfico de El Salvador: 14 departamentos y 262 distritos -->
+    <EmbeddedResource Include="..\..\seed\el-salvador-geo.json" LogicalName="el-salvador-geo.json" />
+  </ItemGroup>
+</Project>
