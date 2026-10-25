@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="NetArchTest.Rules" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\GestionPedidos.Domain\GestionPedidos.Domain.csproj" />
+    <ProjectReference Include="..\..\src\GestionPedidos.Application\GestionPedidos.Application.csproj" />
+    <ProjectReference Include="..\..\src\GestionPedidos.Infrastructure\GestionPedidos.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\GestionPedidos.Api\GestionPedidos.Api.csproj" />
+    <ProjectReference Include="..\..\src\GestionPedidos.Ui\GestionPedidos.Ui.csproj" />
+    <ProjectReference Include="..\..\src\GestionPedidos.Contracts\GestionPedidos.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>
