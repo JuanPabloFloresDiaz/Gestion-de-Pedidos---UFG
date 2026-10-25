@@ -1,0 +1,7 @@
+{
+  "name": "gestion-pedidos-e2e",
+  "private": true,
+  "description": "Pruebas de extremo a extremo (Playwright) de la interfaz web. Se ejecutan en Docker con scripts/e2e-docker.sh",
+  "scripts": { "test": "playwright test" },
+  "devDependencies": { "@playwright/test": "1.49.1" }
+}
