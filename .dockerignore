@@ -1,0 +1,11 @@
+**/bin
+**/obj
+**/node_modules
+.git
+.env
+docs
+tests
+**/*.user
+.vs
+.vscode
+src/GestionPedidos.Desktop

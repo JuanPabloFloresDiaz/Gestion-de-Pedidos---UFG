@@ -1,0 +1,88 @@
+# Entorno local: SQL Server + API + web (Blazor).
+# Uso:  cp .env.example .env  &&  docker compose up -d --build
+name: gestion-pedidos
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      MSSQL_PID: ${MSSQL_PID:-Developer}
+      MSSQL_MEMORY_LIMIT_MB: ${MSSQL_MEMORY_LIMIT_MB:-1536}
+    ports:
+      - "127.0.0.1:${SQL_PORT:-4391}:1433"   # solo en la máquina local, nunca hacia la red
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q \"SELECT 1\" -b -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  # Un solo uso: crea la base y los usuarios 'pedidos_migrator' y 'pedidos_app' (mínimo privilegio).
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: "no"
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      APP_PASSWORD: ${PEDIDOS_APP_PASSWORD}
+      MIGRATOR_PASSWORD: ${PEDIDOS_MIGRATOR_PASSWORD}
+    volumes:
+      - ./scripts/sql/init-usuarios.sql:/init/init-usuarios.sql:ro
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - /opt/mssql-tools18/bin/sqlcmd -C -b -S sqlserver -U sa -P "$$MSSQL_SA_PASSWORD" -i /init/init-usuarios.sql -v APP_PASSWORD="$$APP_PASSWORD" MIGRATOR_PASSWORD="$$MIGRATOR_PASSWORD"
+
+  api:
+    build:
+      context: .
+      dockerfile: src/GestionPedidos.Api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ConnectionStrings__Default: Server=sqlserver,1433;Database=GestionPedidos;User Id=pedidos_app;Password=${PEDIDOS_APP_PASSWORD};Encrypt=True;TrustServerCertificate=True
+      ConnectionStrings__Migraciones: Server=sqlserver,1433;Database=GestionPedidos;User Id=pedidos_migrator;Password=${PEDIDOS_MIGRATOR_PASSWORD};Encrypt=True;TrustServerCertificate=True
+      Jwt__SigningKey: ${JWT_SIGNING_KEY}
+      Admin__ClaveInicial: ${ADMIN_INITIAL_PASSWORD}
+      Database__MigrarAlIniciar: "true"
+      Swagger__Habilitado: ${SWAGGER_HABILITADO:-true}
+    ports:
+      - "${API_PORT:-4390}:8080"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8080 && printf 'GET /health HTTP/1.0\r\n\r\n' >&3 && grep -q '200 OK' <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  web:
+    build:
+      context: .
+      dockerfile: src/GestionPedidos.Web/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      Api__BaseUrl: http://api:8080   # la web llama a la API por la red interna de Docker
+    ports:
+      - "${WEB_PORT:-4392}:8080"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8080 && printf 'GET /health HTTP/1.0\r\n\r\n' >&3 && grep -q '200 OK' <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+volumes:
+  sqlserver-data:
