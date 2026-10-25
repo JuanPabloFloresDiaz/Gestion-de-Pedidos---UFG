@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Escritorio (Windows)": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

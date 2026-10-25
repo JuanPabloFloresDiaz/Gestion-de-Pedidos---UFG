@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <!--
+    Hospedaje de ESCRITORIO: .NET MAUI Blazor Hybrid, solo Windows. Es una capa delgada: un BlazorWebView que carga la
+    interfaz compartida (GestionPedidos.Ui). Se compila y ejecuta en Windows (no en Docker ni en Linux):
+        dotnet build -f net8.0-windows10.0.19041.0
+        dotnet run   -f net8.0-windows10.0.19041.0
+    Requisitos: SDK de .NET 8 + carga de trabajo MAUI (dotnet workload install maui).
+  -->
+  <PropertyGroup>
+    <!-- Sustituye al TargetFramework común de Directory.Build.props -->
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>GestionPedidos.Desktop</RootNamespace>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <EnableDefaultCssItems>false</EnableDefaultCssItems>
+
+    <!-- Código generado por MAUI/XAML: sin la exigencia de comentarios XML ni advertencias como errores -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- Esta capa usa sus propias versiones (las de MAUI), no las centralizadas del resto de la solución -->
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+
+    <ApplicationTitle>Gestión de Pedidos</ApplicationTitle>
+    <ApplicationId>sv.edu.ufg.gestionpedidos</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+
+    <!-- Ejecutable sin empaquetar (sin MSIX ni firma) y con el runtime de Windows App SDK incluido: así corre en
+         equipos del laboratorio sin instalar nada adicional (solo se necesita WebView2, que trae Windows 10/11). -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#2F5BEA" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#2F5BEA" BaseSize="128,128" />
+    <MauiImage Include="Resources\Images\*" />
+    <MauiFont Include="Resources\Fonts\*" />
+    <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
+    <ProjectReference Include="..\GestionPedidos.Ui\GestionPedidos.Ui.csproj" />
+  </ItemGroup>
+</Project>
