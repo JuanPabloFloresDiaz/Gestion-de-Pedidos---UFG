@@ -106,6 +106,30 @@ test('producto, carrito y registro de un cliente', async ({ page }) => {
   await page.getByLabel('Repite la contraseña').fill('ClaveCliente_2026');
   await page.getByRole('button', { name: 'Crear cuenta' }).last().click();
   await expect(page.getByRole('button', { name: /Valeria/ })).toBeVisible();   // sesión iniciada: el encabezado saluda
+
+  // Hacer el pedido: datos de entrega de la cuenta, fecha, comentarios y confirmación
+  await page.getByRole('link', { name: /Carrito/ }).click();
+  await page.getByRole('button', { name: 'Hacer pedido' }).click();
+  await expect(page.getByRole('heading', { name: 'Confirma tu pedido' })).toBeVisible();
+  await expect(page.getByText('Colonia Escalón, pasaje 3, casa 12')).toBeVisible();
+  await page.getByLabel('Comentarios (opcional)').fill('Entregar por la tarde');
+  await captura(page, '28-tienda-pedido');
+  await page.getByRole('button', { name: 'Confirmar pedido' }).click();
+
+  await expect(page).toHaveURL(/mis-pedidos\?nuevo=\d+/);
+  await expect(page.getByText(/Registramos tu pedido/)).toBeVisible();
+  const tarjeta = page.locator('.pedido-tarjeta').first();
+  await expect(tarjeta).toContainText('2 × Camisa Oxford manga larga');
+  await expect(tarjeta).toContainText('$49.98');
+  await expect(tarjeta.locator('.estado-pedido')).toHaveText('Pendiente');
+  await captura(page, '29-tienda-mis-pedidos');
+  await expect(page.getByLabel('Carrito, 0 productos')).toBeVisible();   // el carrito quedó vacío
+
+  // Cancelar el pedido pendiente (con confirmación)
+  await tarjeta.getByRole('button', { name: 'Cancelar pedido' }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Sí, cancelar el pedido' }).click();
+  await expect(tarjeta.locator('.estado-pedido')).toHaveText('Cancelado');
+  await expect(tarjeta.getByRole('button', { name: 'Cancelar pedido' })).toHaveCount(0);
 });
 
 test('modo oscuro y color de acento también cambian la tienda', async ({ page }) => {
