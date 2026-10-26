@@ -6,10 +6,10 @@ using GestionPedidos.Domain.Seguridad;
 
 namespace GestionPedidos.Api.Modulos.Usuarios;
 
-/// <summary>Endpoints de usuarios y roles ([AutenticacionYPermisos.md §3 y §5]).</summary>
+/// <summary>Endpoints de usuarios ([AutenticacionYPermisos.md §5]).</summary>
 public static class UsuariosEndpoints
 {
-    /// <summary>Registra <c>/api/v1/usuarios</c> y <c>/api/v1/roles</c>.</summary>
+    /// <summary>Registra <c>/api/v1/usuarios</c>.</summary>
     public static IEndpointRouteBuilder MapUsuarios(this IEndpointRouteBuilder app)
     {
         var g = app.MapGroup("/api/v1/usuarios").WithTags("Usuarios");
@@ -38,8 +38,11 @@ public static class UsuariosEndpoints
                 (await caso.EjecutarAsync(id, s.Activo, http.User.IdUsuario(), ct)).AHttp(Results.Ok))
             .RequierePermiso(CatalogoPermisos.UsuariosDesactivar);
 
-        app.MapGet("/api/v1/roles", async (ListarRoles caso, CancellationToken ct) => Results.Ok(await caso.EjecutarAsync(ct)))
-            .WithTags("Usuarios").RequierePermiso(CatalogoPermisos.RolesVer);
+        // El DELETE del CRUD: eliminación definitiva, solo de usuarios que ya están dados de baja.
+        g.MapDelete("/{id:int}", async (int id, HttpContext http, EliminarUsuario caso, CancellationToken ct) =>
+                (await caso.EjecutarAsync(id, http.User.IdUsuario(), ct)).AHttp())
+            .RequierePermiso(CatalogoPermisos.UsuariosEliminar);
+
         return app;
     }
 }
