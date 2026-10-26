@@ -1,0 +1,62 @@
+@* Historial de actividades (consulta). Solo marcado y enlace de eventos: la lógica está en HistorialViewModel. *@
+@implements IDisposable
+@inject HistorialViewModel Vm
+
+<PaginaModulo Titulo="Historial de actividades" Error="@Vm.Error">
+    <Acciones>
+        <span class="solo-lectura">Solo lectura</span>
+        <Boton Cargando="Vm.Cargando" AlHacerClic="Vm.RecargarAsync">↻ Actualizar</Boton>
+    </Acciones>
+    <Filtros>
+        <CampoTexto Etiqueta="Buscar" Placeholder="Texto del detalle" @bind-Valor="Vm.Texto" AlPresionarEnter="Vm.BuscarAsync" />
+        <div class="campo">
+            <label for="hist-entidad">Entidad</label>
+            <select id="hist-entidad" @bind="Vm.Entidad">
+                <option value="">Todas</option>
+                @foreach (var e in Vm.Entidades) { <option value="@e">@e</option> }
+            </select>
+        </div>
+        <div class="campo">
+            <label for="hist-accion">Acción</label>
+            <select id="hist-accion" @bind="Vm.Accion">
+                <option value="">Todas</option>
+                @foreach (var a in Vm.Acciones) { <option value="@a">@a</option> }
+            </select>
+        </div>
+        <CampoFecha Etiqueta="Desde" @bind-Valor="Vm.Desde" Error="@Vm.ErrorFechas" />
+        <CampoFecha Etiqueta="Hasta" @bind-Valor="Vm.Hasta" />
+        <div class="filtros-botones">
+            <Boton Variante="Primario" Cargando="Vm.Cargando" AlHacerClic="Vm.BuscarAsync">Buscar</Boton>
+            <Boton AlHacerClic="Vm.LimpiarAsync">Limpiar</Boton>
+        </div>
+    </Filtros>
+    <Tabla>
+        <TablaDatos T="ActividadDto" Items="Vm.Pagina?.Elementos" Cargando="Vm.Cargando" TextoVacio="No hay actividades con esos filtros.">
+            <Encabezado><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>Detalle</th></Encabezado>
+            <Fila Context="a">
+                <td class="celda-fecha">@a.Fecha.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</td>
+                <td>@(a.Usuario ?? "—")</td>
+                <td><span class="accion-etiqueta @(a.Accion.Contains("Fall") ? "accion-fallo" : "")">@a.Accion</span></td>
+                <td>@a.Entidad@(a.EntidadId is null ? "" : $" #{a.EntidadId}")</td>
+                <td class="detalle-celda">@a.Detalle</td>
+            </Fila>
+        </TablaDatos>
+    </Tabla>
+    <Pie>
+        <Paginador Pagina="Vm.Pagina?.Pagina ?? 1" TotalPaginas="Vm.Pagina?.TotalPaginas ?? 0" Total="Vm.Pagina?.Total ?? 0"
+                   PaginaCambiada="Vm.IrAPaginaAsync" />
+    </Pie>
+</PaginaModulo>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        Vm.Cambiado += Vm_Cambiado;
+        await Vm.IniciarAsync();
+    }
+
+    private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de la suscripción al cerrar la pestaña.</summary>
+    public void Dispose() => Vm.Cambiado -= Vm_Cambiado;
+}

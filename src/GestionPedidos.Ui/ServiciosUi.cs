@@ -1,8 +1,12 @@
 using GestionPedidos.Ui.Comun.Api;
+using GestionPedidos.Ui.Comun.Apariencia;
 using GestionPedidos.Ui.Comun.Documentos;
 using GestionPedidos.Ui.Comun.Eventos;
 using GestionPedidos.Ui.Comun.Notificaciones;
 using GestionPedidos.Ui.Comun.Sesion;
+using GestionPedidos.Ui.Modulos.Catalogos;
+using GestionPedidos.Ui.Modulos.Historial;
+using GestionPedidos.Ui.Modulos.Roles;
 using GestionPedidos.Ui.Modulos.Usuarios;
 using GestionPedidos.Ui.Shell;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +30,7 @@ public static class ServiciosUi
         servicios.AddScoped<SesionService>();
         servicios.AddScoped<DocumentosService>();
         servicios.AddScoped<AvisosService>();
+        servicios.AddScoped<AparienciaService>();
         servicios.AddScoped<IAvisos>(sp => sp.GetRequiredService<AvisosService>());
         servicios.AddScoped<Notificador>();
 
@@ -33,6 +38,13 @@ public static class ServiciosUi
         servicios.AddScoped<UsuariosService>();
         servicios.AddScoped<IPublicadorDeCambios>(sp => sp.GetRequiredService<UsuariosService>());
         servicios.AddTransient<UsuariosViewModel>();
+        servicios.AddScoped<RolesService>();
+        servicios.AddScoped<IPublicadorDeCambios>(sp => sp.GetRequiredService<RolesService>());
+        servicios.AddTransient<RolesViewModel>();
+        servicios.AddScoped<CatalogosService>();
+        servicios.AddTransient<CatalogosViewModel>();
+        servicios.AddScoped<HistorialService>();
+        servicios.AddTransient<HistorialViewModel>();
         servicios.AddTransient<LoginViewModel>();
         servicios.AddTransient<CambiarClaveViewModel>();
         return servicios;

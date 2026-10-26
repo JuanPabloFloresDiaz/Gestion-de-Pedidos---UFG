@@ -37,6 +37,9 @@ public sealed class ApiClient
     /// <summary>PUT con cuerpo JSON que devuelve un objeto JSON.</summary>
     public Task<T> PutAsync<T>(string ruta, object? cuerpo, CancellationToken ct = default) => EnviarAsync<T>(HttpMethod.Put, ruta, cuerpo, ct);
 
+    /// <summary>DELETE sin valor de retorno.</summary>
+    public Task DeleteAsync(string ruta, CancellationToken ct = default) => EnviarAsync<object>(HttpMethod.Delete, ruta, null, ct, sinRespuesta: true);
+
     /// <summary>PATCH con cuerpo JSON que devuelve un objeto JSON.</summary>
     public Task<T> PatchAsync<T>(string ruta, object? cuerpo, CancellationToken ct = default) => EnviarAsync<T>(HttpMethod.Patch, ruta, cuerpo, ct);
 

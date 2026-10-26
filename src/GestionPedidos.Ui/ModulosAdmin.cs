@@ -1,6 +1,9 @@
 using GestionPedidos.Contracts;
 using GestionPedidos.Ui.Comun.Documentos;
 using GestionPedidos.Ui.Modulos.Ayuda;
+using GestionPedidos.Ui.Modulos.Catalogos;
+using GestionPedidos.Ui.Modulos.Historial;
+using GestionPedidos.Ui.Modulos.Roles;
 using GestionPedidos.Ui.Modulos.Usuarios;
 
 namespace GestionPedidos.Ui;
@@ -22,6 +25,9 @@ public static class ModulosAdmin
     {
         // Fase 2: Clientes y Productos · Fase 3: Pedidos (añadir aquí sus líneas, grupo "Gestión").
         new ModuloAdmin("Administración", new Documento("usuarios", "Usuarios", typeof(UsuariosPagina)), Permisos.UsuariosVer),
+        new ModuloAdmin("Administración", new Documento("roles", "Roles y permisos", typeof(RolesPagina)), Permisos.RolesVer),
+        new ModuloAdmin("Administración", new Documento("historial", "Historial de actividades", typeof(HistorialPagina)), Permisos.HistorialVer),
+        new ModuloAdmin("Administración", new Documento("catalogos", "Ciudades y departamentos", typeof(CatalogosPagina)), Permisos.CatalogosVer),
         new ModuloAdmin("Ayuda", new Documento("integrantes", "Integrantes del equipo", typeof(IntegrantesPagina)), null),
     };
 }

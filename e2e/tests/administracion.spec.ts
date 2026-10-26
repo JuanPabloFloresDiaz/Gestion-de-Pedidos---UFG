@@ -87,9 +87,49 @@ test('varios módulos abiertos a la vez (pestañas), alta de usuario con notific
   await page.getByRole('menuitem', { name: 'Usuarios' }).click();
   await expect(page.getByRole('tab')).toHaveCount(2);
 
-  // Dar de baja al usuario nuevo
-  await page.getByRole('row', { name: new RegExp(usuario) }).getByRole('button', { name: 'Dar de baja' }).click();
+  // Dar de baja al usuario nuevo: pide confirmación; cancelar no cambia nada
+  const fila = page.getByRole('row', { name: new RegExp(usuario) });
+  await fila.getByRole('button', { name: 'Dar de baja', exact: true }).click();
+  await expect(page.getByRole('alertdialog')).toContainText('eliminado suave');
+  await captura(page, '09-confirmar-baja');
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Cancelar' }).click();
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  await expect(fila.getByRole('button', { name: /Activo/ })).toBeVisible();
+
+  // El chip de estado hace lo mismo que el botón. El listado muestra solo activos por defecto: el usuario desaparece
+  const verEstado = async (estado: 'Activos' | 'Inactivos') => {
+    await page.getByLabel('Estado').selectOption({ label: estado });
+    await page.getByRole('button', { name: 'Buscar', exact: true }).click();
+  };
+  await fila.getByRole('button', { name: /Activo/ }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Dar de baja' }).click();
   await expect(page.locator('.aviso').last()).toContainText('dado de baja');
+  await expect(fila).toHaveCount(0);
+
+  // Reactivar (la baja es reversible) y volver a dar de baja
+  await verEstado('Inactivos');
+  await expect(fila.getByRole('button', { name: /Inactivo/ })).toBeVisible();
+  await fila.getByRole('button', { name: 'Reactivar', exact: true }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Reactivar' }).click();
+  await expect(page.locator('.aviso').last()).toContainText('reactivado');
+  await verEstado('Activos');
+  await expect(fila.getByRole('button', { name: /Activo/ })).toBeVisible();
+  await fila.getByRole('button', { name: 'Dar de baja', exact: true }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Dar de baja' }).click();
+  await verEstado('Inactivos');
+  await expect(fila.getByRole('button', { name: /Inactivo/ })).toBeVisible();
+
+  // Eliminación definitiva: hay que escribir el nombre de usuario
+  await fila.getByRole('button', { name: 'Eliminar definitivamente' }).click();
+  const dialogo = page.getByRole('alertdialog');
+  const confirmar = dialogo.getByRole('button', { name: 'Eliminar definitivamente' });
+  await expect(confirmar).toBeDisabled();
+  await dialogo.getByRole('textbox').fill(usuario);
+  await captura(page, '10-confirmar-eliminar');
+  await expect(confirmar).toBeEnabled();
+  await confirmar.click();
+  await expect(page.locator('.aviso').last()).toContainText('eliminado definitivamente');
+  await expect(page.getByRole('row', { name: new RegExp(usuario) })).toHaveCount(0);
 
   // Cierre de sesión
   await page.getByRole('button', { name: /Administrador del sistema/ }).click();
@@ -117,7 +157,60 @@ test('un operador solo ve lo que su rol permite', async ({ page, request }) => {
   await page.getByRole('button', { name: 'Guardar contraseña' }).click();
 
   await expect(page.getByRole('heading', { name: /Bienvenido, Operadora E2E/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Administración/ })).toHaveCount(0);   // sin permiso usuarios.ver
+  // Sin permiso usuarios.ver: en Administración solo ve los catálogos geográficos
+  await page.getByRole('button', { name: /Administración/ }).click();
+  await expect(page.getByRole('menuitem')).toHaveText(['Ciudades y departamentos']);
+  await page.getByRole('button', { name: /Administración/ }).click();
   await expect(page.getByRole('button', { name: /Ayuda/ })).toBeVisible();
   await captura(page, '08-operador-menu-reducido');
+});
+
+test('roles y permisos, historial, catálogos, pestañas nuevas y apariencia', async ({ page }) => {
+  await entrar(page, 'admin', CLAVE_ADMIN);
+  await expect(page.getByRole('heading', { name: /Bienvenido/ })).toBeVisible();
+
+  // Apariencia: modo oscuro y color, y se recuerda al recargar
+  await page.getByRole('button', { name: /Apariencia/ }).click();
+  await page.getByRole('radio', { name: /Oscuro/ }).click();
+  await page.getByRole('radio', { name: /Violeta/ }).click();
+  await captura(page, '11-apariencia');
+  await expect(page.locator('html')).toHaveAttribute('data-modo', 'oscuro');
+  await expect(page.locator('html')).toHaveAttribute('data-acento', 'violeta');
+  await page.keyboard.press('Escape');
+
+  // Roles y permisos: el administrador no puede perder permisos obligatorios
+  await page.getByRole('button', { name: /Administración/ }).click();
+  await page.getByRole('menuitem', { name: 'Roles y permisos' }).click();
+  await expect(page.getByRole('heading', { name: 'Roles y permisos', level: 1 })).toBeVisible();
+  await expect(page.getByRole('option', { name: /Operador/ })).toBeVisible();
+  await page.getByRole('option', { name: /Administrador/ }).click();
+  await expect(page.getByRole('checkbox', { name: /roles\.editar/ })).toBeDisabled();
+  await page.getByRole('option', { name: /Operador/ }).click();
+  await captura(page, '12-roles-permisos');
+
+  // Historial y catálogos
+  await page.getByRole('button', { name: /Administración/ }).click();
+  await page.getByRole('menuitem', { name: 'Historial de actividades' }).click();
+  await expect(page.getByRole('heading', { name: 'Historial de actividades' })).toBeVisible();
+  await expect(page.getByRole('row').nth(1)).toBeVisible();
+  await captura(page, '13-historial');
+  await page.getByRole('button', { name: /Administración/ }).click();
+  await page.getByRole('menuitem', { name: 'Ciudades y departamentos' }).click();
+  await expect(page.getByText(/262 ciudades en 14 departamentos/)).toBeVisible();
+  await page.getByRole('button', { name: /San Salvador/ }).first().click();
+  await captura(page, '14-catalogos');
+
+  // "+" abre un lanzador; el mismo módulo puede abrirse otra vez como pestaña independiente
+  const antes = await page.getByRole('tab').count();
+  await page.getByRole('button', { name: 'Nueva pestaña' }).click();
+  await expect(page.getByRole('heading', { name: 'Nueva pestaña' })).toBeVisible();
+  await page.locator('.lanzador').getByRole('button', { name: 'Historial de actividades' }).click();
+  await expect(page.getByRole('tab', { name: /Historial de actividades \(2\)/ })).toBeVisible();
+  await expect(page.getByRole('tab')).toHaveCount(antes + 1);
+
+  // Recargar vuelve a crear la pestaña activa (descarta lo escrito en sus filtros)
+  const activa = page.locator('.documento:not([hidden])');
+  await activa.getByLabel('Buscar').fill('texto temporal');
+  await page.getByRole('button', { name: 'Recargar la pestaña' }).click();
+  await expect(activa.getByLabel('Buscar')).toHaveValue('');
 });

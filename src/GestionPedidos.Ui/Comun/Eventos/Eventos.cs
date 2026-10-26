@@ -11,6 +11,8 @@ public enum TipoEntidad
     Pedido,
     /// <summary>Usuario.</summary>
     Usuario,
+    /// <summary>Rol (sus permisos).</summary>
+    Rol,
 }
 
 /// <summary>Qué le ocurrió a la entidad.</summary>
@@ -22,6 +24,8 @@ public enum TipoCambio
     Actualizada,
     /// <summary>Baja lógica o reactivación.</summary>
     EstadoCambiado,
+    /// <summary>Eliminación definitiva.</summary>
+    Eliminada,
 }
 
 /// <summary>Datos del evento <see cref="IPublicadorDeCambios.EntidadCambiada"/>.</summary>

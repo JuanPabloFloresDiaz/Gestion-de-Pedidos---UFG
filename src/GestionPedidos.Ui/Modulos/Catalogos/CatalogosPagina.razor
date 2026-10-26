@@ -1,0 +1,50 @@
+@* Departamentos y ciudades de El Salvador (consulta). Solo marcado y enlace de eventos: la lógica está en CatalogosViewModel. *@
+@implements IDisposable
+@inject CatalogosViewModel Vm
+
+<PaginaModulo Titulo="Ciudades y departamentos" Error="@Vm.Error">
+    <Acciones><span class="solo-lectura">Solo lectura · @Vm.TotalCiudades ciudades en @Vm.Departamentos.Count departamentos</span></Acciones>
+    <Filtros>
+        <CampoTexto Etiqueta="Buscar" Placeholder="Distrito o municipio" @bind-Valor="Vm.Texto" AlPresionarEnter="Vm.BuscarAsync" />
+        <div class="filtros-botones">
+            <Boton Variante="Primario" Cargando="Vm.Cargando" AlHacerClic="Vm.BuscarAsync">Buscar</Boton>
+            <Boton AlHacerClic="Vm.LimpiarAsync">Limpiar</Boton>
+        </div>
+    </Filtros>
+    <Tabla>
+        <div class="catalogo-vista">
+            <div class="depto-lista" aria-label="Departamentos">
+                <button class="depto-item @(Vm.DepartamentoId is null ? "depto-activo" : "")" @onclick="() => Vm.ElegirDepartamentoAsync(null)">
+                    Todos <small>@Vm.TotalCiudades</small>
+                </button>
+                @foreach (var d in Vm.Departamentos)
+                {
+                    <button class="depto-item @(Vm.DepartamentoId == d.Id ? "depto-activo" : "")" @onclick="() => Vm.ElegirDepartamentoAsync(d.Id)">
+                        @d.Nombre <small>@d.TotalCiudades</small>
+                    </button>
+                }
+            </div>
+            <TablaDatos T="CiudadDto" Items="Vm.Pagina?.Elementos" Cargando="Vm.Cargando" TextoVacio="No hay ciudades con esos filtros.">
+                <Encabezado><th>Distrito</th><th>Municipio</th><th>Departamento</th></Encabezado>
+                <Fila Context="c"><td>@c.Nombre</td><td>@c.Municipio</td><td>@c.Departamento</td></Fila>
+            </TablaDatos>
+        </div>
+    </Tabla>
+    <Pie>
+        <Paginador Pagina="Vm.Pagina?.Pagina ?? 1" TotalPaginas="Vm.Pagina?.TotalPaginas ?? 0" Total="Vm.Pagina?.Total ?? 0"
+                   PaginaCambiada="Vm.IrAPaginaAsync" />
+    </Pie>
+</PaginaModulo>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        Vm.Cambiado += Vm_Cambiado;
+        await Vm.IniciarAsync();
+    }
+
+    private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de la suscripción al cerrar la pestaña.</summary>
+    public void Dispose() => Vm.Cambiado -= Vm_Cambiado;
+}

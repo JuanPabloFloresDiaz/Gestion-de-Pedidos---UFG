@@ -4,6 +4,19 @@ using GestionPedidos.Ui.Comun.Eventos;
 
 namespace GestionPedidos.Ui.Modulos.Usuarios;
 
+/// <summary>Acción que espera confirmación de la persona.</summary>
+public enum AccionUsuario
+{
+    /// <summary>Nada pendiente.</summary>
+    Ninguna,
+    /// <summary>Dar de baja (eliminado suave).</summary>
+    DarDeBaja,
+    /// <summary>Reactivar.</summary>
+    Reactivar,
+    /// <summary>Eliminar definitivamente.</summary>
+    Eliminar,
+}
+
 /// <summary>Estado y lógica de la pantalla de usuarios: listado con filtros, alta, edición y baja lógica.</summary>
 public sealed class UsuariosViewModel : ViewModelBase
 {
@@ -131,9 +144,72 @@ public sealed class UsuariosViewModel : ViewModelBase
         if (ok) { Editando = false; Original = null; OnCambiado(); }
     }
 
-    /// <summary>Da de baja o reactiva al usuario.</summary>
-    public Task CambiarEstadoAsync(UsuarioDto usuario) =>
-        EjecutarAsync(ct => _usuarios.CambiarEstadoAsync(usuario.Id, !usuario.Activo, ct), cancelarAnterior: false);
+    // ---- Cambios de estado con confirmación (el chip y los botones llevan al mismo diálogo) ----
+
+    /// <summary>Usuario sobre el que se pide confirmación, o <c>null</c>.</summary>
+    public UsuarioDto? Pendiente { get; private set; }
+    /// <summary>Acción pendiente de confirmar.</summary>
+    public AccionUsuario Accion { get; private set; }
+    /// <summary>Indica si hay un diálogo de confirmación abierto.</summary>
+    public bool HayConfirmacion => Pendiente is not null && Accion != AccionUsuario.Ninguna;
+    /// <summary>Título del diálogo.</summary>
+    public string TituloConfirmacion => Accion switch
+    {
+        AccionUsuario.DarDeBaja => "¿Dar de baja al usuario?",
+        AccionUsuario.Reactivar => "¿Reactivar al usuario?",
+        AccionUsuario.Eliminar => "¿Eliminar definitivamente?",
+        _ => "",
+    };
+    /// <summary>Texto del botón de confirmar.</summary>
+    public string TextoConfirmar => Accion switch
+    {
+        AccionUsuario.DarDeBaja => "Dar de baja",
+        AccionUsuario.Reactivar => "Reactivar",
+        AccionUsuario.Eliminar => "Eliminar definitivamente",
+        _ => "Confirmar",
+    };
+    /// <summary>Indica si la acción es destructiva (el botón se pinta en rojo).</summary>
+    public bool EsPeligro => Accion is AccionUsuario.DarDeBaja or AccionUsuario.Eliminar;
+    /// <summary>Texto que hay que escribir para confirmar una eliminación definitiva (el nombre de usuario).</summary>
+    public string? TextoAConfirmar => Accion == AccionUsuario.Eliminar ? Pendiente?.NombreUsuario : null;
+
+    /// <summary>Pide confirmar la baja o la reactivación (según el estado actual del usuario).</summary>
+    public void SolicitarCambioEstado(UsuarioDto usuario)
+    {
+        Pendiente = usuario;
+        Accion = usuario.Activo ? AccionUsuario.DarDeBaja : AccionUsuario.Reactivar;
+        OnCambiado();
+    }
+
+    /// <summary>Pide confirmar la eliminación definitiva (solo de usuarios ya dados de baja).</summary>
+    public void SolicitarEliminacion(UsuarioDto usuario)
+    {
+        Pendiente = usuario;
+        Accion = AccionUsuario.Eliminar;
+        OnCambiado();
+    }
+
+    /// <summary>Cierra el diálogo sin hacer nada.</summary>
+    public void CancelarSolicitud()
+    {
+        Pendiente = null;
+        Accion = AccionUsuario.Ninguna;
+        OnCambiado();
+    }
+
+    /// <summary>Ejecuta la acción confirmada; en cualquier caso el diálogo se cierra (un error se muestra en la pantalla).</summary>
+    public async Task ConfirmarAsync()
+    {
+        var usuario = Pendiente;
+        var accion = Accion;
+        if (usuario is null || accion == AccionUsuario.Ninguna) return;
+        await EjecutarAsync(ct => accion == AccionUsuario.Eliminar
+            ? _usuarios.EliminarAsync(usuario, ct)
+            : _usuarios.CambiarEstadoAsync(usuario.Id, accion == AccionUsuario.Reactivar, ct), cancelarAnterior: false);
+        Pendiente = null;
+        Accion = AccionUsuario.Ninguna;
+        OnCambiado();
+    }
 
     // Validación en la interfaz con reglas componibles; la API vuelve a validar siempre.
     private bool Validar()

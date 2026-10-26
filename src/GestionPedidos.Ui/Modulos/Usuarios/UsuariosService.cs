@@ -52,6 +52,13 @@ public sealed class UsuariosService : IPublicadorDeCambios
         return u;
     }
 
+    /// <summary>Elimina definitivamente un usuario que ya está dado de baja y notifica la eliminación.</summary>
+    public async Task EliminarAsync(UsuarioDto usuario, CancellationToken ct)
+    {
+        await _api.DeleteAsync($"/api/v1/usuarios/{usuario.Id}", ct);   // si falla (por ejemplo, tiene pedidos), no se notifica nada
+        OnEntidadCambiada(usuario, TipoCambio.Eliminada);
+    }
+
     private void OnEntidadCambiada(UsuarioDto u, TipoCambio tipo) =>
         EntidadCambiada?.Invoke(this, new EntidadCambiadaEventArgs
         {

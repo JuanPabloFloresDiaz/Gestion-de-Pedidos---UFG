@@ -30,16 +30,20 @@
                 <td>@u.NombreCompleto</td>
                 <td>@u.Correo</td>
                 <td><span class="etiqueta">@u.Rol</span></td>
-                <td>@(u.Activo ? "Activo" : "Inactivo")</td>
+                <td><ChipEstado Activo="u.Activo" Habilitado="PuedeCambiarEstado" AlHacerClic="() => Vm.SolicitarCambioEstado(u)" /></td>
                 <td>@(u.UltimoAcceso?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—")</td>
                 <td class="celda-acciones">
                     @if (Sesion.TienePermiso(Permisos.UsuariosEditar) && u.Activo)
                     {
                         <button class="enlace" @onclick="() => Vm.Editar(u)">Editar</button>
                     }
-                    @if (Sesion.TienePermiso(Permisos.UsuariosDesactivar))
+                    @if (PuedeCambiarEstado)
                     {
-                        <button class="enlace @(u.Activo ? "enlace-peligro" : "")" @onclick="() => Vm.CambiarEstadoAsync(u)">@(u.Activo ? "Dar de baja" : "Reactivar")</button>
+                        <button class="enlace @(u.Activo ? "enlace-peligro" : "")" @onclick="() => Vm.SolicitarCambioEstado(u)" @onclick:stopPropagation="true">@(u.Activo ? "Dar de baja" : "Reactivar")</button>
+                    }
+                    @if (!u.Activo && Sesion.TienePermiso(Permisos.UsuariosEliminar))
+                    {
+                        <button class="enlace enlace-peligro" @onclick="() => Vm.SolicitarEliminacion(u)" @onclick:stopPropagation="true">Eliminar definitivamente</button>
                     }
                 </td>
             </Fila>
@@ -77,9 +81,31 @@
     </Panel>
 </PaginaModulo>
 
+<DialogoConfirmacion Visible="Vm.HayConfirmacion" Titulo="@Vm.TituloConfirmacion" TextoConfirmar="@Vm.TextoConfirmar"
+                     Peligro="Vm.EsPeligro" Cargando="Vm.Cargando" TextoAConfirmar="@Vm.TextoAConfirmar"
+                     AlConfirmar="Vm.ConfirmarAsync" AlCancelar="Vm.CancelarSolicitud">
+    @if (Vm.Pendiente is { } u)
+    {
+        @switch (Vm.Accion)
+        {
+            case AccionUsuario.DarDeBaja:
+                <p><strong>@u.NombreUsuario</strong> dejará de poder iniciar sesión. Es un eliminado suave: sus datos y su historial se conservan y se puede reactivar cuando quieras.</p>
+                break;
+            case AccionUsuario.Reactivar:
+                <p><strong>@u.NombreUsuario</strong> volverá a poder iniciar sesión.</p>
+                break;
+            case AccionUsuario.Eliminar:
+                <p>Se borrará <strong>@u.NombreUsuario</strong> de la base de datos. <strong>No se puede deshacer.</strong> Si tiene pedidos, la API lo rechazará.</p>
+                break;
+        }
+    }
+</DialogoConfirmacion>
+
 @code {
     // El rol Cliente es solo para la tienda web: no se ofrece al crear o editar personal.
     private IEnumerable<(int, string)> RolesDelPersonal => Vm.Roles.Where(r => r.Nombre != "Cliente").Select(r => (r.Id, r.Nombre));
+
+    private bool PuedeCambiarEstado => Sesion.TienePermiso(Permisos.UsuariosDesactivar);
 
     private int? EstadoComoNumero => Vm.FiltroActivo is null ? null : (Vm.FiltroActivo.Value ? 1 : 0);
 

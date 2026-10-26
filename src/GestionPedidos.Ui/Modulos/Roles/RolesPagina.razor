@@ -1,0 +1,83 @@
+@* Roles y permisos: se elige un rol y se marcan sus permisos. Las reglas por rol (obligatorios/prohibidos) vienen de la
+   API y bloquean la casilla. Solo marcado y enlace de eventos: la lógica está en RolesViewModel. *@
+@implements IDisposable
+@inject RolesViewModel Vm
+@inject SesionService Sesion
+
+<section class="modulo">
+    <header class="modulo-cabecera">
+        <h1>Roles y permisos</h1>
+        <div class="modulo-acciones">
+            @if (!Sesion.TienePermiso(Permisos.RolesEditar)) { <span class="solo-lectura">Solo lectura</span> }
+        </div>
+    </header>
+    @if (!string.IsNullOrEmpty(Vm.Error))
+    {
+        <div class="alerta alerta-error" role="alert">@Vm.Error</div>
+    }
+    <div class="roles-vista">
+        <div class="roles-lista" role="listbox" aria-label="Roles">
+            @foreach (var rol in Vm.Roles)
+            {
+                <button class="rol-tarjeta @(rol.Id == Vm.Seleccionado?.Id ? "rol-activo" : "")" role="option"
+                        aria-selected="@(rol.Id == Vm.Seleccionado?.Id)" @onclick="() => Vm.Seleccionar(rol)">
+                    <strong>@rol.Nombre</strong>
+                    <small>@rol.Permisos.Count permisos</small>
+                </button>
+            }
+        </div>
+        @if (Vm.Seleccionado is { } actual)
+        {
+            <div class="permisos-panel">
+                <div class="permisos-cabecera">
+                    <div>
+                        <strong>@actual.Nombre</strong>
+                        <div><small class="nota">@actual.Descripcion</small></div>
+                    </div>
+                    <small class="nota">@Vm.Marcados.Count de @Vm.Permisos.Count permisos marcados</small>
+                </div>
+                @foreach (var grupo in Vm.Grupos)
+                {
+                    <div class="permisos-grupo">
+                        <h3>@grupo.Titulo</h3>
+                        @foreach (var p in grupo.Permisos)
+                        {
+                            <Casilla Etiqueta="@p.Codigo" Descripcion="@p.Descripcion" Valor="Vm.Marcados.Contains(p.Codigo)"
+                                     ValorChanged="v => Vm.Alternar(p.Codigo, v)"
+                                     Deshabilitado="@(Vm.EstaBloqueado(p.Codigo) || !PuedeEditar)" Nota="@Vm.NotaDeBloqueo(p.Codigo)" />
+                        }
+                    </div>
+                }
+                @if (PuedeEditar)
+                {
+                    <div class="permisos-pie">
+                        <small class="nota">
+                            @(Vm.HayCambios ? $"Sin guardar: +{Vm.Anadidos} / −{Vm.Quitados}. " : "Sin cambios. ")
+                            Los cambios se aplican cuando cada persona vuelva a iniciar sesión.
+                        </small>
+                        <div class="fila-botones">
+                            <Boton AlHacerClic="Vm.Descartar" Deshabilitado="!Vm.HayCambios">Descartar</Boton>
+                            <Boton Variante="Primario" Cargando="Vm.Cargando" Deshabilitado="!Vm.HayCambios" AlHacerClic="Vm.GuardarAsync">Guardar permisos</Boton>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private bool PuedeEditar => Sesion.TienePermiso(Permisos.RolesEditar);
+
+    protected override async Task OnInitializedAsync()
+    {
+        Vm.Cambiado += Vm_Cambiado;     // suscripción con +=
+        await Vm.IniciarAsync();
+    }
+
+    // El evento puede llegar fuera del ciclo de render: se repinta con InvokeAsync.
+    private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de la suscripción al cerrar la pestaña.</summary>
+    public void Dispose() => Vm.Cambiado -= Vm_Cambiado;
+}

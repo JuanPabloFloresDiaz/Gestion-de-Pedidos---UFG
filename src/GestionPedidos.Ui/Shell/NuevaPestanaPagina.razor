@@ -1,0 +1,32 @@
+@* Contenido de una pestaña nueva ("+"): lista los módulos permitidos. Al elegir uno, la pestaña se convierte en una
+   instancia nueva de ese módulo, así se pueden tener varias del mismo con filtros distintos. *@
+@inject SesionService Sesion
+@inject DocumentosService Documentos
+
+<div class="lanzador">
+    <h1>Nueva pestaña</h1>
+    <p>Elija qué quiere abrir. Puede abrir el mismo módulo varias veces para trabajar con filtros distintos.</p>
+    @foreach (var grupo in ModulosAdmin.Todos.Where(m => m.Permiso is null || Sesion.TienePermiso(m.Permiso)).GroupBy(m => m.Grupo))
+    {
+        <div class="lanzador-grupo">
+            <h2>@grupo.Key</h2>
+            <div class="lanzador-lista">
+                @foreach (var modulo in grupo)
+                {
+                    <button class="atajo" @onclick="() => Elegir(modulo)">@modulo.Documento.Titulo</button>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Clave de la pestaña que se reemplaza (la propia pestaña "Nueva pestaña").</summary>
+    [Parameter] public string? Clave { get; set; }
+
+    private void Elegir(ModuloAdmin modulo)
+    {
+        var clave = Clave ?? Documentos.Activo?.Clave;
+        if (clave is not null) Documentos.ReemplazarPorInstancia(clave, modulo.Documento);
+    }
+}

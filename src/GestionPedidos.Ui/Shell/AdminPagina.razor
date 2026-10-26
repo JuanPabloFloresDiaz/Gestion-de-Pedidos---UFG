@@ -30,6 +30,7 @@
                     </div>
                 }
             </nav>
+            <BotonApariencia />
             <div class="menu-grupo menu-usuario">
                 <button class="menu-boton" aria-haspopup="true" @onclick="@(() => AlternarMenu("__usuario"))">
                     @Sesion.Usuario?.NombreCompleto ▾
@@ -45,13 +46,18 @@
         </header>
 
         <div class="pestanas" role="tablist" aria-label="Documentos abiertos">
-            @foreach (var doc in Documentos.Abiertos)
-            {
-                <div class="pestana @(doc == Documentos.Activo ? "activa" : "")" role="tab" aria-selected="@(doc == Documentos.Activo)" @key="doc.Clave">
-                    <button class="pestana-titulo" @onclick="() => Documentos.Activar(doc.Clave)">@doc.Titulo</button>
-                    <button class="pestana-cerrar" aria-label="Cerrar @doc.Titulo" @onclick="() => Documentos.Cerrar(doc.Clave)">×</button>
-                </div>
-            }
+            <div class="pestanas-lista">
+                @foreach (var doc in Documentos.Abiertos)
+                {
+                    <div class="pestana @(doc == Documentos.Activo ? "activa" : "")" role="tab" aria-selected="@(doc == Documentos.Activo)" @key="doc.Clave">
+                        <button class="pestana-titulo" @onclick="() => Documentos.Activar(doc.Clave)">@doc.Titulo</button>
+                        <button class="pestana-cerrar" aria-label="Cerrar @doc.Titulo" @onclick="() => Documentos.Cerrar(doc.Clave)">×</button>
+                    </div>
+                }
+            </div>
+            <button class="pestana-nueva" title="Nueva pestaña (Alt+N)" aria-label="Nueva pestaña" @onclick="NuevaPestana">+</button>
+            <button class="pestana-recargar @(_recargando ? "girando" : "")" title="Recargar la pestaña (Alt+R)" aria-label="Recargar la pestaña"
+                    disabled="@(Documentos.Activo is null)" @onclick="Recargar"><span aria-hidden="true">↻</span></button>
         </div>
 
         <main class="documentos" @onclick="CerrarMenus">
@@ -71,8 +77,8 @@
             @* Todas las pestañas abiertas siguen montadas (solo se oculta la inactiva) para conservar su estado *@
             @foreach (var doc in Documentos.Abiertos)
             {
-                <div class="documento" hidden="@(doc != Documentos.Activo)" @key="doc.Clave">
-                    <DynamicComponent Type="doc.Tipo" />
+                <div class="documento" hidden="@(doc != Documentos.Activo)" @key="(doc.Clave, doc.Version)">
+                    <DynamicComponent Type="doc.Tipo" Parameters="ParametrosDe(doc)" />
                 </div>
             }
         </main>
@@ -87,6 +93,22 @@
 
 @code {
     private string? _menuAbierto;
+    private bool _recargando;
+
+    // Solo el lanzador recibe parámetro: necesita saber qué pestaña reemplaza.
+    private static IDictionary<string, object>? ParametrosDe(Documento doc) =>
+        doc.Tipo == typeof(NuevaPestanaPagina) ? new Dictionary<string, object> { ["Clave"] = doc.Clave } : null;
+
+    private void NuevaPestana() { _menuAbierto = null; Documentos.NuevaPestana(typeof(NuevaPestanaPagina)); }
+
+    private async Task Recargar()
+    {
+        if (Documentos.Activo is null) return;
+        _recargando = true;
+        Documentos.Recargar(Documentos.Activo.Clave);
+        await Task.Delay(600);
+        _recargando = false;
+    }
 
     protected override void OnInitialized()
     {
@@ -94,6 +116,7 @@
         Documentos.DocumentoAbierto += Documentos_Cambio;
         Documentos.DocumentoCerrado += Documentos_Cambio;
         Documentos.DocumentoActivado += Documentos_Cambio;
+        Documentos.DocumentoRecargado += Documentos_Cambio;
         Sesion.SesionPorExpirar += Sesion_PorExpirar;
         Sesion.SesionExpirada += Sesion_Expirada;
         Sesion.SesionCerrada += Sesion_Cerrada;
@@ -126,6 +149,8 @@
         var indice = Documentos.Activo is null ? -1 : lista.ToList().FindIndex(d => d == Documentos.Activo);
         switch (e.Key)
         {
+            case "n" or "N": NuevaPestana(); break;
+            case "r" or "R" when Documentos.Activo is not null: _ = Recargar(); break;
             case "w" or "W" when Documentos.Activo is not null: Documentos.Cerrar(Documentos.Activo.Clave); break;
             case "ArrowRight" when lista.Count > 0: Documentos.Activar(lista[(indice + 1) % lista.Count].Clave); break;
             case "ArrowLeft" when lista.Count > 0: Documentos.Activar(lista[(indice - 1 + lista.Count) % lista.Count].Clave); break;
@@ -157,6 +182,7 @@
         Documentos.DocumentoAbierto -= Documentos_Cambio;
         Documentos.DocumentoCerrado -= Documentos_Cambio;
         Documentos.DocumentoActivado -= Documentos_Cambio;
+        Documentos.DocumentoRecargado -= Documentos_Cambio;
         Sesion.SesionPorExpirar -= Sesion_PorExpirar;
         Sesion.SesionExpirada -= Sesion_Expirada;
         Sesion.SesionCerrada -= Sesion_Cerrada;

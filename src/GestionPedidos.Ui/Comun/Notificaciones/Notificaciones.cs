@@ -65,6 +65,7 @@ public static class Mensajes
     /// <summary>Mensaje de una notificación de cambio (alta, edición o cambio de estado).</summary>
     public static string Cambio(EntidadCambiadaEventArgs e)
     {
+        if (e.Entidad == TipoEntidad.Rol) return $"Permisos del rol {e.Descripcion} actualizados. Se aplican cuando cada persona vuelva a iniciar sesión.";
         var entidad = e.Entidad switch
         {
             TipoEntidad.Cliente => "Cliente", TipoEntidad.Producto => "Producto",
@@ -74,6 +75,7 @@ public static class Mensajes
         {
             TipoCambio.Registrada => "registrado",
             TipoCambio.Actualizada => "actualizado",
+            TipoCambio.Eliminada => "eliminado definitivamente",
             _ => e.Activo ? "reactivado" : "dado de baja",
         };
         return $"{entidad} {e.Descripcion} {accion}.";
