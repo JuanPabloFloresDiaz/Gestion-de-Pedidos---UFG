@@ -1,0 +1,80 @@
+@* Diálogo modal de confirmación del kit. Para acciones irreversibles puede exigir escribir un texto (por ejemplo,
+   el nombre del registro) antes de habilitar el botón de confirmar. Esc o clic fuera cancelan. *@
+@if (Visible)
+{
+    <div class="dialogo-fondo" @onclick="Cancelar" @onkeydown="AlTeclear">
+        <div class="dialogo @(Peligro ? "dialogo-peligro" : "")" role="alertdialog" aria-modal="true" aria-labelledby="@_idTitulo"
+             @onclick:stopPropagation="true">
+            <h2 id="@_idTitulo">@Titulo</h2>
+            <div class="dialogo-cuerpo">@ChildContent</div>
+            @if (!string.IsNullOrEmpty(TextoAConfirmar))
+            {
+                <div class="campo">
+                    <label for="@_idEntrada">Para confirmar, escriba <strong>@TextoAConfirmar</strong></label>
+                    <input id="@_idEntrada" autocomplete="off" value="@_escrito" @oninput="AlEscribir" @onkeydown="AlTeclear" />
+                </div>
+            }
+            <div class="fila-botones">
+                <button type="button" class="boton" @ref="_botonCancelar" @onclick="Cancelar" disabled="@Cargando">Cancelar</button>
+                <Boton Variante="@(Peligro ? "Peligro" : "Primario")" Cargando="Cargando" Deshabilitado="!PuedeConfirmar"
+                       AlHacerClic="Confirmar">@TextoConfirmar</Boton>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private readonly string _idTitulo = "dt" + Guid.NewGuid().ToString("N")[..8];
+    private readonly string _idEntrada = "de" + Guid.NewGuid().ToString("N")[..8];
+    private ElementReference _botonCancelar;
+    private string _escrito = "";
+    private bool _eraVisible;
+
+    /// <summary>Indica si el diálogo está abierto.</summary>
+    [Parameter] public bool Visible { get; set; }
+    /// <summary>Título del diálogo.</summary>
+    [Parameter] public string Titulo { get; set; } = "";
+    /// <summary>Mensaje del diálogo.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    /// <summary>Texto del botón de confirmar.</summary>
+    [Parameter] public string TextoConfirmar { get; set; } = "Confirmar";
+    /// <summary>Si es <c>true</c>, el botón de confirmar es rojo (acción destructiva).</summary>
+    [Parameter] public bool Peligro { get; set; }
+    /// <summary>Muestra el indicador de carga mientras se ejecuta la acción.</summary>
+    [Parameter] public bool Cargando { get; set; }
+    /// <summary>Si no es nulo, exige escribir exactamente este texto (sin distinguir mayúsculas) para confirmar.</summary>
+    [Parameter] public string? TextoAConfirmar { get; set; }
+    /// <summary>Se produce al confirmar.</summary>
+    [Parameter] public EventCallback AlConfirmar { get; set; }
+    /// <summary>Se produce al cancelar.</summary>
+    [Parameter] public EventCallback AlCancelar { get; set; }
+
+    private bool PuedeConfirmar => string.IsNullOrEmpty(TextoAConfirmar)
+        || string.Equals(_escrito.Trim(), TextoAConfirmar, StringComparison.OrdinalIgnoreCase);
+
+    protected override void OnParametersSet()
+    {
+        if (!Visible) _escrito = "";
+    }
+
+    // Al abrirse, el foco va al botón Cancelar: Enter no confirma por accidente una acción destructiva.
+    protected override async Task OnAfterRenderAsync(bool primerRender)
+    {
+        if (Visible && !_eraVisible && string.IsNullOrEmpty(TextoAConfirmar))
+        {
+            try { await _botonCancelar.FocusAsync(); } catch (InvalidOperationException) { /* aún no está en el DOM */ }
+        }
+        _eraVisible = Visible;
+    }
+
+    private void AlEscribir(ChangeEventArgs e) => _escrito = e.Value?.ToString() ?? "";
+
+    private async Task AlTeclear(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape" && !Cargando) await Cancelar();
+        else if (e.Key == "Enter" && !string.IsNullOrEmpty(TextoAConfirmar) && PuedeConfirmar && !Cargando) await Confirmar();
+    }
+
+    private Task Cancelar() => Cargando ? Task.CompletedTask : AlCancelar.InvokeAsync();
+    private Task Confirmar() => PuedeConfirmar && !Cargando ? AlConfirmar.InvokeAsync() : Task.CompletedTask;
+}

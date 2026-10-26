@@ -1,0 +1,25 @@
+@* Casilla de verificación del kit con descripción y bloqueo (con una nota que explica por qué está bloqueada). *@
+<label class="casilla @(Deshabilitado ? "casilla-bloqueada" : "")" title="@Nota">
+    <input type="checkbox" checked="@Valor" disabled="@Deshabilitado" @onchange="AlCambiar" />
+    <span class="casilla-texto">
+        <span class="casilla-etiqueta">@Etiqueta @if (Deshabilitado && !string.IsNullOrEmpty(Nota)) { <span aria-hidden="true">🔒</span> }</span>
+        @if (!string.IsNullOrEmpty(Descripcion)) { <small>@Descripcion</small> }
+    </span>
+</label>
+
+@code {
+    /// <summary>Texto principal.</summary>
+    [Parameter] public string Etiqueta { get; set; } = "";
+    /// <summary>Texto secundario.</summary>
+    [Parameter] public string? Descripcion { get; set; }
+    /// <summary>Marcada o no (admite <c>@bind-Valor</c>).</summary>
+    [Parameter] public bool Valor { get; set; }
+    /// <summary>Se produce al cambiar el valor.</summary>
+    [Parameter] public EventCallback<bool> ValorChanged { get; set; }
+    /// <summary>Bloquea la casilla.</summary>
+    [Parameter] public bool Deshabilitado { get; set; }
+    /// <summary>Explicación al pasar el cursor (por qué está bloqueada).</summary>
+    [Parameter] public string? Nota { get; set; }
+
+    private Task AlCambiar(ChangeEventArgs e) => ValorChanged.InvokeAsync(e.Value is true);
+}

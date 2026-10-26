@@ -1,0 +1,61 @@
+@* Botón "Apariencia" con un panel de tarjetas: modo (claro, oscuro, sistema) y color de acento. Funciona igual en la web
+   y en el escritorio; la preferencia se recuerda. *@
+@implements IDisposable
+@inject AparienciaService Apariencia
+
+<div class="apariencia">
+    <button type="button" class="menu-boton" aria-haspopup="dialog" aria-expanded="@_abierto" title="Cambiar la apariencia"
+            @onclick="Alternar"><span aria-hidden="true">🎨</span> Apariencia</button>
+    @if (_abierto)
+    {
+        <div class="apariencia-fondo" @onclick="Cerrar"></div>
+        <div class="apariencia-panel" role="dialog" aria-label="Apariencia" @onkeydown="AlTeclear">
+            <h2>Modo</h2>
+            <div class="cartas" role="radiogroup" aria-label="Modo de color">
+                @foreach (var modo in OpcionesDeApariencia.Modos)
+                {
+                    <button type="button" role="radio" aria-checked="@(Apariencia.Modo == modo.Id)"
+                            class="carta carta-@modo.Id @(Apariencia.Modo == modo.Id ? "carta-activa" : "")"
+                            @onclick="() => Apariencia.EstablecerModoAsync(modo.Id)" title="@modo.Descripcion">
+                        <span class="carta-previa" aria-hidden="true"><i></i><i></i><i></i></span>
+                        <span class="carta-nombre">@modo.Nombre</span>
+                    </button>
+                }
+            </div>
+            <h2>Color</h2>
+            <div class="cartas cartas-colores" role="radiogroup" aria-label="Color de acento">
+                @foreach (var acento in OpcionesDeApariencia.Acentos)
+                {
+                    <button type="button" role="radio" aria-checked="@(Apariencia.Acento == acento.Id)"
+                            class="carta carta-color muestra-@acento.Id @(Apariencia.Acento == acento.Id ? "carta-activa" : "")"
+                            @onclick="() => Apariencia.EstablecerAcentoAsync(acento.Id)" title="@acento.Descripcion">
+                        <span class="carta-muestra" aria-hidden="true"></span>
+                        <span class="carta-nombre">@acento.Nombre</span>
+                    </button>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool _abierto;
+
+    protected override void OnInitialized() => Apariencia.Cambiado += Apariencia_Cambiado;
+
+    // La preferencia guardada solo se puede leer tras el primer render (hace falta JavaScript).
+    protected override async Task OnAfterRenderAsync(bool primerRender)
+    {
+        if (primerRender) await Apariencia.InicializarAsync();
+    }
+
+    private void Alternar() => _abierto = !_abierto;
+    private void Cerrar() => _abierto = false;
+    private void AlTeclear(KeyboardEventArgs e) { if (e.Key == "Escape") _abierto = false; }
+
+    // Puede llegar fuera del ciclo de render: se repinta con InvokeAsync.
+    private void Apariencia_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de la suscripción.</summary>
+    public void Dispose() => Apariencia.Cambiado -= Apariencia_Cambiado;
+}

@@ -1,0 +1,31 @@
+@* Chip de estado (Activo/Inactivo). Si está habilitado se puede hacer clic para cambiar el estado (la página
+   pide confirmación); si no, es solo una etiqueta. *@
+@if (Habilitado)
+{
+    <button type="button" class="chip-estado @Clase chip-clicable" title="@TituloEfectivo" aria-label="@AriaLabel"
+            @onclick="AlHacerClic" @onclick:stopPropagation="true">
+        <span class="chip-punto" aria-hidden="true"></span>@Texto
+    </button>
+}
+else
+{
+    <span class="chip-estado @Clase"><span class="chip-punto" aria-hidden="true"></span>@Texto</span>
+}
+
+@code {
+    /// <summary>Estado representado: <c>true</c> = activo.</summary>
+    [Parameter] public bool Activo { get; set; }
+    /// <summary>Si es <c>true</c> el chip es un botón que permite cambiar el estado.</summary>
+    [Parameter] public bool Habilitado { get; set; }
+    /// <summary>Texto del chip; si es nulo, "Activo" o "Inactivo".</summary>
+    [Parameter] public string? TextoPersonalizado { get; set; }
+    /// <summary>Texto de ayuda al pasar el cursor; si es nulo, se genera según el estado.</summary>
+    [Parameter] public string? Titulo { get; set; }
+    /// <summary>Se produce al hacer clic (solo si <see cref="Habilitado"/>).</summary>
+    [Parameter] public EventCallback AlHacerClic { get; set; }
+
+    private string Clase => Activo ? "chip-activo" : "chip-inactivo";
+    private string Texto => TextoPersonalizado ?? (Activo ? "Activo" : "Inactivo");
+    private string TituloEfectivo => Titulo ?? (Activo ? "Clic para dar de baja" : "Clic para reactivar");
+    private string AriaLabel => $"{Texto}. {TituloEfectivo}";
+}
