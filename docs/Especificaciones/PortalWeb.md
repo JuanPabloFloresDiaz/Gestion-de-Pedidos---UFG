@@ -33,6 +33,7 @@ Una tienda en línea mínima y funcional: un visitante explora el catálogo, se 
 * Un pedido hecho en la web es un `Pedido` normal: `ClienteId` = el cliente enlazado al usuario; `UsuarioId` = ese mismo usuario ([Pedidos.md](Pedidos.md)). Mismas reglas de stock, precio copiado y estados.
 * El cliente solo ve y cancela **sus** pedidos; no puede editar líneas después de crearlo (cancela y vuelve a pedir).
 * El catálogo público muestra solo productos **activos** y, según el interruptor `MostrarStock` de cada producto ([Productos.md](Productos.md)), la **cantidad exacta** o solo "Disponible" / "Agotado" (por defecto, lo segundo).
+* La tienda se puede **explorar por categoría y subcategoría** y filtrar por las **opciones** de sus filtros (Talla 42, Color Negro…), con los endpoints anónimos `GET /tienda/categorias` y `GET /catalogo?subcategoriaId=&opcionIds=` ([CatalogoProductos.md §5](CatalogoProductos.md)); solo se muestran elementos activos. El detalle de producto lista sus opciones.
 * La fecha de entrega deseada debe ser posterior a hoy.
 * **Registro** ([AutenticacionYPermisos.md §2](AutenticacionYPermisos.md)): crea el usuario (rol `Cliente`) y su `Clientes` en una transacción. Con el correo escrito:
   * **Ya existe una cuenta** con ese correo → "Ya existe una cuenta con este correo: inicia sesión o usa otro correo".

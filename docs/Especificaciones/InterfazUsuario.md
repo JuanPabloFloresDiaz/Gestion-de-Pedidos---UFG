@@ -40,7 +40,7 @@ La rúbrica puntúa una "interfaz de múltiples documentos". En Blazor se logra 
 
 | Menú | Opciones | Visible para |
 |---|---|---|
-| **Gestión** | Clientes · Productos · Pedidos | Quien tenga `*.ver` del módulo |
+| **Gestión** | Clientes · Productos · **Categorías y filtros** · Pedidos | Quien tenga `*.ver` del módulo (`categorias.ver` para Categorías y filtros) |
 | **Administración** | Usuarios · Roles y permisos · Historial de actividades · Ciudades y departamentos | `usuarios.ver` / `roles.ver` / `historial.ver` / `catalogos.ver` |
 | **Ayuda** | **Integrantes del equipo** · Acerca de | Todos |
 | **Usuario** | Cambiar contraseña · Cerrar sesión | Todos |

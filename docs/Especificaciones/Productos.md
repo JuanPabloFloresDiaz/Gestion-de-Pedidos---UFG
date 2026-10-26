@@ -16,6 +16,8 @@ Mantener el catálogo de productos con su stock y precio de venta, notificando i
 | Precio de venta | Decimal ≥ 0, 2 decimales |
 | Fecha | **Fecha de ingreso** al inventario ([Analisis.md §3](../Analisis.md), I-02); por defecto hoy; no puede ser futura |
 | Mostrar existencias en la tienda (`MostrarStock`) | Interruptor que decide el administrador por producto. Apagado (por defecto): la web muestra "Disponible" o "Agotado"; encendido: muestra la cantidad exacta |
+| Subcategoría (`SubcategoriaId`) | **Opcional**. Clasifica el producto ([CatalogoProductos.md](CatalogoProductos.md)); sin ella queda "Sin clasificar" |
+| Detalles (opciones de filtro) | **Opcionales**: una opción por cada filtro de la subcategoría (Color = Negro, Talla = 42). Informativos: no cambian precio ni stock |
 | Activo | `true` al crear |
 
 Comportamiento del dominio (usado por Pedidos):
@@ -36,6 +38,8 @@ Comportamiento del dominio (usado por Pedidos):
 * Cambiar el **precio** no afecta pedidos ya creados (copian el precio, [Pedidos.md §2](Pedidos.md)).
 * **Stock bajo**: umbral fijo de 5 unidades para destacarlo en el listado (constante de configuración; no es un campo en BD, YAGNI).
 
+* Al cambiar la subcategoría se **descartan los detalles** anteriores (son de otros filtros). Una subcategoría, filtro u opción dados de baja **no se ofrecen** para productos nuevos, pero se siguen mostrando en los que ya los tienen.
+
 ## 4. API
 
 | Método y ruta | Permiso | Descripción |
@@ -52,7 +56,7 @@ Comportamiento del dominio (usado por Pedidos):
 
 ## 6. Interfaz (`ProductosPagina`, en una pestaña)
 
-Listado con indicador visual de **stock bajo**, panel de edición con validación en línea, selector de fecha, interruptor "Mostrar existencias en la tienda" y campo de precio con formato monetario. Botones sujetos a permisos ([AutenticacionYPermisos.md §3](AutenticacionYPermisos.md)): el operador **consulta** pero no crea ni edita.
+El formulario incluye el selector de **Subcategoría** y un selector por filtro ([CatalogoProductos.md §7](CatalogoProductos.md)). Listado con indicador visual de **stock bajo**, panel de edición con validación en línea, selector de fecha, interruptor "Mostrar existencias en la tienda" y campo de precio con formato monetario. Botones sujetos a permisos ([AutenticacionYPermisos.md §3](AutenticacionYPermisos.md)): el operador **consulta** pero no crea ni edita.
 
 ## 7. Plan de Pruebas
 

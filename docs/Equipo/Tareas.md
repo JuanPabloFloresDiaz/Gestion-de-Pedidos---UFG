@@ -36,6 +36,24 @@
 
 ---
 
+## Bloque K — Catálogo de productos: categorías, subcategorías, filtros y opciones (Fase 2.5, a cargo de Pablo) · Spec: [CatalogoProductos.md](../Especificaciones/CatalogoProductos.md)
+
+> **Nuevo (26/10/2026).** Versión básica, sin SKU ni variantes. Amplía la base de datos con 5 tablas ([BaseDatos.md §4.7](../BaseDatos.md)). Los integrantes de **Productos** no esperan: `SubcategoriaId` es opcional y suman P-10/P-11 cuando K-04 esté listo.
+
+| ID | Tarea | Talla | Depende de | Responsable |
+|---|---|---|---|---|
+| K-01 | Dominio: `Categoria`, `Subcategoria`, `Filtro`, `OpcionFiltro` (baja suave, reglas de nombres y de baja) y `Producto.EstablecerClasificacion(subcategoriaId, opciones)`; pruebas unitarias | M | Fase 0.5 | Pablo |
+| K-02 | Configuración EF de las 5 tablas (únicos, FK compuesta, índices), permisos 29–33 al final del catálogo y **una** migración `AgregarCatalogoDeProductos`; regenerar el script SQL; pruebas de integración | M | K-01 | Pablo |
+| K-03 | Casos de uso (árbol, altas, ediciones, bajas, reactivación, eliminación definitiva) con eventos de aplicación e historial; pruebas | M | K-02 | Pablo |
+| K-04 | DTOs y endpoints `/categorias`, `/subcategorias`, `/filtros`, `/opciones` con validación, permisos y pruebas de API | M | K-03 | Pablo |
+| K-05 | `CatalogoService` (publica `EntidadCambiada`) y `CategoriasViewModel`; pruebas | M | K-04 | Pablo |
+| K-06 | `CategoriasPagina`: árbol, filtros con *chips* de opciones, estado, baja suave y eliminar definitivamente; E2E | L | K-05 | Pablo |
+| K-07 | Integración con Productos: `ProductoDto`/solicitudes con subcategoría y detalles, validación de opciones y `GET /productos` con `categoriaId`/`subcategoriaId`/`opcionIds` (**se coordina con P-04**: una migración a la vez) | M | K-04, P-04 | Pablo + integrante de Productos |
+| K-08 | Endpoints anónimos de la tienda (`/tienda/categorias`, `/catalogo` con filtros Y/O) y su uso en el catálogo público | M | K-04, W-04 | Pablo |
+| K-09 | Datos de ejemplo opcionales para demostraciones (script aparte), spec y guion de demostración | S | K-06 | Pablo |
+
+---
+
 ## Bloque C — Clientes (Fase 2) · *integrante del equipo* — · Spec: [Clientes.md](../Especificaciones/Clientes.md)
 
 | ID | Tarea | Talla | Depende de | Responsable |
@@ -64,6 +82,8 @@
 | P-07 | `ProductosPagina`: listado, alta/edición, baja/reactivación, indicador de stock bajo e interruptor "Mostrar existencias en la tienda" | M | P-06 | |
 | P-08 | Búsqueda de productos (nombre/descripción, rango de precio, stock, fecha de ingreso, estado) | M | P-07 | |
 | P-09 | Spec y guion de demostración de Productos | S | P-08 | |
+| P-10 | Formulario de producto con selector de **Subcategoría** y un selector por filtro (aviso al cambiar de subcategoría) | M | K-07, P-07 | |
+| P-11 | Búsqueda y listado por categoría, subcategoría y opciones de filtro | S | K-07, P-08 | |
 
 ## Bloque D — Pedidos y detalle de pedido (Fase 3) · *integrante del equipo* — · Spec: [Pedidos.md](../Especificaciones/Pedidos.md)
 

@@ -74,6 +74,8 @@ sequenceDiagram
 | `usuarios.eliminar` (eliminación definitiva) | ✅ | ❌ | ❌ |
 | `roles.ver` / `roles.editar` (gestionar los permisos de cada rol) | ✅ | ❌ | ❌ |
 | `catalogos.ver` (ciudades y departamentos) | ✅ | ✅ | ❌ |
+| `categorias.ver` (categorías, subcategorías, filtros y opciones) | ✅ | ✅ | ❌ |
+| `categorias.crear` / `.editar` / `.desactivar` / `.eliminar` | ✅ | ❌ | ❌ |
 | `historial.ver` | ✅ | ❌ | ❌ |
 | `catalogo.ver` (además es **público**, sin sesión) | ✅ | ✅ | ✅ |
 | `mispedidos.ver` / `.crear` / `.cancelar` (solo los propios) | ❌ | ❌ | ✅ |

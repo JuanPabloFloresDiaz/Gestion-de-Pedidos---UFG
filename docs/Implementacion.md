@@ -11,6 +11,7 @@
 | **Fase 0** — Esqueleto, Docker, interfaz y pruebas | ✅ Hecha (excepto validar el escritorio MAUI en Windows) |
 | **Fase 0.5** — Persistencia: 11 tablas, migraciones, semillas, script SQL, respaldo | ✅ Hecha |
 | **Fase 1** — Autenticación, usuarios, roles y permisos (API + Ui) | ✅ Hecha |
+| **Fase 2.5** — Catálogo de productos (categorías, subcategorías, filtros, opciones) | 📝 Especificada ([CatalogoProductos.md](Especificaciones/CatalogoProductos.md)); por implementar |
 | Fases 2 a 5 (Clientes, Productos, Pedidos, búsquedas, historial, entrega) | 🕓 Pendientes: ver [Tareas.md](Equipo/Tareas.md) |
 
 **Calidad actual**: 109 pruebas automáticas (unitarias, integración con SQL Server real en Docker, arquitectura) + 3 pruebas de extremo a extremo con Playwright. No hay CI/CD: se corre `./scripts/test-docker.sh` antes de subir cambios ([Testing.md §6](Especificaciones/Testing.md)).
@@ -49,6 +50,9 @@
 
 ### Fase 2 — Clientes y Productos *(repartida entre el equipo)*
 Módulos independientes entre sí; se trabajan en paralelo. Incluye los catálogos Departamentos/Ciudades dentro de Clientes. Specs: [Clientes.md](Especificaciones/Clientes.md), [Productos.md](Especificaciones/Productos.md).
+
+### Fase 2.5 — Catálogo de productos: categorías, subcategorías, filtros y opciones *(Pablo)*
+Extensión acordada el 26/10/2026 (versión básica de un motor de catálogo dinámico, sin SKU ni variantes): 5 tablas nuevas (pasan de 11 a 16), una migración, permisos `categorias.*`, pantalla "Categorías y filtros" y su integración con Productos y la tienda. Spec: [CatalogoProductos.md](Especificaciones/CatalogoProductos.md); tareas: bloque K de [Tareas.md](Equipo/Tareas.md).
 
 ### Fase 3 — Pedidos *(repartida)*
 Depende de Clientes y Productos (consume sus contratos y el stock). Spec: [Pedidos.md](Especificaciones/Pedidos.md). Empieza por el dominio puro, que no necesita esperar a los otros módulos.

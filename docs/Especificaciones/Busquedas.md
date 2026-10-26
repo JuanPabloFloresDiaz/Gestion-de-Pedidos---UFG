@@ -30,6 +30,8 @@
 | `precioMin`, `precioMax` | Rango de **precio de venta** |
 | `stockMin`, `stockMax` | Rango de existencias |
 | `ingresoDesde`, `ingresoHasta` | Rango de fecha de ingreso |
+| `categoriaId`, `subcategoriaId` | Clasificación del producto ([CatalogoProductos.md](CatalogoProductos.md)); `sinClasificar=true` lista los que no tienen |
+| `opcionIds` | Opciones de filtro (ej. Color = Negro). **Y** entre filtros distintos, **O** entre opciones del mismo filtro |
 
 ### Pedidos (`GET /api/v1/pedidos`, procedimiento `usp_Pedidos_Buscar`)
 
