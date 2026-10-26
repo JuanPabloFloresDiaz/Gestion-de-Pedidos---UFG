@@ -80,7 +80,8 @@ Antes de diseñar se revisaron referencias de tiendas en línea y guías de UX (
 
 La tienda usa el **mismo tema central** (`tema.css`) y el mismo botón **Apariencia**: modo claro, oscuro o del sistema y los 7 colores de acento cambian la tienda completa (el fondo pastel de las categorías se atenúa solo en modo oscuro). Solo la disposición vive en `tienda.css`; los colores salen del tema.
 
-* **Sin fotos**: cada producto se muestra con el ícono de su categoría sobre su tono pastel (`VisualProducto`). Si más adelante hubiera imágenes, solo cambia ese componente.
+* **Fotos desde Garage**: cada producto y categoría muestra su foto (`/imagenes/productos/CODIGO`, servida con caché) sobre un respaldo: el **ícono Lucide** de su categoría en su tono pastel (`VisualProducto`), que se ve mientras carga o si no hay foto ([CatalogoProductos.md §9](CatalogoProductos.md)).
+* **Sin emojis**: todos los íconos son SVG de la librería Lucide (`Icono`), iguales en cualquier sistema y navegador.
 * **Accesible**: contraste del tema, foco visible, `aria-label` en controles, `prefers-reduced-motion` respetado y diseño adaptable (móvil, tableta, escritorio).
 
 ### 5.3 Estructura

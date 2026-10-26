@@ -23,6 +23,7 @@ cd Gestion-de-Pedidos---UFG
 | Qué | Dónde |
 |---|---|
 | **Web** | http://localhost:4392 |
+| **Garage** (almacén de imágenes, API S3) | `127.0.0.1:4393`; las fotos se ven en la tienda y se administran por la API ([CatalogoProductos.md §9](../Especificaciones/CatalogoProductos.md)) |
 | **API** (con Swagger) | http://localhost:4390/swagger |
 | **SQL Server** | `localhost`, puerto **4391** (usuario `sa`, clave en `.env`); ver [§2.1](#21-conectarse-a-la-base-de-datos-dbeaver-azure-data-studio-ssms) |
 | **Administrador inicial** | usuario `admin`, contraseña `ADMIN_INITIAL_PASSWORD` de `.env`; el sistema le pedirá cambiarla al primer ingreso |
@@ -41,7 +42,7 @@ cd Gestion-de-Pedidos---UFG
 | **Trust Server Certificate** | **Marcado** (el contenedor usa un certificado autofirmado; sin esto falla con un error de certificado) |
 
 * **Explorar con `sa`; la aplicación usa `pedidos_app`**, un usuario de mínimo privilegio que no puede modificar ni borrar el historial (`Actividades`). Para ver el sistema como lo ve la API, crear otra conexión con `pedidos_app` / `PEDIDOS_APP_PASSWORD` de `.env`.
-* Verán las 16 tablas en `dbo` (con **datos de ejemplo** ya cargados: catálogo, productos, clientes, pedidos e historial; ver [CatalogoProductos.md §10](../Especificaciones/CatalogoProductos.md)), la vista `vw_PedidosResumen` y el procedimiento `usp_Pedidos_Buscar`.
+* Verán las 16 tablas en `dbo` (con **datos de ejemplo** ya cargados: catálogo, productos, clientes, pedidos e historial; ver [CatalogoProductos.md §11](../Especificaciones/CatalogoProductos.md)), la vista `vw_PedidosResumen` y el procedimiento `usp_Pedidos_Buscar`.
 * El puerto solo escucha en `127.0.0.1`: la base nunca queda expuesta a la red. **No** la modifiquen a mano; los cambios de esquema van por migraciones ([§6](#6-migraciones-de-la-base-de-datos)).
 * *Connection refused* → el contenedor no está corriendo (`docker compose ps`, `sqlserver` debe estar *healthy*). *Login failed for user 'sa'* → la contraseña de su `.env` es otra.
 

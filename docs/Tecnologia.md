@@ -12,6 +12,8 @@
 | Hospedaje web | **Blazor Web App** (.NET 8, render interactivo de servidor) | La misma `Ui` en el navegador; se despliega en Docker |
 | Patrón de interfaz | **Página (.razor) + ViewModel** con eventos | Marcado sin lógica; el ViewModel se prueba sin pantalla |
 | Componentes visuales | **Kit propio** (`Ui/Comun/Componentes`) + tema CSS central | Se evaluó MudBlazor y se descartó: el kit propio es pequeño, sin dependencias, se personaliza en un solo archivo (`tema.css`) y evita problemas de versión con .NET 8 |
+| Íconos | **Lucide** vía `Blazicons.Lucide` (1 900+ íconos SVG de trazo) detrás del componente `Icono` | Se compararon las librerías para Blazor: Material Design Icons (~7 000, muy completa pero de aspecto más pesado), Fluent UI (grande, estilo Microsoft), Font Awesome (la gratuita es limitada) y Lucide (moderna, consistente, la de moda en interfaces actuales y con todo lo que necesita una tienda). Son SVG incrustados: funcionan sin internet y en el escritorio. Cambiar de librería es tocar `Icono.razor` y `TiendaVisual.cs`. **Sin emojis en la interfaz**: se ven distintos en cada sistema |
+| Almacén de imágenes | **Garage** (compatible con S3) + `AWSSDK.S3` 3.7 | Ligero, de un solo binario y software libre; las imágenes no se guardan en la base ni en el sitio. Se usa el cliente 3.7 porque el 4.x añade sumas de comprobación que no todos los servicios S3 aceptan |
 | API | **ASP.NET Core 8** (Minimal APIs agrupadas por módulo) | Un solo backend para los dos clientes |
 | ORM | **Entity Framework Core 8** (SQL Server) | Requisito del equipo; migraciones y consultas parametrizadas por construcción |
 | Base de datos | **SQL Server 2022** (imagen oficial Linux) | Enunciado |

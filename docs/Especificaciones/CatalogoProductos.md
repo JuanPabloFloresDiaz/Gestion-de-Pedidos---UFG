@@ -81,7 +81,7 @@ Todas bajo `/api/v1`, con Problem Details y `RowVersion` en las actualizaciones.
 | `POST /filtros/{id}/opciones` | `categorias.crear` | Alta de opción |
 | `PUT` · `PATCH …/estado` · `DELETE /opciones/{id}` | `.editar` · `.desactivar` · `.eliminar` | |
 
-Cambios en lo existente (los entrega el bloque K junto con el de Productos, ver §9):
+Cambios en lo existente (los entrega el bloque K junto con el de Productos, ver §10):
 
 * `ProductoDto` añade `SubcategoriaId`, `Subcategoria`, `Categoria` y `Detalles` (`filtroId`, `filtro`, `opcionId`, `valor`). `ActualizarProductoSolicitud` y `RegistrarProductoSolicitud` aceptan `SubcategoriaId` (opcional) y `OpcionIds` (lista).
 * `GET /productos` suma los filtros `categoriaId`, `subcategoriaId` y `opcionIds` ([Busquedas.md](Busquedas.md)).
@@ -126,17 +126,64 @@ Una sola pantalla, **`CategoriasPagina`** ("Categorías y filtros", menú **Gest
 * **ViewModel**: selección de nodos, chips, confirmaciones, publicación de `EntidadCambiada`.
 * **E2E (Playwright)**: crear categoría → subcategoría → filtro → opciones; clasificar un producto; verlo filtrado en la tienda; baja y reactivación; eliminar definitivamente solo lo vacío.
 
-## 9. Orden de trabajo y coordinación con el equipo
+## 9. Imágenes de productos y categorías (almacén de objetos)
+
+Las imágenes **no** se guardan en SQL Server ni en la carpeta del sitio: viven en un **almacén de objetos compatible con S3**, [Garage](https://garagehq.deuxfleurs.fr/) (imagen `dxflrs/garage`, un servicio más de `docker-compose`, puerto `127.0.0.1:4393`). La base solo guarda la **clave** del objeto.
+
+### 9.1 Cómo se ligan: por código, no por número
+
+Cada producto y cada categoría tiene un **código estable e irrepetible** (`Productos.Codigo`: `ROP-CAM-001`; `Categorias.Codigo`: `ROP`). La imagen se llama **igual que el código**:
+
+| De qué | Clave en el almacén | Ejemplo |
+|---|---|---|
+| Producto | `productos/{Codigo}.{ext}` | `productos/ROP-CAM-001.jpg` |
+| Categoría | `categorias/{Codigo}.{ext}` | `categorias/ROP.jpg` |
+
+**Por qué el código y no el `Id`**: el `Id` es un número que cambia si la base se recrea o se restaura en otro orden; el código es un dato de negocio que se conserva. Así, si se pierde o se restaura la base, **la relación imagen ↔ producto no se pierde**: el nombre del archivo dice a qué producto pertenece. Nada de nombres al azar ni de `GUID` como nombre de archivo.
+
+* El **código humano** (`ROP-CAM-001` = categoría `ROP` · subcategoría `CAM` · número `001`) lo define quien registra el producto; si no se indica, la base lo genera con una secuencia (`PRD-001000`, `CAT-001000`), para que cualquier alta, incluso la de otro módulo, tenga siempre uno.
+* La base guarda además `ImagenClave` (la clave completa, con la extensión) para saber rápido si hay imagen y cuál.
+
+### 9.2 Recuperación si se pierde la base
+
+Si la base se restaura (o se pierde la columna `ImagenClave`) pero el almacén conserva sus objetos, **`POST /api/v1/imagenes/reenlazar`** (permiso `categorias.editar`) recorre el almacén y vuelve a ligar cada archivo con el producto o categoría cuyo código aparece en su nombre; informa cuántas ligó, cuántas ya estaban bien y cuántas no tienen destino. La API lo hace sola en cada arranque (`Almacen__ReenlazarAlIniciar=true`, activado en el compose). Probado de punta a punta: se borraron las claves de la base, se reinició la API y se recuperaron las 59 imágenes.
+
+La copia de seguridad debe incluir **la base y el volumen de Garage** (`garage-data`); con ambos, todo se restaura. Con solo el volumen de imágenes, el reenlace por código recupera lo que la base ya conozca por su código.
+
+### 9.3 Entrega y subida
+
+| Método y ruta | Permiso | Descripción |
+|---|---|---|
+| `GET /api/v1/imagenes/{productos\|categorias}/{codigo}` | Anónimo | Entrega la imagen con `Cache-Control` y `ETag` (el navegador recibe `304` si no cambió). La clave se busca **en la base por código**, nunca se usa una ruta que mande quien llama (sin recorridos de directorio) |
+| `PUT /api/v1/categorias/{id}/imagen` · `PUT /api/v1/productos/{id}/imagen` | `categorias.editar` · `productos.editar` | Sube (multipart, campo `archivo`) y reemplaza la imagen. Se valida por los **primeros bytes** (JPEG, PNG o WebP; no por el nombre ni el tipo declarado) y un máximo de **2 MB**. Si cambia el formato se borra la anterior |
+| `DELETE …/{id}/imagen` | igual | Quita la imagen (borra el objeto y limpia la clave) |
+| `POST /api/v1/imagenes/reenlazar` | `categorias.editar` | Recuperación por código (§9.2) |
+
+La **tienda** pide las fotos a su propio sitio (`/imagenes/productos/CODIGO`); el servidor web las trae de la API por la red interna de Docker, así que no hace falta exponer la API ni configurar CORS. Si un producto no tiene foto (o falla), se muestra el **ícono de su categoría** sobre un fondo pastel.
+
+### 9.4 Configuración (`docker-compose.yml` y `.env`)
+
+* Servicio `garage`: `command: /garage server --single-node --default-bucket` crea solo el bucket y la llave a partir de `GARAGE_DEFAULT_ACCESS_KEY/SECRET_KEY/BUCKET`. Configuración en [`docker/garage/garage.toml`](../../docker/garage/garage.toml). Volumen `garage-data`. *Healthcheck* con el propio binario (`/garage status`; la imagen no trae shell).
+* API: sección `Almacen` (`Endpoint`, `Bucket`, `AccessKey`, `SecretKey`, `ReenlazarAlIniciar`); cliente `AWSSDK.S3` con direcciones tipo ruta (lo que exige Garage).
+* **Las llaves del repositorio son solo de desarrollo.** En un despliegue real se cambian los secretos (`rpc_secret`, `admin_token`, llaves S3) por valores propios.
+* Sin Garage, la siembra de datos continúa **sin imágenes** y la tienda muestra los íconos de respaldo.
+
+### 9.5 Imágenes de ejemplo
+
+El sembrador sube **53 fotos de productos y 6 de categorías** ([`seed/imagenes/`](../../seed/imagenes/)), nombradas con el código, incrustadas en la API. Son fotografías de [Wikimedia Commons](https://commons.wikimedia.org/) con licencia libre (CC0, CC BY o CC BY-SA, **con atribución**): autores y licencias en [`seed/imagenes/CREDITOS.md`](../../seed/imagenes/CREDITOS.md). Se escogieron mirando los candidatos uno por uno; **11 productos quedaron sin foto** porque no se encontró una adecuada (se ve su ícono) y las de las categorías son copias de la foto de un producto representativo. **Reemplazar una foto es soltar un archivo con el mismo código** (`seed/imagenes/productos/ROP-PAN-002.jpg`) o subirla por la API.
+
+## 10. Orden de trabajo y coordinación con el equipo
 
 El bloque **K** ([Tareas.md](../Equipo/Tareas.md)) lo lleva **Pablo** (administración transversal). Los integrantes que hacen **Productos (bloque P)** no se bloquean: `SubcategoriaId` es opcional y su trabajo sigue igual; cuando K-04 (API) esté listo, suman las tareas P-10/P-11 (selector de clasificación y búsqueda). Se **coordina el cambio de `ProductoDto`/endpoints** entre K-07 y P-04 para no pisarse en la migración (una migración a la vez).
 
-## 10. Datos de ejemplo (sembrador de desarrollo)
+## 11. Datos de ejemplo (sembrador de desarrollo)
 
 Para que la administración y la futura tienda "se sientan vivas" y los integrantes vean sus pantallas con datos desde el primer día, la API puede **sembrar datos realistas** al arrancar (`DatosDeEjemplo`; ver [Estructura.md](../Estructura.md)):
 
 | Qué | Cantidad y detalle |
 |---|---|
 | **Catálogo** | 6 categorías (Ropa, Tecnología, Hogar y cocina, Deportes, Belleza y cuidado personal, Papelería y escolar) con **23 subcategorías** (3 a 5 en Ropa y Tecnología; 3 o 4 en el resto), cada una con sus **filtros y opciones** (Clima, Color, Material, Marca, Talla, Almacenamiento…) y **64 productos** (de 2 a 3 por subcategoría) descritos con una opción por filtro, precios en dólares y stock variado (uno **agotado** y varios con **stock bajo**; una cuarta parte muestra la cantidad exacta en la tienda) |
+| **Códigos e imágenes** | Cada producto y categoría tiene su **código** (`ROP-CAM-001`, `ROP`) y **59 tienen foto** en Garage, ligada por código (§9). Los usuarios de ejemplo y demás datos siguen igual |
 | **Estados para probar la interfaz** | Una categoría **inactiva y vacía** ("Temporada pasada", se puede eliminar definitivamente), una opción dada de baja ("Fucsia"), 2 productos dados de baja, 2 clientes dados de baja y un operador dado de baja |
 | **Personal** | `gerencia` (Administrador), `mramirez`, `jcastillo` y `lmartinez` (Operadores) y `rcruz` (Operador dado de baja). Contraseña de todos: `Demo_Sembrado_2026` (solo desarrollo) |
 | **Clientes** | 48 clientes con nombres, teléfonos, direcciones y ciudades reales de El Salvador (65 % en San Salvador, La Libertad, Santa Ana y San Miguel); **6 con cuenta web** (rol Cliente; inician sesión con su correo y la misma contraseña) para probar la tienda |
@@ -147,7 +194,7 @@ Para que la administración y la futura tienda "se sientan vivas" y los integran
 * **Se activa solo en desarrollo**: `SEMBRAR_DATOS_EJEMPLO=true` en `.env` (valor por defecto del compose y del `.env.example`); con `false` la base queda vacía (solo el administrador `admin`). **En la entrega a la universidad se decide** si se deja activado para la demostración.
 * No forma parte de las migraciones: es código de la API (`Persistence/Seed/DatosDeEjemplo.cs` y `CatalogoDeEjemplo.cs`) con pruebas contra SQL Server real.
 
-## 11. Decisiones abiertas
+## 12. Decisiones abiertas
 
 * **Orden de las opciones**: hoy alfabético; si hiciera falta un orden manual (tallas 38 < 40 < 42) se añade una columna `Orden`. Propuesta: no hasta que se necesite.
 * **Filtros obligatorios por subcategoría** (que un producto deba elegir todos): hoy son opcionales.

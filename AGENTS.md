@@ -16,6 +16,7 @@ Reglas cortas para cualquier agente de IA que trabaje en este repositorio. La fu
 - Consultas **siempre parametrizadas** (EF Core o el procedimiento con parámetros). Sin SQL concatenado.
 - Baja **lógica** (`Activo` + `EliminadoEn`, siempre reversible) para clientes, productos, pedidos y usuarios. Los únicos `DELETE` físicos son el de **usuarios ya dados de baja** (`usuarios.eliminar`) y el de elementos **inactivos y sin uso** del catálogo de productos (`categorias.eliminar`, [CatalogoProductos.md](docs/Especificaciones/CatalogoProductos.md)); no añadas otros.
 - Pruebas primero; cada módulo con pruebas de dominio, caso de uso, API, ViewModel y eventos (`docs/Especificaciones/Testing.md`).
+- **Sin emojis en la interfaz**: los íconos son SVG con el componente `<Icono Svg="Lucide.…" />` (librería Lucide). Las imágenes de productos y categorías viven en Garage (S3) y se nombran con el **código** (`productos/ROP-CAM-001.jpg`), nunca con el `Id` ni con nombres al azar ([CatalogoProductos.md §9](docs/Especificaciones/CatalogoProductos.md)).
 - Idioma: dominio, interfaz y comentarios en español; términos técnicos estándar en inglés.
 - No inventes requerimientos: las interpretaciones del enunciado están en `docs/Analisis.md §3`; si falta información, **pregunta**.
 - Una sola migración de EF Core a la vez (avisa al equipo antes de generarla).

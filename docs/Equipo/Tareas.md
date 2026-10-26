@@ -50,7 +50,8 @@
 | K-06 ✅ | `CategoriasPagina`: árbol, filtros con *chips* de opciones, estado, baja suave y eliminar definitivamente; E2E | L | K-05 | Pablo |
 | K-07 | Integración con Productos: `ProductoDto`/solicitudes con subcategoría y detalles, validación de opciones y `GET /productos` con `categoriaId`/`subcategoriaId`/`opcionIds` (**se coordina con P-04**: una migración a la vez) | M | K-04, P-04 | Pablo + integrante de Productos |
 | K-08 ✅ | Endpoints anónimos de la tienda (`/tienda/categorias`, `/catalogo` con filtros Y/O) y su uso en el catálogo público | M | K-04, W-04 | Pablo |
-| K-09 | Datos de ejemplo realistas ✅ (sembrador `DatosDeEjemplo`, [§10 de la spec](../Especificaciones/CatalogoProductos.md)); falta el guion de demostración | S | K-06 | Pablo |
+| K-10 ✅ | **Imágenes**: Garage (S3) en el compose, `Codigo` e `ImagenClave` en productos y categorías, endpoints para entregar/subir/quitar/reenlazar, fotos de ejemplo con créditos y la tienda mostrándolas ([§9 de la spec](../Especificaciones/CatalogoProductos.md)). **Productos (P-07):** el formulario debe permitir subir la foto con `PUT /api/v1/productos/{id}/imagen` y mostrarla; el `Codigo` lo genera la base si no se indica | M | K-04 | Pablo |
+| K-09 | Datos de ejemplo realistas ✅ (sembrador `DatosDeEjemplo`, [§11 de la spec](../Especificaciones/CatalogoProductos.md)); falta el guion de demostración | S | K-06 | Pablo |
 
 ---
 

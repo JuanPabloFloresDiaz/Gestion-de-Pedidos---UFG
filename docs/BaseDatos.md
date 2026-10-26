@@ -135,6 +135,8 @@ Datos iniciales: `Administrador`, `Operador` (escritorio) y `Cliente` (web públ
 | Columna | Tipo | Restricciones |
 |---|---|---|
 | Id | INT IDENTITY | PK |
+| Codigo | NVARCHAR(30) | NOT NULL, **UNIQUE**. Código estable del producto (`ROP-CAM-001`); si no se indica, la base lo genera con la secuencia `SecuenciaProductos` (`PRD-001000`). **Es lo que liga la imagen del almacén con el producto** ([CatalogoProductos.md §9](Especificaciones/CatalogoProductos.md)) |
+| ImagenClave | NVARCHAR(200) | NULL. Clave de la imagen en el almacén de objetos (`productos/ROP-CAM-001.jpg`) |
 | Nombre | NVARCHAR(150) | NOT NULL |
 | Descripcion | NVARCHAR(500) | NOT NULL |
 | CantidadStock | INT | NOT NULL, `CHECK (CantidadStock >= 0)` |
@@ -209,6 +211,8 @@ Datos iniciales: `Administrador`, `Operador` (escritorio) y `Cliente` (web públ
 | Columna | Tipo | Restricciones |
 |---|---|---|
 | Id | INT IDENTITY | PK |
+| Codigo | NVARCHAR(30) | NOT NULL, **UNIQUE**. Código estable (`ROP`); si no se indica, la base lo genera (`SecuenciaCategorias` → `CAT-001000`). Nombra la imagen de la categoría |
+| ImagenClave | NVARCHAR(200) | NULL. Clave de la imagen en el almacén (`categorias/ROP.jpg`) |
 | Nombre | NVARCHAR(100) | NOT NULL, **UNIQUE** (se compara también con las inactivas, para poder reactivar sin duplicados) |
 | Descripcion | NVARCHAR(300) | NULL |
 | Activo / EliminadoEn | BIT / DATETIMEOFFSET(0) | NOT NULL DEFAULT 1 / NULL |

@@ -20,12 +20,13 @@ La **API, la web y SQL Server** corren en contenedores; el único requisito para
 | `sqlserver` | `mcr.microsoft.com/mssql/server:2022-latest` | `127.0.0.1:4391 → 1433` | Volumen nombrado, `healthcheck` con `sqlcmd`, `ACCEPT_EULA=Y`, `MSSQL_PID` y `MSSQL_MEMORY_LIMIT_MB` (1536 por defecto) |
 | `db-init` | misma imagen de SQL Server | — | **Un solo uso**: crea la base `GestionPedidos` y los usuarios `pedidos_migrator` y `pedidos_app` ([BaseDatos.md §7](BaseDatos.md)) |
 | `api` | `src/GestionPedidos.Api/Dockerfile` (`sdk:8.0` → `aspnet:8.0`) | `4390 → 8080` | Espera a `db-init`; al arrancar aplica las migraciones con `pedidos_migrator` y siembra al administrador; conecta con `pedidos_app` |
+| `garage` | `dxflrs/garage:v2.5.0` | `127.0.0.1:4393 → 3900` (API S3) | Almacén de objetos compatible con S3 para las imágenes de productos y categorías; un solo nodo; volumen `garage-data`; crea solo el bucket y la llave (`--default-bucket`); *healthcheck* con `/garage status`. La `api` espera a que esté sano ([CatalogoProductos.md §9](Especificaciones/CatalogoProductos.md)) |
 | `web` | `src/GestionPedidos.Web/Dockerfile` | `4392 → 8080` | Blazor Web App con la `Ui`; llama a `api` por la red interna (`http://api:8080`) |
 
-* **Puertos del ecosistema del equipo**: `4390` (API), `4391` (SQL Server) y `4392` (web), los siguientes libres; verificados el 2026-10-01. Configurables (`${API_PORT:-4390}`).
+* **Puertos del ecosistema del equipo**: `4390` (API), `4391` (SQL Server), `4392` (web) y `4393` (Garage), los siguientes libres; verificados el 2026-10-01. Configurables (`${API_PORT:-4390}`).
 * SQL Server se publica **solo en `127.0.0.1`** y nunca hacia la red.
 * Contenedores con usuario **no root**.
-* `.env.example` documenta: puertos (`API_PORT`, `SQL_PORT`, `WEB_PORT`), `MSSQL_SA_PASSWORD`, `PEDIDOS_APP_PASSWORD`, `PEDIDOS_MIGRATOR_PASSWORD`, `JWT_SIGNING_KEY`, `ADMIN_INITIAL_PASSWORD`, `MSSQL_PID` y `MSSQL_MEMORY_LIMIT_MB`. `.env` está en `.gitignore`.
+* `.env.example` documenta: puertos (`API_PORT`, `SQL_PORT`, `WEB_PORT`), `GARAGE_PORT`, `GARAGE_BUCKET`, `GARAGE_ACCESS_KEY`, `GARAGE_SECRET_KEY` (llaves **solo de desarrollo**), `MSSQL_SA_PASSWORD`, `PEDIDOS_APP_PASSWORD`, `PEDIDOS_MIGRATOR_PASSWORD`, `JWT_SIGNING_KEY`, `ADMIN_INITIAL_PASSWORD`, `MSSQL_PID` y `MSSQL_MEMORY_LIMIT_MB`. `.env` está en `.gitignore`.
 * Swagger queda **activo** en el entorno local de Docker (`SWAGGER_HABILITADO`, por defecto `true`); en un despliegue real debe ir en `false`.
 
 ## 3. Scripts de Desarrollo
