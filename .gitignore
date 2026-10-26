@@ -61,3 +61,6 @@ dist/
 e2e/node_modules/
 e2e/resultados/
 e2e/capturas/
+
+# Carpeta de Visual Studio
+.vs/
