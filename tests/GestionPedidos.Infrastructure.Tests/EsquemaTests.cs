@@ -21,9 +21,9 @@ public class EsquemaTests
     {
         await using var db = _bd.Contexto();
         Assert.Equal(new[] { "Administrador", "Cliente", "Operador" }, (await db.Roles.Select(r => r.Nombre).OrderBy(n => n).ToListAsync()));
-        Assert.Equal(25, await db.Permisos.CountAsync());
-        Assert.Equal(21, await db.RolesPermisos.CountAsync(rp => rp.RolId == 1));
-        Assert.Equal(10, await db.RolesPermisos.CountAsync(rp => rp.RolId == 2));
+        Assert.Equal(28, await db.Permisos.CountAsync());
+        Assert.Equal(24, await db.RolesPermisos.CountAsync(rp => rp.RolId == 1));
+        Assert.Equal(11, await db.RolesPermisos.CountAsync(rp => rp.RolId == 2));
         Assert.Equal(5, await db.RolesPermisos.CountAsync(rp => rp.RolId == 3));
     }
 
@@ -185,11 +185,11 @@ public class EsquemaTests
         Assert.Equal(0, await Contar($"@ClienteId = {cliente}, @Cliente = N'''; DROP TABLE Pedidos; --'"));   // texto raro: parámetro, no SQL
     }
 
-    // ---------- Mínimo privilegio ----------
-    [Fact]
-    public async Task UsuarioDeLaAplicacion_NoPuedeModificarNiBorrarElHistorial()
+    // ---------- Mínimo privilegio y eliminación definitiva ----------
+
+    /// <summary>Crea una base nueva con migraciones y el usuario 'pedidos_app' (como en producción); devuelve la conexión de ese usuario.</summary>
+    private async Task<string> BaseConUsuarioDeLaAplicacionAsync(string bd)
     {
-        const string bd = "PermisosPrueba";
         await using (var cn = new SqlConnection(_bd.Servidor))
         {
             await cn.OpenAsync();
@@ -203,8 +203,13 @@ public class EsquemaTests
             await Ejecutar(cn, "CREATE USER pedidos_app FOR LOGIN pedidos_app_t; ALTER ROLE db_datareader ADD MEMBER pedidos_app; ALTER ROLE db_datawriter ADD MEMBER pedidos_app;");
         }
         await using (var db = _bd.Contexto(bd)) await db.Database.MigrateAsync();
+        return $"{_bd.Servidor.Replace("User Id=sa", "User Id=pedidos_app_t").Replace("Pruebas_Password_123!", "App_Pruebas_Password_123!")};Database={bd}";
+    }
 
-        var conexionApp = $"{_bd.Servidor.Replace("User Id=sa", "User Id=pedidos_app_t").Replace("Pruebas_Password_123!", "App_Pruebas_Password_123!")};Database={bd}";
+    [Fact]
+    public async Task UsuarioDeLaAplicacion_NoPuedeModificarNiBorrarElHistorial()
+    {
+        var conexionApp = await BaseConUsuarioDeLaAplicacionAsync("PermisosPrueba");
         await using var app = new SqlConnection(conexionApp);
         await app.OpenAsync();
         await Ejecutar(app, "INSERT INTO dbo.Actividades (Fecha, Accion, Entidad) VALUES (SYSDATETIMEOFFSET(), N'Prueba', N'Usuario')");   // insertar: permitido
@@ -212,6 +217,55 @@ public class EsquemaTests
         var ex2 = await Assert.ThrowsAsync<SqlException>(() => Ejecutar(app, "DELETE FROM dbo.Actividades"));
         Assert.Equal(229, ex1.Number);   // permiso denegado
         Assert.Equal(229, ex2.Number);
+    }
+
+    [Fact]
+    public async Task EliminarUnUsuario_ComoUsuarioDeLaAplicacion_ConservaElHistorialYElCliente_PeroUnPedidoLoImpide()
+    {
+        const string bd = "EliminacionPrueba";
+        var conexionApp = await BaseConUsuarioDeLaAplicacionAsync(bd);
+        await using var sa = new SqlConnection(_bd.Conexion(bd));
+        await sa.OpenAsync();
+        await Ejecutar(sa, @"
+            INSERT INTO dbo.Usuarios (NombreUsuario, NombreCompleto, Correo, ClaveHash, RolId, CreadoEn, ActualizadoEn) VALUES
+              (N'borrable', N'Borrable', N'borrable@e.com', N'h', 2, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET()),
+              (N'conpedido', N'Con Pedido', N'conpedido@e.com', N'h', 2, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET());
+            DECLARE @u INT = (SELECT Id FROM dbo.Usuarios WHERE NombreUsuario = N'borrable');
+            DECLARE @p INT = (SELECT Id FROM dbo.Usuarios WHERE NombreUsuario = N'conpedido');
+            INSERT INTO dbo.Actividades (UsuarioId, Fecha, Accion, Entidad, Detalle) VALUES (@u, SYSDATETIMEOFFSET(), N'Login', N'Usuario', N'Usuario intentado: borrable');
+            INSERT INTO dbo.Clientes (Nombres, Apellidos, Telefono, Direccion, CiudadId, UsuarioId, CreadoEn, ActualizadoEn) VALUES (N'Cli', N'Ente', N'1', N'x', 1, @u, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET());
+            INSERT INTO dbo.Clientes (Nombres, Apellidos, Telefono, Direccion, CiudadId, CreadoEn, ActualizadoEn) VALUES (N'Otro', N'Cliente', N'2', N'x', 1, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET());
+            INSERT INTO dbo.Pedidos (ClienteId, UsuarioId, FechaPedido, FechaEntrega, Total, CreadoEn, ActualizadoEn)
+              VALUES ((SELECT TOP 1 Id FROM dbo.Clientes WHERE UsuarioId IS NULL), @p, SYSDATETIMEOFFSET(), SYSDATETIME(), 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET());");
+
+        await using var app = new SqlConnection(conexionApp);
+        await app.OpenAsync();
+
+        // Un usuario con un pedido a su nombre NO se puede eliminar (clave foránea restrictiva).
+        var bloqueado = await Assert.ThrowsAsync<SqlException>(() => Ejecutar(app, "DELETE FROM dbo.Usuarios WHERE NombreUsuario = N'conpedido'"));
+        Assert.Equal(547, bloqueado.Number);
+
+        // Uno sin pedidos SÍ, aunque tenga historial y un cliente enlazado, y aunque pedidos_app no pueda actualizar Actividades.
+        await Ejecutar(app, "DELETE FROM dbo.Usuarios WHERE NombreUsuario = N'borrable'");
+
+        Assert.Equal(0, await Escalar(sa, "SELECT COUNT(*) FROM dbo.Usuarios WHERE NombreUsuario = N'borrable'"));
+        Assert.Equal(1, await Escalar(sa, "SELECT COUNT(*) FROM dbo.Actividades WHERE Detalle LIKE N'%borrable%' AND UsuarioId IS NULL"));   // el historial queda, sin usuario
+        Assert.Equal(1, await Escalar(sa, "SELECT COUNT(*) FROM dbo.Clientes WHERE Nombres = N'Cli' AND UsuarioId IS NULL"));                 // el cliente queda, sin cuenta
+    }
+
+    [Fact]
+    public async Task LasTablasConBajaLogica_TienenLaColumnaEliminadoEn()
+    {
+        await using var cn = new SqlConnection(_bd.Conexion("GestionPedidosPruebas"));
+        await cn.OpenAsync();
+        foreach (var tabla in new[] { "Usuarios", "Clientes", "Productos", "Pedidos" })
+            Assert.Equal(1, await Escalar(cn, $"SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{tabla}' AND COLUMN_NAME = 'EliminadoEn' AND IS_NULLABLE = 'YES'"));
+    }
+
+    private static async Task<int> Escalar(SqlConnection cn, string sql)
+    {
+        await using var cmd = new SqlCommand(sql, cn);
+        return Convert.ToInt32(await cmd.ExecuteScalarAsync());
     }
 
     private static async Task Ejecutar(SqlConnection cn, string sql)

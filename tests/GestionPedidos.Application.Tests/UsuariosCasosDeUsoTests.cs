@@ -23,7 +23,9 @@ public class UsuariosCasosDeUsoTests
 
     private CrearUsuario Crear() => new(_usuarios, new RolesFake(), new HasherFake(), _uow, _eventos);
     private ActualizarUsuario Actualizar() => new(_usuarios, new RolesFake(), _uow, _eventos);
-    private CambiarEstadoUsuario Estado() => new(_usuarios, _uow, _eventos);
+    private readonly Microsoft.Extensions.Time.Testing.FakeTimeProvider _reloj = new(new DateTimeOffset(2026, 10, 25, 12, 0, 0, TimeSpan.Zero));
+    private CambiarEstadoUsuario Estado() => new(_usuarios, _uow, _eventos, _reloj);
+    private EliminarUsuario Eliminar() => new(_usuarios, _uow, _eventos);
     private CambiarClave Clave() => new(_usuarios, new HasherFake(), _uow, _eventos);
 
     // ---- Crear ----
@@ -150,4 +152,59 @@ public class UsuariosCasosDeUsoTests
         var e = Assert.Single(_cambios);
         Assert.DoesNotContain("NuevaClave", e.Detalle);
     }
+
+    // ---- Eliminado suave (dar de baja guarda EliminadoEn) y eliminación definitiva ----
+    [Fact]
+    public async Task DarDeBaja_GuardaLaFechaDeEliminadoSuave_YReactivarLaBorra()
+    {
+        _usuarios.Datos.Add(Fabrica.Usuario(3, "admin2", Fabrica.Admin));
+        var baja = await Estado().EjecutarAsync(2, false, actorId: 1, default);
+        Assert.Equal(_reloj.GetUtcNow(), baja.Valor!.EliminadoEn);
+        var reactivado = await Estado().EjecutarAsync(2, true, actorId: 1, default);
+        Assert.Null(reactivado.Valor!.EliminadoEn);
+    }
+
+    [Fact]
+    public async Task Eliminar_UsuarioDadoDeBaja_LoBorraDefinitivamente_YPublicaElEvento()
+    {
+        await Estado().EjecutarAsync(2, false, actorId: 1, default);
+        _cambios.Clear();
+        var r = await Eliminar().EjecutarAsync(2, actorId: 1, default);
+        Assert.True(r.Exito);
+        Assert.Single(_usuarios.Eliminados);
+        var e = Assert.Single(_cambios);
+        Assert.Equal(TipoCambioServidor.Eliminada, e.Tipo);
+        Assert.Contains("ana", e.Detalle);   // el detalle conserva el nombre: la fila ya no existe
+    }
+
+    [Fact]
+    public async Task Eliminar_UsuarioActivo_NoSePermite_PrimeroHayQueDarloDeBaja()
+    {
+        var r = await Eliminar().EjecutarAsync(2, actorId: 1, default);
+        Assert.Equal(TipoError.Regla, r.Error!.Tipo);
+        Assert.Contains("dar de baja", r.Error.Mensaje);
+        Assert.Empty(_usuarios.Eliminados);
+    }
+
+    [Fact]
+    public async Task Eliminar_ASiMismo_NoSePermite()
+    {
+        _usuarios.Datos[1].CambiarEstado(false, _reloj.GetUtcNow());
+        var r = await Eliminar().EjecutarAsync(2, actorId: 2, default);
+        Assert.Equal("No puede eliminarse a sí mismo.", r.Error!.Mensaje);
+    }
+
+    [Fact]
+    public async Task Eliminar_ConPedidosAsociados_NoSePermite()
+    {
+        _usuarios.Datos[1].CambiarEstado(false, _reloj.GetUtcNow());
+        _usuarios.ConPedidos.Add(2);
+        var r = await Eliminar().EjecutarAsync(2, actorId: 1, default);
+        Assert.Contains("pedidos", r.Error!.Mensaje);
+        Assert.Empty(_usuarios.Eliminados);
+    }
+
+    [Fact]
+    public async Task Eliminar_Inexistente_DaNoEncontrado() =>
+        Assert.Equal(TipoError.NoEncontrado, (await Eliminar().EjecutarAsync(999, 1, default)).Error!.Tipo);
 }

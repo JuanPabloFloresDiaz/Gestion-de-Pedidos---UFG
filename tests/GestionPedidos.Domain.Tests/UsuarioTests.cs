@@ -62,9 +62,31 @@ public class UsuarioTests
     {
         var u = Nuevo();
         for (var i = 0; i < Usuario.MaximoIntentosFallidos; i++) u.RegistrarFalloAcceso(Ahora);
-        u.CambiarEstado(false);
-        u.CambiarEstado(true);
+        u.CambiarEstado(false, Ahora);
+        u.CambiarEstado(true, Ahora);
         Assert.True(u.Activo);
         Assert.False(u.EstaBloqueado(Ahora));
+    }
+
+    [Fact]
+    public void DarDeBaja_GuardaLaFechaDeEliminadoSuave_YReactivarLaBorra()
+    {
+        var u = Nuevo();
+        Assert.Null(u.EliminadoEn);
+        u.CambiarEstado(false, Ahora);
+        Assert.False(u.Activo);
+        Assert.Equal(Ahora, u.EliminadoEn);
+        u.CambiarEstado(true, Ahora.AddDays(1));
+        Assert.True(u.Activo);
+        Assert.Null(u.EliminadoEn);
+    }
+
+    [Fact]
+    public void DarDeBajaDosVeces_ConservaLaFechaOriginal()
+    {
+        var u = Nuevo();
+        u.CambiarEstado(false, Ahora);
+        u.CambiarEstado(false, Ahora.AddDays(5));
+        Assert.Equal(Ahora, u.EliminadoEn);
     }
 }
