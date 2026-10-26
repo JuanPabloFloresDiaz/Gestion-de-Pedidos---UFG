@@ -8,7 +8,7 @@
 |---|---|
 | API, web, base de datos y pruebas | **Docker Desktop** (o Docker Engine con Compose v2). SQL Server pide **≥ 2 GB de RAM** libres para su contenedor |
 | Escritorio (MAUI Blazor Hybrid) | **Windows 10/11**, **SDK de .NET 8**, carga de trabajo `maui` y **WebView2** (viene con Windows 11 y casi siempre con Windows 10 actualizado) |
-| Editar código | **Visual Studio 2022** ([§4.1](#41-paso-a-paso-con-visual-studio-2022)) o **VS Code** con *C# Dev Kit* y *.NET MAUI* (se recomiendan solas al abrir la carpeta: `.vscode/extensions.json`) |
+| Editar código | **Visual Studio 2022** ([§4.1](#41-paso-a-paso-con-visual-studio-2022-o-2026)) o **VS Code** con *C# Dev Kit* y *.NET MAUI* (se recomiendan solas al abrir la carpeta: `.vscode/extensions.json`) |
 
 No hace falta instalar SQL Server, Node ni navegadores de pruebas: todo eso vive en contenedores.
 
@@ -45,6 +45,17 @@ cd Gestion-de-Pedidos---UFG
 * El puerto solo escucha en `127.0.0.1`: la base nunca queda expuesta a la red. **No** la modifiquen a mano; los cambios de esquema van por migraciones ([§6](#6-migraciones-de-la-base-de-datos)).
 * *Connection refused* → el contenedor no está corriendo (`docker compose ps`, `sqlserver` debe estar *healthy*). *Login failed for user 'sa'* → la contraseña de su `.env` es otra.
 
+### 2.2 Probar la API a mano
+
+El inicio de sesión recibe **`identificador`** (usuario o correo) y **`clave`** (no `usuario`). Con la API arriba:
+
+```powershell
+$cuerpo = @{ identificador = "admin"; clave = "Admin_Dev_Password_123!" } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri http://localhost:4390/api/v1/auth/login -ContentType "application/json" -Body $cuerpo
+```
+
+La respuesta trae `accessToken` (JWT de 60 minutos), `debeCambiarClave` y el usuario con sus `permisos`. Para llamar a otros endpoints se envía `Authorization: Bearer <accessToken>`. Lo más cómodo es **Swagger** (http://localhost:4390/swagger → *Authorize*).
+
 ## 3. Pruebas (no hay CI/CD: se corren a mano antes de subir cambios)
 
 ```bash
@@ -56,7 +67,7 @@ Detalle y reglas en [Testing.md](../Especificaciones/Testing.md).
 
 ## 4. Escritorio en Windows
 
-> ✅ **Estado (25/10/2026)**: `src/GestionPedidos.Desktop` **compila sin advertencias y abre el login** en Windows 11 (SDK 8.0.427, Visual Studio 18). Falta confirmar a mano el flujo completo (iniciar sesión, pestañas, cerrar sesión) en los equipos de todos los integrantes; si aparece algún error, se anota aquí. Con **Visual Studio** sigan el [§4.1](#41-paso-a-paso-con-visual-studio-2022).
+> ✅ **Estado (25/10/2026)**: `src/GestionPedidos.Desktop` **compila sin advertencias y abre el login** en Windows 11 (SDK 8.0.427, Visual Studio 18). Falta confirmar a mano el flujo completo (iniciar sesión, pestañas, cerrar sesión) en los equipos de todos los integrantes; si aparece algún error, se anota aquí. Con **Visual Studio** sigan el [§4.1](#41-paso-a-paso-con-visual-studio-2022-o-2026).
 
 1. Con el entorno levantado (§2), en **PowerShell** o la terminal de VS Code:
    ```powershell
@@ -68,10 +79,11 @@ Detalle y reglas en [Testing.md](../Especificaciones/Testing.md).
 4. Si Docker corre dentro de **WSL**, los puertos también se ven desde Windows en `localhost`.
 5. Para generar un `.exe` que no necesite instalar nada: `dotnet publish -f net8.0-windows10.0.19041.0 -c Release` (queda autocontenido, con el runtime de Windows App SDK incluido).
 6. Si la ventana sale en blanco: falta **WebView2** (instalar el *Evergreen Runtime* de Microsoft) o la API no está levantada.
+7. Si la ventana **desaparece sola, sin mensaje**, justo después de compilar: volver a lanzarla. Se observó una vez (error de Windows `0xc0000374`) y los cinco lanzamientos siguientes funcionaron; la causa no está confirmada (posiblemente el antivirus escaneando el `.exe` recién creado). Solo si se repite de forma constante, avisar al equipo con el detalle del *Visor de eventos*.
 
-### 4.1 Paso a paso con Visual Studio 2022
+### 4.1 Paso a paso con Visual Studio (2022 o 2026)
 
-Sirve para ejecutar y depurar el **escritorio** (y también la API y la web) desde Visual Studio. Se necesita Visual Studio **2022 (17.8 o superior)** o **Visual Studio 2026** en Windows 10/11.
+Sirve para ejecutar y depurar el **escritorio** (y también la API y la web) desde Visual Studio. Se necesita Visual Studio **2022 (17.8 o superior)** o **Visual Studio 2026** en Windows 10/11. Validado por consola con Visual Studio 18 (2026); el flujo con F5 en el IDE no se ha probado con ambas versiones, avisen si algún paso difiere.
 
 **A. Preparar una sola vez**
 
@@ -112,7 +124,7 @@ Comprobar que responde http://localhost:4390/health (debe decir `vivo`).
 1. En el **Explorador de soluciones**: clic derecho en **`GestionPedidos.Desktop` → Establecer como proyecto de inicio**. (Por defecto Visual Studio puede dejar `GestionPedidos.Domain`, que no es ejecutable.)
 2. En la barra de herramientas, el perfil de ejecución debe decir **"Escritorio (Windows)"** y la configuración **Debug** / **Any CPU** (o x64).
 3. **F5** para depurar o **Ctrl+F5** para ejecutar sin depurar. La primera compilación de MAUI tarda varios minutos.
-4. Se abre la ventana *Gestión de Pedidos — UFG* con el login. Iniciar sesión con `admin` y la contraseña de `ADMIN_INITIAL_PASSWORD` en `.env` (por defecto `Admin_Dev_Password_123!`; pedirá cambiarla). Si la base ya existía de antes, será la contraseña que se fijó entonces.
+4. Se abre la ventana *Gestión de Pedidos — UFG* con el login. Iniciar sesión con `admin` y la contraseña de `ADMIN_INITIAL_PASSWORD` en `.env` (por defecto `Admin_Dev_Password_123!`; pedirá cambiarla). Si la base ya existía de antes, será la contraseña que se fijó entonces: en la base de Docker de Pablo es **`Admin_E2E_Segura_2026`** (la dejaron las pruebas de extremo a extremo) y **no** pide cambiarla. Si no entra, no adivinen: `docker compose down -v` y `docker compose up -d --build` recrean la base desde cero con la clave inicial.
 
 **D. Ejecutar la web desde Visual Studio (opcional)**
 
@@ -127,9 +139,9 @@ Con la API en Docker ya levantada, para depurar la web: detener el servicio de D
 | Síntoma | Causa y solución |
 |---|---|
 | `NETSDK1147 … maui-tizen`, o el proyecto `Desktop` "no se pudo cargar" | Falta `dotnet workload install maui` (**A.2**): la carga de trabajo del instalador de Visual Studio no basta |
-| Error de compilación de `Desktop` | Copiar el mensaje completo de la ventana **Salida / Lista de errores** y avisar al equipo: este proyecto aún se está validando en Windows |
+| Error de compilación de `Desktop` | Lo más probable es que falte la carga de trabajo (**A.2**). La solución completa compila **sin advertencias** en Windows 11 con el SDK 8.0.427 (validado el 25/10/2026); si aun así falla, copiar el mensaje completo de **Salida / Lista de errores** y avisar al equipo |
 | La ventana se abre y queda en blanco | Falta WebView2 (**A.4**) o la API no responde (**B**) |
-| La aplicación se cierra sola (error de Windows `0xc0000374`, corrupción de memoria) | Se observó en una compilación de Windows de **vista previa** (Insider) al lanzar el `.exe` **con la salida redirigida o sin ventana**. Lancen siempre la aplicación **normalmente** (F5, Ctrl+F5, o `dotnet run` desde una terminal normal), sin redirigir su salida ni ocultarla. Si les ocurre en un Windows normal, avisen con el detalle del evento |
+| La aplicación se cierra sola al abrirla | Ver el punto 7 del [§4](#4-escritorio-en-windows): volver a lanzarla; lanzarla siempre **normalmente** (F5, Ctrl+F5 o `dotnet run` desde una terminal normal), sin redirigir su salida ni ocultar la ventana |
 | "No se pudo conectar con el servidor" | La API no está levantada o el puerto 4390 lo usa otra aplicación; revisar `docker compose ps` |
 | "Usuario o contraseña incorrectos" con un usuario *Cliente* | Es lo esperado: el escritorio solo permite administradores y operadores |
 | Visual Studio sugiere actualizar paquetes NuGet | No actualizar: las versiones están fijadas a propósito en `Directory.Packages.props` (compatibles con .NET 8) |
