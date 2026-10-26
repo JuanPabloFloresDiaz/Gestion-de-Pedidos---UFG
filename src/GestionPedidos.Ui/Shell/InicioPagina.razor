@@ -1,54 +1,76 @@
-@* Pantalla de inicio. En el escritorio lleva directo al login; en la web será la portada de la tienda (Fase Web). *@
+@* Portada. En el escritorio lleva directo al login; en la web es la portada de la tienda: promoción, categorías y novedades. *@
 @page "/"
+@layout TiendaLayout
 @implements IDisposable
-@inject SesionService Sesion
+@inject CatalogoViewModel Vm
 @inject NavigationManager Nav
 @inject UiOptions Opciones
 
-@if (!Sesion.Lista)
+<PageTitle>Tienda GP</PageTitle>
+
+@if (!Opciones.EsEscritorio)
 {
-    <div class="centrado"><p class="cargando">Cargando…</p></div>
-}
-else
-{
-    <div class="login-fondo">
-    <div class="login-apariencia"><BotonApariencia /></div>
-        <div class="login-tarjeta">
-            <div class="login-marca" aria-hidden="true">GP</div>
-            <h1>Gestión de Pedidos</h1>
-            <p class="login-sub">Universidad Francisco Gavidia</p>
-            @if (Sesion.Autenticada)
+    <section class="portada">
+        <div class="portada-texto">
+            <span class="portada-etiqueta">Nueva temporada</span>
+            <h1>Encuentra lo que buscas, <em>sin salir de casa</em></h1>
+            <p>Ropa, tecnología, hogar, deportes y más. Haz tu pedido en línea y sigue su estado desde tu cuenta.</p>
+            <div class="portada-botones">
+                <a class="boton boton-primario" href="/tienda">Ver el catálogo</a>
+                <a class="boton boton-secundario" href="/registro">Crear mi cuenta</a>
+            </div>
+            <ul class="portada-ventajas">
+                <li>✔ Pedidos con seguimiento</li><li>✔ Productos descritos al detalle</li><li>✔ Entregas en todo El Salvador</li>
+            </ul>
+        </div>
+        <div class="portada-collage" aria-hidden="true">
+            @foreach (var (c, i) in Vm.Categorias.Take(4).Select((c, i) => (c, i)))
             {
-                <p>Hola, <strong>@Sesion.Usuario!.NombreCompleto</strong>.</p>
-                <p class="nota">La tienda en línea estará disponible próximamente.</p>
-                <Boton AlHacerClic="Salir">Cerrar sesión</Boton>
+                <div class="collage-pieza pieza-@i" style="--h:@TiendaVisual.Tono(c.Id)"><span>@TiendaVisual.Icono(null, c.Nombre)</span></div>
+            }
+        </div>
+    </section>
+
+    <section class="seccion">
+        <div class="seccion-cabecera"><h2>Compra por categoría</h2><a href="/tienda">Ver todo →</a></div>
+        <div class="categorias-tarjetas">
+            @foreach (var c in Vm.Categorias)
+            {
+                <a class="categoria-tarjeta" href="/tienda?categoria=@c.Id" style="--h:@TiendaVisual.Tono(c.Id)">
+                    <span class="categoria-icono" aria-hidden="true">@TiendaVisual.Icono(null, c.Nombre)</span>
+                    <strong>@c.Nombre</strong>
+                    <small>@c.TotalProductos productos · @c.Subcategorias.Count subcategorías</small>
+                </a>
+            }
+        </div>
+    </section>
+
+    <section class="seccion">
+        <div class="seccion-cabecera"><h2>Recién llegados</h2><a href="/tienda?orden=nuevos">Ver más →</a></div>
+        @if (!string.IsNullOrEmpty(Vm.Error)) { <div class="alerta alerta-error" role="alert">@Vm.Error</div> }
+        <div class="cuadricula cuadricula-4">
+            @if (!Vm.Cargado)
+            {
+                @for (var i = 0; i < 4; i++) { <div class="tarjeta-producto esqueleto" aria-hidden="true"></div> }
             }
             else
             {
-                <p class="nota">La tienda en línea estará disponible próximamente. El personal puede ingresar a la administración.</p>
-                <a class="boton boton-primario" href="/ingresar">Ingresar</a>
+                @foreach (var p in Vm.Pagina?.Elementos.Take(8) ?? Enumerable.Empty<ProductoTiendaDto>()) { <TarjetaProducto P="p" @key="p.Id" /> }
             }
         </div>
-    </div>
+    </section>
 }
 
 @code {
-    protected override void OnInitialized() => Sesion.Restaurada += Sesion_Restaurada;
-
-    protected override void OnParametersSet() => Decidir();
-
-    // Escritorio: siempre al login o a la administración. Web con personal conectado: a la administración.
-    private void Decidir()
+    protected override async Task OnInitializedAsync()
     {
-        if (!Sesion.Lista) return;
-        if (Sesion.Autenticada && Sesion.TienePermiso(Permisos.AdminAcceso)) Nav.NavigateTo("/admin", replace: true);
-        else if (Opciones.EsEscritorio) Nav.NavigateTo("/ingresar", replace: true);
+        if (Opciones.EsEscritorio) { Nav.NavigateTo("/ingresar", replace: true); return; }   // el escritorio es solo para el personal
+        Vm.Cambiado += Vm_Cambiado;     // suscripción con +=
+        await Vm.CargarAsync(new FiltrosCatalogo(SoloDisponibles: true));
     }
 
-    private async Task Salir() { await Sesion.CerrarAsync(); StateHasChanged(); }
-
-    private void Sesion_Restaurada(object? sender, EventArgs e) => _ = InvokeAsync(() => { Decidir(); StateHasChanged(); });
+    private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
 
     /// <summary>Baja de la suscripción.</summary>
-    public void Dispose() => Sesion.Restaurada -= Sesion_Restaurada;
+    public void Dispose() => Vm.Cambiado -= Vm_Cambiado;
 }

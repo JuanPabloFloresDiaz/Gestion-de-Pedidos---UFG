@@ -1,0 +1,102 @@
+@* Detalle de un producto: imagen, precio, disponibilidad, cantidad, características y productos relacionados. *@
+@page "/producto/{Id:int}"
+@layout TiendaLayout
+@implements IDisposable
+@inject ProductoViewModel Vm
+@inject NavigationManager Nav
+
+@if (Vm.Producto is { } p)
+{
+    <PageTitle>@p.Nombre · Tienda GP</PageTitle>
+    <nav class="migas" aria-label="Ruta">
+        <a href="/tienda">Tienda</a>
+        @if (p.CategoriaId is not null) { <span>›</span><a href="/tienda?categoria=@p.CategoriaId">@p.Categoria</a> }
+        @if (p.SubcategoriaId is not null) { <span>›</span><a href="/tienda?sub=@p.SubcategoriaId">@p.Subcategoria</a> }
+    </nav>
+
+    <section class="producto">
+        <VisualProducto Icono="@TiendaVisual.Icono(p.Subcategoria, p.Categoria)" Tono="TiendaVisual.Tono(p.CategoriaId)" Clase="visual-grande" Etiqueta="@p.Nombre" />
+        <div class="producto-info">
+            <small class="tarjeta-categoria">@(p.Subcategoria ?? "Sin clasificar")</small>
+            <h1>@p.Nombre</h1>
+            <p class="precio precio-grande">@TiendaVisual.Dinero(p.Precio)</p>
+            <p class="disponibilidad @(p.Disponible ? "ok" : "no")">
+                @(!p.Disponible ? "Agotado por ahora" : p.Existencias is { } n ? $"Disponible · quedan {n} unidades" : "Disponible")
+            </p>
+            <p class="producto-descripcion">@p.Descripcion</p>
+
+            @if (p.Disponible)
+            {
+                <div class="producto-compra">
+                    <div class="cantidad" role="group" aria-label="Cantidad">
+                        <button aria-label="Una menos" disabled="@(Vm.Cantidad <= 1)" @onclick="() => Vm.CambiarCantidad(-1)">−</button>
+                        <span aria-live="polite">@Vm.Cantidad</span>
+                        <button aria-label="Una más" disabled="@(Vm.Cantidad >= p.MaximoPorPedido)" @onclick="() => Vm.CambiarCantidad(1)">+</button>
+                    </div>
+                    <Boton Variante="Primario" AlHacerClic="Vm.AgregarAlCarritoAsync">Agregar al carrito</Boton>
+                    <Boton AlHacerClic="ComprarAhora">Comprar ahora</Boton>
+                </div>
+                <small class="nota">Máximo @p.MaximoPorPedido unidades por pedido.</small>
+                @if (Vm.Aviso is not null) { <div class="alerta alerta-exito" role="status">@Vm.Aviso <a href="/carrito">Ver carrito</a></div> }
+            }
+
+            @if (p.Detalles.Count > 0)
+            {
+                <h2 class="producto-subtitulo">Características</h2>
+                <dl class="caracteristicas">
+                    @foreach (var d in p.Detalles)
+                    {
+                        <div><dt>@d.Filtro</dt><dd><a href="@(new FiltrosCatalogo(SubcategoriaId: p.SubcategoriaId, OpcionIds: new[] { d.OpcionId }).Url())">@d.Valor</a></dd></div>
+                    }
+                </dl>
+            }
+        </div>
+    </section>
+
+    @if (Vm.Relacionados.Count > 0)
+    {
+        <section class="seccion">
+            <h2>También te puede gustar</h2>
+            <div class="cuadricula cuadricula-4">
+                @foreach (var r in Vm.Relacionados) { <TarjetaProducto P="r" @key="r.Id" /> }
+            </div>
+        </section>
+    }
+}
+else if (Vm.NoEncontrado)
+{
+    <div class="vacio">
+        <div class="vacio-icono" aria-hidden="true">🫥</div>
+        <h1>Este producto ya no está disponible</h1>
+        <p>Puede que se haya retirado de la tienda.</p>
+        <a class="boton boton-primario" href="/tienda">Ver el catálogo</a>
+    </div>
+}
+else if (!string.IsNullOrEmpty(Vm.Error))
+{
+    <div class="alerta alerta-error" role="alert">@Vm.Error</div>
+}
+else
+{
+    <div class="producto esqueleto-pagina" aria-hidden="true"><div class="visual visual-grande esqueleto"></div><div class="producto-info"><div class="linea-esqueleto"></div><div class="linea-esqueleto corta"></div></div></div>
+}
+
+@code {
+    /// <summary>Identificador del producto (de la dirección).</summary>
+    [Parameter] public int Id { get; set; }
+
+    protected override void OnInitialized() => Vm.Cambiado += Vm_Cambiado;     // suscripción con +=
+
+    protected override async Task OnParametersSetAsync() => await Vm.CargarAsync(Id);
+
+    private async Task ComprarAhora()
+    {
+        await Vm.AgregarAlCarritoAsync();
+        Nav.NavigateTo("/carrito");
+    }
+
+    private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de la suscripción.</summary>
+    public void Dispose() => Vm.Cambiado -= Vm_Cambiado;
+}

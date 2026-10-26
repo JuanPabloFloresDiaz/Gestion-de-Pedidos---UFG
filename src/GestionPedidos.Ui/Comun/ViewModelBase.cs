@@ -31,12 +31,19 @@ public abstract class ViewModelBase : IDisposable
         Cargando = true; Error = null; OnCambiado();
         try { await operacion(cts.Token); return true; }
         catch (OperationCanceledException) { return false; }   // otra operación reemplazó a esta
-        catch (ApiException ex) { Error = ex.MensajeParaUsuario; return false; }
+        catch (ApiException ex) { if (!InterpretarError(ex)) Error = ex.MensajeParaUsuario; return false; }
         finally
         {
             if (_cts == cts) { Cargando = false; OnCambiado(); }
         }
     }
+
+    /// <summary>
+    /// Gancho para que un ViewModel reaccione a un código de error de negocio concreto (por ejemplo, pedir una confirmación).
+    /// Devuelve <c>true</c> si ya lo manejó y dejó él mismo el mensaje en <see cref="Error"/>.
+    /// </summary>
+    /// <param name="ex">Error de la API.</param>
+    protected virtual bool InterpretarError(ApiException ex) => false;
 
     /// <summary>Cancela lo pendiente al cerrar la pantalla.</summary>
     public virtual void Dispose() => _cts?.Cancel();

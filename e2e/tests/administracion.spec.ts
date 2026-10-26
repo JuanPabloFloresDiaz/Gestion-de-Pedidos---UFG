@@ -13,7 +13,7 @@ async function entrar(page: Page, usuario: string, clave: string) {
 }
 
 test('el administrador inicia sesión, cambia la clave obligatoria y entra a la administración', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/ingresar');
   await expect(page.getByRole('heading', { name: 'Gestión de Pedidos' })).toBeVisible();
   await captura(page, '01-inicio');
 

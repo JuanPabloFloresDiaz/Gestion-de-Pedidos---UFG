@@ -1,0 +1,69 @@
+@* Carrito de compras: cantidades, subtotales y resumen. Para hacer el pedido hay que tener sesión como cliente. *@
+@page "/carrito"
+@layout TiendaLayout
+@implements IDisposable
+@inject CarritoService Carrito
+@inject SesionService Sesion
+@inject NavigationManager Nav
+
+<PageTitle>Carrito · Tienda GP</PageTitle>
+<h1>Tu carrito</h1>
+
+@if (Carrito.Lineas.Count == 0)
+{
+    <div class="vacio">
+        <div class="vacio-icono" aria-hidden="true">🛒</div>
+        <h2>Tu carrito está vacío</h2>
+        <p>Explora el catálogo y agrega lo que te guste.</p>
+        <a class="boton boton-primario" href="/tienda">Ir a la tienda</a>
+    </div>
+}
+else
+{
+    <div class="carrito">
+        <ul class="carrito-lineas">
+            @foreach (var l in Carrito.Lineas)
+            {
+                <li class="carrito-linea" @key="l.ProductoId">
+                    <a href="/producto/@l.ProductoId"><VisualProducto Icono="@l.Icono" Tono="l.Tono" Clase="visual-mini" Etiqueta="@l.Nombre" /></a>
+                    <div class="carrito-datos">
+                        <a href="/producto/@l.ProductoId"><strong>@l.Nombre</strong></a>
+                        <small class="nota">@TiendaVisual.Dinero(l.Precio) c/u</small>
+                        <button class="enlace enlace-peligro" @onclick="() => Carrito.QuitarAsync(l.ProductoId)">Quitar</button>
+                    </div>
+                    <div class="cantidad" role="group" aria-label="Cantidad de @l.Nombre">
+                        <button aria-label="Una menos" disabled="@(l.Cantidad <= 1)" @onclick="() => Carrito.CambiarCantidadAsync(l.ProductoId, l.Cantidad - 1)">−</button>
+                        <span>@l.Cantidad</span>
+                        <button aria-label="Una más" disabled="@(l.Cantidad >= l.Maximo)" @onclick="() => Carrito.CambiarCantidadAsync(l.ProductoId, l.Cantidad + 1)">+</button>
+                    </div>
+                    <strong class="carrito-subtotal">@TiendaVisual.Dinero(l.Subtotal)</strong>
+                </li>
+            }
+        </ul>
+
+        <aside class="carrito-resumen" aria-label="Resumen del pedido">
+            <h2>Resumen</h2>
+            <dl>
+                <div><dt>Productos</dt><dd>@Carrito.Cantidad</dd></div>
+                <div class="total"><dt>Total</dt><dd>@TiendaVisual.Dinero(Carrito.Total)</dd></div>
+            </dl>
+            <small class="nota">El precio final lo confirma la tienda al registrar el pedido.</small>
+            <Boton Variante="Primario" AlHacerClic="HacerPedido">@(Sesion.Autenticada ? "Hacer pedido" : "Ingresar para hacer el pedido")</Boton>
+            <a class="enlace" href="/tienda">Seguir comprando</a>
+            <button class="enlace enlace-peligro" @onclick="Carrito.VaciarAsync">Vaciar carrito</button>
+        </aside>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Carrito.Cambiado += Carrito_Cambiado;     // suscripción con +=
+
+    // Sin sesión se va al ingreso y se vuelve aquí; con sesión de personal no se puede pedir como cliente (se explica allí)
+    private void HacerPedido() =>
+        Nav.NavigateTo(Sesion.Autenticada ? "/pedido" : "/ingresar?retorno=%2Fpedido");
+
+    private void Carrito_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de la suscripción.</summary>
+    public void Dispose() => Carrito.Cambiado -= Carrito_Cambiado;
+}

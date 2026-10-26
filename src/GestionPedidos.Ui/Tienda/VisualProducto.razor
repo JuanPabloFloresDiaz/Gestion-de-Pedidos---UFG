@@ -1,0 +1,13 @@
+@* Imagen de un producto sin fotos: ícono de su categoría sobre un fondo pastel de su tono (cambia con el modo claro/oscuro). *@
+<div class="visual @Clase" style="--h:@Tono" role="img" aria-label="@Etiqueta"><span aria-hidden="true">@Icono</span></div>
+
+@code {
+    /// <summary>Ícono (emoji) a mostrar.</summary>
+    [Parameter] public string Icono { get; set; } = "🛍️";
+    /// <summary>Tono de color (0–359).</summary>
+    [Parameter] public int Tono { get; set; } = 215;
+    /// <summary>Clase extra de tamaño (por ejemplo, <c>visual-grande</c>).</summary>
+    [Parameter] public string? Clase { get; set; }
+    /// <summary>Texto alternativo para lectores de pantalla.</summary>
+    [Parameter] public string Etiqueta { get; set; } = "Producto";
+}

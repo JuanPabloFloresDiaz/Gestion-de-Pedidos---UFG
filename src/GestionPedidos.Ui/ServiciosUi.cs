@@ -10,6 +10,7 @@ using GestionPedidos.Ui.Modulos.Historial;
 using GestionPedidos.Ui.Modulos.Roles;
 using GestionPedidos.Ui.Modulos.Usuarios;
 using GestionPedidos.Ui.Shell;
+using GestionPedidos.Ui.Tienda;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -49,6 +50,12 @@ public static class ServiciosUi
         servicios.AddTransient<CatalogosViewModel>();
         servicios.AddScoped<HistorialService>();
         servicios.AddTransient<HistorialViewModel>();
+        // Tienda pública: servicio de consultas y carrito (por visita) y un ViewModel por página
+        servicios.AddScoped<TiendaService>();
+        servicios.AddScoped<CarritoService>();
+        servicios.AddTransient<CatalogoViewModel>();
+        servicios.AddTransient<ProductoViewModel>();
+        servicios.AddTransient<RegistroViewModel>();
         servicios.AddTransient<LoginViewModel>();
         servicios.AddTransient<CambiarClaveViewModel>();
         return servicios;

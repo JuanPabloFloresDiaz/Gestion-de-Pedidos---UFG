@@ -26,6 +26,10 @@
         <CampoTexto Etiqueta="Contraseña" Tipo="password" @bind-Valor="Vm.Clave" Autocompletar="current-password"
                     Deshabilitado="Vm.Cargando" AlPresionarEnter="Ingresar" />
         <Boton Variante="Primario" Tipo="submit" Cargando="Vm.Cargando">Ingresar</Boton>
+        @if (!Opciones.EsEscritorio)
+        {
+            <p class="nota login-pie">¿Eres cliente y aún no tienes cuenta? <a href="/registro">Créala aquí</a> · <a href="/">Volver a la tienda</a></p>
+        }
     </form>
 </div>
 
@@ -45,6 +49,7 @@
         var sesion = await Vm.IniciarAsync();
         if (sesion is null) return;
         if (sesion.DebeCambiarClave) Nav.NavigateTo("/cambiar-clave");
+        else if (Retorno.Desde(Nav.Uri) is { } retorno) Nav.NavigateTo(retorno);
         else Nav.NavigateTo(sesion.Usuario.Permisos.Contains(Permisos.AdminAcceso) ? "/admin" : "/");
     }
 

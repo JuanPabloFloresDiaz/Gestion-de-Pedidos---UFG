@@ -1,0 +1,187 @@
+@* Catálogo público: categorías y filtros a la izquierda, resultados a la derecha. Los filtros viven en la dirección de la
+   página (se pueden compartir y el botón "atrás" los conserva); la lógica está en CatalogoViewModel. *@
+@page "/tienda"
+@using Microsoft.JSInterop
+@layout TiendaLayout
+@implements IDisposable
+@inject CatalogoViewModel Vm
+@inject NavigationManager Nav
+@inject IJSRuntime Js
+
+<PageTitle>@Vm.Titulo · Tienda GP</PageTitle>
+
+<div class="catalogo">
+    <button class="boton boton-secundario catalogo-filtros-boton" @onclick="() => _abierto = !_abierto" aria-expanded="@_abierto">
+        ⚙ Filtros@(Vm.Aplicados.Count > 0 ? $" ({Vm.Aplicados.Count})" : "")
+    </button>
+
+    <aside class="catalogo-lateral @(_abierto ? "abierto" : "")" aria-label="Categorías y filtros">
+        <section>
+            <h2>Categorías</h2>
+            <ul class="lista-categorias">
+                <li><a href="/tienda" class="@(Vm.CategoriaElegida is null && !Vm.Filtros.HayFiltros ? "activa" : "")">Todos los productos</a></li>
+                @foreach (var c in Vm.Categorias)
+                {
+                    <li>
+                        <a href="@(new FiltrosCatalogo(CategoriaId: c.Id).Url())" class="@(Vm.CategoriaElegida?.Id == c.Id ? "activa" : "")">
+                            @c.Nombre <small>@c.TotalProductos</small>
+                        </a>
+                        @if (Vm.CategoriaElegida?.Id == c.Id)
+                        {
+                            <ul>
+                                @foreach (var s in c.Subcategorias)
+                                {
+                                    <li><a href="@(new FiltrosCatalogo(SubcategoriaId: s.Id).Url())" class="@(Vm.Filtros.SubcategoriaId == s.Id ? "activa" : "")">@s.Nombre <small>@s.TotalProductos</small></a></li>
+                                }
+                            </ul>
+                        }
+                    </li>
+                }
+            </ul>
+        </section>
+
+        @if (Vm.SubcategoriaElegida is { } sub)
+        {
+            @foreach (var f in sub.Filtros)
+            {
+                <details class="filtro-grupo" open>
+                    <summary>@f.Nombre</summary>
+                    @foreach (var o in f.Opciones)
+                    {
+                        <label class="opcion-check">
+                            <input type="checkbox" checked="@Vm.Filtros.Opciones.Contains(o.Id)"
+                                   @onchange="e => Ir(Vm.Filtros.ConOpcion(o.Id, e.Value is true))" />
+                            <span>@o.Valor</span>
+                        </label>
+                    }
+                </details>
+            }
+        }
+        else if (Vm.CategoriaElegida is not null)
+        {
+            <p class="nota">Elija una subcategoría para filtrar por sus características (color, talla, marca…).</p>
+        }
+
+        <details class="filtro-grupo" open>
+            <summary>Precio</summary>
+            <div class="rango-precio">
+                <input type="number" min="0" step="0.01" placeholder="Mín." aria-label="Precio mínimo" value="@_min" @oninput="e => _min = e.Value?.ToString()" />
+                <span>–</span>
+                <input type="number" min="0" step="0.01" placeholder="Máx." aria-label="Precio máximo" value="@_max" @oninput="e => _max = e.Value?.ToString()" />
+                <button class="boton boton-secundario" @onclick="AplicarPrecio">Aplicar</button>
+            </div>
+            @if (_errorPrecio is not null) { <small class="mensaje-error" role="alert">@_errorPrecio</small> }
+        </details>
+
+        <label class="opcion-check">
+            <input type="checkbox" checked="@Vm.Filtros.SoloDisponibles" @onchange="e => Ir(Vm.Filtros with { SoloDisponibles = e.Value is true, Pagina = 1 })" />
+            <span>Solo disponibles</span>
+        </label>
+
+        @if (Vm.Filtros.HayFiltros) { <a class="enlace" href="/tienda">Limpiar filtros</a> }
+    </aside>
+
+    <section class="catalogo-resultados">
+        <div class="catalogo-cabecera">
+            <div>
+                <h1>@Vm.Titulo</h1>
+                <p class="nota">@(Vm.Pagina is null ? "Cargando…" : $"{Vm.Pagina.Total} producto{(Vm.Pagina.Total == 1 ? "" : "s")}")</p>
+            </div>
+            <label class="ordenar">
+                Ordenar por
+                <select @onchange="e => Ir(Vm.Filtros with { Orden = e.Value?.ToString(), Pagina = 1 })" aria-label="Ordenar por">
+                    <option value="nuevos" selected="@(Vm.Filtros.Orden is null or "nuevos")">Más recientes</option>
+                    <option value="precio-asc" selected="@(Vm.Filtros.Orden == "precio-asc")">Precio: menor a mayor</option>
+                    <option value="precio-desc" selected="@(Vm.Filtros.Orden == "precio-desc")">Precio: mayor a menor</option>
+                    <option value="nombre" selected="@(Vm.Filtros.Orden == "nombre")">Nombre (A–Z)</option>
+                </select>
+            </label>
+        </div>
+
+        @if (Vm.Aplicados.Count > 0)
+        {
+            <div class="chips-aplicados" aria-label="Filtros aplicados">
+                @foreach (var a in Vm.Aplicados)
+                {
+                    <button class="chip-filtro" aria-label="Quitar filtro @a.Texto" @onclick="() => Ir(a.Sin)">@a.Texto <span aria-hidden="true">×</span></button>
+                }
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(Vm.Error)) { <div class="alerta alerta-error" role="alert">@Vm.Error</div> }
+
+        @if (!Vm.Cargado)
+        {
+            <div class="cuadricula">
+                @for (var i = 0; i < 6; i++) { <div class="tarjeta-producto esqueleto" aria-hidden="true"></div> }
+            </div>
+        }
+        else if (Vm.Pagina is { Elementos.Count: > 0 })
+        {
+            <div class="cuadricula">
+                @foreach (var p in Vm.Pagina.Elementos) { <TarjetaProducto P="p" @key="p.Id" /> }
+            </div>
+            <Paginador Pagina="Vm.Pagina.Pagina" TotalPaginas="Vm.TotalPaginas" Total="Vm.Pagina.Total" PaginaCambiada="IrAPagina" />
+        }
+        else if (string.IsNullOrEmpty(Vm.Error))
+        {
+            <div class="vacio">
+                <div class="vacio-icono" aria-hidden="true">🔎</div>
+                <h2>No encontramos productos</h2>
+                <p>Prueba quitando algún filtro o buscando otra palabra.</p>
+                <a class="boton boton-primario" href="/tienda">Ver todo el catálogo</a>
+            </div>
+        }
+    </section>
+</div>
+
+@code {
+    private bool _abierto;
+    private string? _min, _max, _errorPrecio;
+
+    [SupplyParameterFromQuery(Name = "q")] public string? Q { get; set; }
+    [SupplyParameterFromQuery(Name = "categoria")] public string? Categoria { get; set; }
+    [SupplyParameterFromQuery(Name = "sub")] public string? Sub { get; set; }
+    [SupplyParameterFromQuery(Name = "op")] public string? Op { get; set; }
+    [SupplyParameterFromQuery(Name = "min")] public string? Min { get; set; }
+    [SupplyParameterFromQuery(Name = "max")] public string? Max { get; set; }
+    [SupplyParameterFromQuery(Name = "disp")] public string? Disp { get; set; }
+    [SupplyParameterFromQuery(Name = "orden")] public string? Orden { get; set; }
+    [SupplyParameterFromQuery(Name = "pag")] public string? Pag { get; set; }
+
+    protected override void OnInitialized() => Vm.Cambiado += Vm_Cambiado;     // suscripción con +=
+
+    // La dirección manda: cada cambio de filtros navega, y aquí se vuelve a cargar con lo que dice la dirección.
+    protected override async Task OnParametersSetAsync()
+    {
+        var f = FiltrosCatalogo.Desde(Q, Categoria, Sub, Op, Min, Max, Disp, Orden, Pag);
+        _min = f.PrecioMin?.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        _max = f.PrecioMax?.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        _abierto = false;
+        await Vm.CargarAsync(f);
+    }
+
+    private void Ir(FiltrosCatalogo f) => Nav.NavigateTo(f.Url());
+
+    private async Task IrAPagina(int pagina)
+    {
+        Ir(Vm.Filtros with { Pagina = pagina });
+        await Js.InvokeVoidAsync("gpTienda.subir");
+    }
+
+    private void AplicarPrecio()
+    {
+        _errorPrecio = null;
+        decimal? min = decimal.TryParse(_min, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var a) ? a : null;
+        decimal? max = decimal.TryParse(_max, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var b) ? b : null;
+        if (min < 0 || max < 0) { _errorPrecio = "El precio no puede ser negativo."; return; }
+        if (min is not null && max is not null && min > max) { _errorPrecio = "El mínimo no puede superar al máximo."; return; }
+        Ir(Vm.Filtros with { PrecioMin = min, PrecioMax = max, Pagina = 1 });
+    }
+
+    // El evento puede llegar fuera del ciclo de render: se repinta con InvokeAsync.
+    private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de la suscripción.</summary>
+    public void Dispose() => Vm.Cambiado -= Vm_Cambiado;
+}

@@ -1,0 +1,33 @@
+@* Tarjeta de producto del catálogo: imagen, nombre, precio, disponibilidad y botón de agregar. *@
+@inject CarritoService Carrito
+@inject IAvisos Avisos
+
+<article class="tarjeta-producto @(P.Disponible ? "" : "agotado")">
+    <a class="tarjeta-enlace" href="/producto/@P.Id" aria-label="Ver @P.Nombre">
+        <div class="tarjeta-visual">
+            <VisualProducto Icono="@TiendaVisual.Icono(P.Subcategoria, P.Categoria)" Tono="TiendaVisual.Tono(P.CategoriaId)" Etiqueta="@P.Nombre" />
+            @if (!P.Disponible) { <span class="insignia insignia-agotado">Agotado</span> }
+            else if (P.Existencias is > 0 and <= 5) { <span class="insignia insignia-pocas">Quedan @P.Existencias</span> }
+        </div>
+        <div class="tarjeta-cuerpo">
+            <small class="tarjeta-categoria">@(P.Subcategoria ?? "Sin clasificar")</small>
+            <h3>@P.Nombre</h3>
+            <strong class="precio">@TiendaVisual.Dinero(P.Precio)</strong>
+        </div>
+    </a>
+    <button class="boton boton-primario tarjeta-agregar" disabled="@(!P.Disponible)" @onclick="Agregar" aria-label="Agregar @P.Nombre al carrito">
+        @(P.Disponible ? "Agregar al carrito" : "No disponible")
+    </button>
+</article>
+
+@code {
+    /// <summary>Producto mostrado.</summary>
+    [Parameter, EditorRequired] public ProductoTiendaDto P { get; set; } = default!;
+
+    private async Task Agregar()
+    {
+        var agregadas = await Carrito.AgregarAsync(ProductoViewModel.LineaDe(P, 1));
+        if (agregadas > 0) Avisos.Exito($"{P.Nombre} se agregó al carrito.");
+        else Avisos.Advertencia($"Ya tiene el máximo de {P.MaximoPorPedido} unidades de este producto.");
+    }
+}

@@ -333,3 +333,8 @@ a { color: var(--color-primario); }
 .opcion-agregar { border: 1px dashed var(--color-borde); background: none; border-radius: 999px; padding: 3px 12px; font: inherit; font-size: .9rem; color: var(--color-primario); cursor: pointer; }
 .opcion-agregar:hover { background: var(--color-superficie-2); }
 .modulo-acciones { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* ---- Tonos pastel de la tienda (fondos de categorías y productos): claro por defecto, más apagados en modo oscuro ---- */
+:root { --pastel-s: 78%; --pastel-l: 92%; --pastel-l2: 85%; }
+@media (prefers-color-scheme: dark) { :root:not([data-modo="claro"]) { --pastel-s: 34%; --pastel-l: 24%; --pastel-l2: 31%; } }
+:root[data-modo="oscuro"] { --pastel-s: 34%; --pastel-l: 24%; --pastel-l2: 31%; }

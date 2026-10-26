@@ -1,0 +1,136 @@
+@* Diseño de la tienda pública: encabezado con buscador, categorías, carrito, apariencia y cuenta; contenido; pie. *@
+@inherits LayoutComponentBase
+@layout LayoutBasico
+@implements IDisposable
+@inject SesionService Sesion
+@inject CarritoService Carrito
+@inject TiendaService Tienda
+@inject NavigationManager Nav
+@inject UiOptions Opciones
+
+@if (Opciones.EsEscritorio)
+{
+    @Body   @* el escritorio es solo para el personal: sin diseño de tienda *@
+}
+else
+{
+<div class="tienda">
+    <header class="tienda-encabezado">
+        <div class="tienda-barra">
+            <a class="tienda-marca" href="/"><span class="marca-logo" aria-hidden="true">GP</span><span>Tienda <strong>GP</strong></span></a>
+
+            <form class="tienda-buscar" role="search" @onsubmit="Buscar" @onsubmit:preventDefault>
+                <input type="search" placeholder="Buscar productos…" aria-label="Buscar productos" value="@_texto" @oninput="e => _texto = e.Value?.ToString()" />
+                <button type="submit" aria-label="Buscar">🔍</button>
+            </form>
+
+            <div class="tienda-acciones">
+                <BotonApariencia />
+                <a class="tienda-carrito" href="/carrito" aria-label="Carrito, @Carrito.Cantidad producto@(Carrito.Cantidad == 1 ? "" : "s")">
+                    <span aria-hidden="true">🛒</span>
+                    @if (Carrito.Cantidad > 0) { <span class="insignia-carrito">@Carrito.Cantidad</span> }
+                </a>
+                @if (Sesion.Autenticada)
+                {
+                    <div class="menu-grupo menu-usuario">
+                        <button class="boton boton-secundario" aria-haspopup="true" aria-expanded="@_menuAbierto" @onclick="() => _menuAbierto = !_menuAbierto">
+                            @PrimerNombre ▾
+                        </button>
+                        @if (_menuAbierto)
+                        {
+                            <div class="apariencia-fondo" @onclick="() => _menuAbierto = false"></div>
+                            <div class="menu-lista menu-lista-derecha" role="menu">
+                                <button role="menuitem" @onclick="@(() => Ir("/mis-pedidos"))">Mis pedidos</button>
+                                @if (Sesion.TienePermiso(Permisos.AdminAcceso)) { <button role="menuitem" @onclick="@(() => Ir("/admin"))">Ir a la administración</button> }
+                                <button role="menuitem" @onclick="CerrarSesion">Cerrar sesión</button>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <a class="boton boton-secundario" href="/ingresar">Ingresar</a>
+                    <a class="boton boton-primario tienda-solo-ancho" href="/registro">Crear cuenta</a>
+                }
+            </div>
+        </div>
+        <nav class="tienda-categorias" aria-label="Categorías">
+            <a href="/tienda" class="@(Activo(null))">Todo</a>
+            @foreach (var c in _categorias)
+            {
+                <a href="/tienda?categoria=@c.Id" class="@(Activo(c.Id))">@TiendaVisual.Icono(null, c.Nombre) @c.Nombre</a>
+            }
+        </nav>
+    </header>
+
+    <main class="tienda-contenido">@Body</main>
+
+    <footer class="tienda-pie">
+        <div>
+            <strong>Tienda GP</strong>
+            <p>Proyecto de Programación Orientada a Eventos · Universidad Francisco Gavidia.</p>
+        </div>
+        <div>
+            <strong>Compra</strong>
+            <a href="/tienda">Catálogo</a>
+            <a href="/carrito">Mi carrito</a>
+            <a href="/mis-pedidos">Mis pedidos</a>
+        </div>
+        <div>
+            <strong>Cuenta</strong>
+            <a href="/registro">Crear cuenta</a>
+            <a href="/ingresar">Ingresar</a>
+        </div>
+    </footer>
+</div>
+}
+
+@code {
+    private IReadOnlyList<GestionPedidos.Contracts.CategoriaTiendaDto> _categorias = Array.Empty<GestionPedidos.Contracts.CategoriaTiendaDto>();
+    private string? _texto;
+    private bool _menuAbierto;
+
+    private string PrimerNombre => Sesion.Usuario?.NombreCompleto.Split(' ')[0] ?? "Mi cuenta";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Carrito.Cambiado += Carrito_Cambiado;     // suscripciones con +=; se liberan en Dispose
+        Sesion.Restaurada += Sesion_Restaurada;
+        Sesion.SesionCerrada += Sesion_Cerrada;
+        try { _categorias = await Tienda.CategoriasAsync(default); }
+        catch (ApiException) { /* sin menú de categorías si la API no responde; el resto de la página sigue */ }
+    }
+
+    // El carrito guardado y la sesión solo se pueden leer después del primer render (hace falta JavaScript)
+    protected override async Task OnAfterRenderAsync(bool primerRender)
+    {
+        if (primerRender) await Carrito.InicializarAsync();
+    }
+
+    private string Activo(int? categoriaId)
+    {
+        var ruta = new Uri(Nav.Uri);
+        if (!ruta.AbsolutePath.StartsWith("/tienda")) return "";
+        var consulta = System.Web.HttpUtility.ParseQueryString(ruta.Query);
+        if (!string.IsNullOrEmpty(consulta["sub"])) return "";   // dentro de una subcategoría no se resalta ninguna categoría
+        var actual = consulta["categoria"];
+        return categoriaId is null ? (string.IsNullOrEmpty(actual) ? "activa" : "") : (actual == categoriaId.ToString() ? "activa" : "");
+    }
+
+    private void Buscar() => Nav.NavigateTo(new FiltrosCatalogo(Q: _texto).Url());
+    private void Ir(string ruta) { _menuAbierto = false; Nav.NavigateTo(ruta); }
+    private async Task CerrarSesion() { _menuAbierto = false; await Sesion.CerrarAsync(); Nav.NavigateTo("/"); }
+
+    // Estos eventos pueden llegar fuera del ciclo de render: se repinta con InvokeAsync.
+    private void Carrito_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+    private void Sesion_Restaurada(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+    private void Sesion_Cerrada(object sender, SesionEventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de las suscripciones (par obligatorio del +=).</summary>
+    public void Dispose()
+    {
+        Carrito.Cambiado -= Carrito_Cambiado;
+        Sesion.Restaurada -= Sesion_Restaurada;
+        Sesion.SesionCerrada -= Sesion_Cerrada;
+    }
+}

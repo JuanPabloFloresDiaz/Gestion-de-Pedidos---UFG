@@ -1,0 +1,65 @@
+@* Registro de clientes de la tienda. Toda la lógica vive en RegistroViewModel. *@
+@page "/registro"
+@layout TiendaLayout
+@implements IDisposable
+@inject RegistroViewModel Vm
+@inject NavigationManager Nav
+
+<PageTitle>Crear cuenta · Tienda GP</PageTitle>
+<div class="formulario-centrado">
+    <form class="tarjeta-formulario" @onsubmit="Registrar" @onsubmit:preventDefault>
+        <h1>Crea tu cuenta</h1>
+        <p class="nota">Con tu cuenta puedes hacer pedidos y ver su estado. ¿Ya tienes una? <a href="/ingresar?retorno=@Uri.EscapeDataString(_retorno)">Ingresa</a>.</p>
+
+        @if (!string.IsNullOrEmpty(Vm.Error)) { <div class="alerta @(Vm.PedirConfirmacion ? "alerta-advertencia" : "alerta-error")" role="alert">@Vm.Error</div> }
+
+        <div class="fila-campos">
+            <CampoTexto Etiqueta="Nombres" @bind-Valor="Vm.Nombres" Error="@Vm.ErrorDe(nameof(Vm.Nombres))" Autocompletar="given-name" />
+            <CampoTexto Etiqueta="Apellidos" @bind-Valor="Vm.Apellidos" Error="@Vm.ErrorDe(nameof(Vm.Apellidos))" Autocompletar="family-name" />
+        </div>
+        <div class="fila-campos">
+            <CampoTexto Etiqueta="Correo electrónico" Tipo="email" @bind-Valor="Vm.Correo" Error="@Vm.ErrorDe(nameof(Vm.Correo))" Autocompletar="email" />
+            <CampoTexto Etiqueta="Teléfono" Tipo="tel" @bind-Valor="Vm.Telefono" Placeholder="7000-0000" Error="@Vm.ErrorDe(nameof(Vm.Telefono))" Autocompletar="tel" />
+        </div>
+        @if (Vm.PedirConfirmacion)
+        {
+            <CampoTexto Etiqueta="Teléfono con el que te registraron antes" Tipo="tel" @bind-Valor="Vm.TelefonoConfirmacion"
+                        Error="@Vm.ErrorDe(nameof(Vm.TelefonoConfirmacion))" />
+        }
+        <div class="fila-campos">
+            <CampoSelector Etiqueta="Departamento" Valor="Vm.DepartamentoId" ValorChanged="Vm.ElegirDepartamentoAsync"
+                           Opciones="Vm.Departamentos.Select(d => (d.Id, d.Nombre))" />
+            <CampoSelector Etiqueta="Distrito" @bind-Valor="Vm.CiudadId" Error="@Vm.ErrorDe(nameof(Vm.CiudadId))"
+                           Deshabilitado="@(Vm.DepartamentoId is null)" Opciones="Vm.Ciudades.Select(c => (c.Id, c.Nombre))" />
+        </div>
+        <CampoTexto Etiqueta="Dirección de entrega" @bind-Valor="Vm.Direccion" Error="@Vm.ErrorDe(nameof(Vm.Direccion))" Autocompletar="street-address" />
+        <div class="fila-campos">
+            <CampoTexto Etiqueta="Contraseña (mínimo 10 caracteres)" Tipo="password" @bind-Valor="Vm.Clave" Error="@Vm.ErrorDe(nameof(Vm.Clave))" Autocompletar="new-password" />
+            <CampoTexto Etiqueta="Repite la contraseña" Tipo="password" @bind-Valor="Vm.RepetirClave" Error="@Vm.ErrorDe(nameof(Vm.RepetirClave))"
+                        Autocompletar="new-password" AlPresionarEnter="Registrar" />
+        </div>
+        <Boton Variante="Primario" Tipo="submit" Cargando="Vm.Cargando">@(Vm.PedirConfirmacion ? "Confirmar y crear cuenta" : "Crear cuenta")</Boton>
+    </form>
+</div>
+
+@code {
+    private string _retorno = "/";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Vm.Cambiado += Vm_Cambiado;     // suscripción con +=
+        _retorno = Retorno.Desde(Nav.Uri) ?? "/";
+        await Vm.IniciarAsync();
+    }
+
+    private async Task Registrar()
+    {
+        var sesion = await Vm.RegistrarAsync();
+        if (sesion is not null) Nav.NavigateTo(_retorno);
+    }
+
+    private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de la suscripción.</summary>
+    public void Dispose() => Vm.Cambiado -= Vm_Cambiado;
+}
