@@ -11,6 +11,10 @@ public sealed class CategoriaConfiguration : IEntityTypeConfiguration<Categoria>
     public void Configure(EntityTypeBuilder<Categoria> b)
     {
         b.ToTable("Categorias");
+        b.Property(x => x.Codigo).HasMaxLength(30).IsRequired()
+            .HasDefaultValueSql("'CAT-' + RIGHT('000000' + CAST(NEXT VALUE FOR dbo.SecuenciaCategorias AS varchar(10)), 6)");
+        b.Property(x => x.ImagenClave).HasMaxLength(200);
+        b.HasIndex(x => x.Codigo).IsUnique();
         b.Property(x => x.Nombre).HasMaxLength(100).IsRequired();
         b.Property(x => x.Descripcion).HasMaxLength(300);
         b.Property(x => x.Activo).HasDefaultValue(true);

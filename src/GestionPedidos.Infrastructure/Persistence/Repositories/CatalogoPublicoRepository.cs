@@ -29,7 +29,7 @@ public sealed class CatalogoPublicoRepository : ICatalogoPublicoRepository
         var categorias = await _db.Categorias.AsNoTracking().Where(c => c.Activo).OrderBy(c => c.Nombre)
             .Select(c => new
             {
-                c.Id, c.Nombre, c.Descripcion,
+                c.Id, c.Nombre, c.Descripcion, c.Codigo, c.ImagenClave,
                 Subs = c.Subcategorias.Where(s => s.Activo).OrderBy(s => s.Nombre).Select(s => new
                 {
                     s.Id, s.Nombre,
@@ -45,7 +45,8 @@ public sealed class CatalogoPublicoRepository : ICatalogoPublicoRepository
         {
             var subs = c.Subs.Select(s => new SubcategoriaTiendaDto(s.Id, s.Nombre, conteos.GetValueOrDefault(s.Id),
                 s.Filtros.Where(f => f.Opciones.Count > 0).Select(f => new FiltroTiendaDto(f.Id, f.Nombre, f.Opciones)).ToList())).ToList();
-            return new CategoriaTiendaDto(c.Id, c.Nombre, c.Descripcion, subs.Sum(s => s.TotalProductos), subs);
+            return new CategoriaTiendaDto(c.Id, c.Nombre, c.Descripcion, subs.Sum(s => s.TotalProductos), subs, c.Codigo,
+                c.ImagenClave is null ? null : $"/imagenes/categorias/{c.Codigo}");
         }).ToList();
     }
 
@@ -92,10 +93,10 @@ public sealed class CatalogoPublicoRepository : ICatalogoPublicoRepository
         return p is null ? null : ADto(p);
     }
 
-    private sealed record Fila(int Id, string Nombre, string Descripcion, decimal Precio, int? SubId, string? Sub, int? CatId, string? Cat,
+    private sealed record Fila(string Codigo, string? ImagenClave, int Id, string Nombre, string Descripcion, decimal Precio, int? SubId, string? Sub, int? CatId, string? Cat,
         int Stock, bool MostrarStock, DateOnly Fecha, List<DetalleProductoTiendaDto> Detalles);
 
-    private static IQueryable<Fila> Proyectar(IQueryable<Producto> q) => q.Select(p => new Fila(p.Id, p.Nombre, p.Descripcion, p.PrecioVenta,
+    private static IQueryable<Fila> Proyectar(IQueryable<Producto> q) => q.Select(p => new Fila(p.Codigo, p.ImagenClave, p.Id, p.Nombre, p.Descripcion, p.PrecioVenta,
         p.SubcategoriaId, p.Subcategoria!.Nombre, p.Subcategoria.CategoriaId, p.Subcategoria.Categoria!.Nombre, p.CantidadStock, p.MostrarStock,
         p.FechaIngreso,
         p.Opciones.OrderBy(o => o.Filtro!.Nombre)
@@ -103,5 +104,6 @@ public sealed class CatalogoPublicoRepository : ICatalogoPublicoRepository
 
     // El stock exacto solo se publica si el administrador lo decidió; si no, apenas "disponible" o no.
     private static ProductoTiendaDto ADto(Fila f) => new(f.Id, f.Nombre, f.Descripcion, f.Precio, f.CatId, f.Cat, f.SubId, f.Sub,
-        f.Stock > 0, f.MostrarStock ? f.Stock : null, Math.Min(f.Stock, MaximoPorPedido), f.Fecha, f.Detalles);
+        f.Stock > 0, f.MostrarStock ? f.Stock : null, Math.Min(f.Stock, MaximoPorPedido), f.Fecha, f.Detalles, f.Codigo,
+        f.ImagenClave is null ? null : $"/imagenes/productos/{f.Codigo}");
 }

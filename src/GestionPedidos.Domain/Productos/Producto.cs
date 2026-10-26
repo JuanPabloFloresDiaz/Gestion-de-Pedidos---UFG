@@ -10,6 +10,14 @@ public class Producto : IAuditable
 {
     /// <summary>Identificador.</summary>
     public int Id { get; set; }
+    /// <summary>
+    /// Código estable e irrepetible del producto (por ejemplo <c>ROP-CAM-001</c>). Es lo que liga la imagen guardada en el almacén
+    /// de objetos con su producto: si la base se pierde y se restaura, la imagen se vuelve a enlazar por este código. Si no se
+    /// indica, la base lo genera (<c>PRD-000123</c>).
+    /// </summary>
+    public string Codigo { get; set; } = default!;
+    /// <summary>Clave de la imagen en el almacén de objetos (<c>productos/CODIGO.jpg</c>), o <c>null</c> si no tiene.</summary>
+    public string? ImagenClave { get; set; }
     /// <summary>Nombre del producto.</summary>
     public string Nombre { get; set; } = "";
     /// <summary>Descripción.</summary>

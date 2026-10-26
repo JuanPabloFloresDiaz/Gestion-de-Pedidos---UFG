@@ -1356,3 +1356,143 @@ GO
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
+)
+BEGIN
+    CREATE SEQUENCE [SecuenciaCategorias] AS int START WITH 1000 INCREMENT BY 1 NO MINVALUE NO MAXVALUE NO CYCLE;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
+)
+BEGIN
+    CREATE SEQUENCE [SecuenciaProductos] AS int START WITH 1000 INCREMENT BY 1 NO MINVALUE NO MAXVALUE NO CYCLE;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
+)
+BEGIN
+    ALTER TABLE [Productos] ADD [Codigo] nvarchar(30) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
+)
+BEGIN
+    UPDATE dbo.Productos SET Codigo = 'PRD-' + RIGHT('000000' + CAST(Id AS varchar(10)), 6)
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
+)
+BEGIN
+    DECLARE @var0 sysname;
+    SELECT @var0 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Productos]') AND [c].[name] = N'Codigo');
+    IF @var0 IS NOT NULL EXEC(N'ALTER TABLE [Productos] DROP CONSTRAINT [' + @var0 + '];');
+    EXEC(N'UPDATE [Productos] SET [Codigo] = ''PRD-'' + RIGHT(''000000'' + CAST(NEXT VALUE FOR dbo.SecuenciaProductos AS varchar(10)), 6) WHERE [Codigo] IS NULL');
+    ALTER TABLE [Productos] ALTER COLUMN [Codigo] nvarchar(30) NOT NULL;
+    ALTER TABLE [Productos] ADD DEFAULT ('PRD-' + RIGHT('000000' + CAST(NEXT VALUE FOR dbo.SecuenciaProductos AS varchar(10)), 6)) FOR [Codigo];
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
+)
+BEGIN
+    ALTER TABLE [Productos] ADD [ImagenClave] nvarchar(200) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
+)
+BEGIN
+    ALTER TABLE [Categorias] ADD [Codigo] nvarchar(30) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
+)
+BEGIN
+    UPDATE dbo.Categorias SET Codigo = 'CAT-' + RIGHT('000000' + CAST(Id AS varchar(10)), 6)
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
+)
+BEGIN
+    DECLARE @var1 sysname;
+    SELECT @var1 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Categorias]') AND [c].[name] = N'Codigo');
+    IF @var1 IS NOT NULL EXEC(N'ALTER TABLE [Categorias] DROP CONSTRAINT [' + @var1 + '];');
+    EXEC(N'UPDATE [Categorias] SET [Codigo] = ''CAT-'' + RIGHT(''000000'' + CAST(NEXT VALUE FOR dbo.SecuenciaCategorias AS varchar(10)), 6) WHERE [Codigo] IS NULL');
+    ALTER TABLE [Categorias] ALTER COLUMN [Codigo] nvarchar(30) NOT NULL;
+    ALTER TABLE [Categorias] ADD DEFAULT ('CAT-' + RIGHT('000000' + CAST(NEXT VALUE FOR dbo.SecuenciaCategorias AS varchar(10)), 6)) FOR [Codigo];
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
+)
+BEGIN
+    ALTER TABLE [Categorias] ADD [ImagenClave] nvarchar(200) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_Productos_Codigo] ON [Productos] ([Codigo]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_Categorias_Codigo] ON [Categorias] ([Codigo]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261026163850_AgregarCodigosEImagenes', N'8.0.11');
+END;
+GO
+
+COMMIT;
+GO
+

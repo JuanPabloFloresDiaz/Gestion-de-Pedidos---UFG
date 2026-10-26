@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using GestionPedidos.Application.Imagenes;
 using GestionPedidos.Application.Seguridad;
 using GestionPedidos.Domain.Catalogo;
 using GestionPedidos.Domain.Clientes;
@@ -54,11 +55,12 @@ public sealed class DatosDeEjemplo
     private readonly IHasherClave _hasher;
     private readonly TimeProvider _reloj;
     private readonly ILogger<DatosDeEjemplo> _log;
+    private readonly IAlmacenImagenes? _almacen;
 
-    /// <summary>Crea el sembrador.</summary>
-    public DatosDeEjemplo(GestionPedidosDbContext db, IHasherClave hasher, TimeProvider reloj, ILogger<DatosDeEjemplo> log)
+    /// <summary>Crea el sembrador. Sin almacén de imágenes se siembra todo menos las imágenes.</summary>
+    public DatosDeEjemplo(GestionPedidosDbContext db, IHasherClave hasher, TimeProvider reloj, ILogger<DatosDeEjemplo> log, IAlmacenImagenes? almacen = null)
     {
-        _db = db; _hasher = hasher; _reloj = reloj; _log = log;
+        _db = db; _hasher = hasher; _reloj = reloj; _log = log; _almacen = almacen;
     }
 
     /// <summary>Siembra los datos de ejemplo si la base está vacía de catálogo, productos y clientes.</summary>
@@ -82,6 +84,7 @@ public sealed class DatosDeEjemplo
 
         var (categorias, subcategorias, opcionesPorSub) = await SembrarClasificacionAsync(ahora, ct);
         var productos = await SembrarProductosAsync(subcategorias, opcionesPorSub, rnd, ahora, ct);
+        await SembrarImagenesAsync(categorias, productos, ct);
         var personal = await SembrarPersonalAsync(admin, ahora, ct);
         var (clientes, cuentasWeb) = await SembrarClientesAsync(rnd, ahora, ct);
         var pedidos = await SembrarPedidosAsync(clientes, cuentasWeb, productos, personal, rnd, ahora, ct);
@@ -101,7 +104,7 @@ public sealed class DatosDeEjemplo
 
         foreach (var c in CatalogoDeEjemplo.Categorias)
         {
-            var categoria = new Categoria { Nombre = c.Nombre, Descripcion = c.Descripcion };
+            var categoria = new Categoria { Codigo = c.Codigo, Nombre = c.Nombre, Descripcion = c.Descripcion };
             categorias.Add(categoria);
             foreach (var s in c.Subcategorias)
             {
@@ -124,7 +127,7 @@ public sealed class DatosDeEjemplo
             }
         }
         // Una categoría inactiva y vacía: sirve para probar la eliminación definitiva desde la pantalla
-        var vieja = new Categoria { Nombre = CatalogoDeEjemplo.CategoriaInactiva, Descripcion = "Colección anterior, ya sin productos" };
+        var vieja = new Categoria { Codigo = CatalogoDeEjemplo.CodigoCategoriaInactiva, Nombre = CatalogoDeEjemplo.CategoriaInactiva, Descripcion = "Colección anterior, ya sin productos" };
         vieja.CambiarEstado(false, ahora.AddDays(-30));
         categorias.Add(vieja);
 
@@ -146,8 +149,10 @@ public sealed class DatosDeEjemplo
         {
             var clave = Clave(c.Nombre, s.Nombre);
             var sub = subs[clave];
+            var numero = 0;
             foreach (var pe in s.Productos)
             {
+                numero++;
                 var fijas = pe.Detalle.Split(';', StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => x.Split('=', 2)).ToDictionary(x => x[0], x => x[1]);
                 var detalle = new List<(int, int)>();
@@ -160,6 +165,8 @@ public sealed class DatosDeEjemplo
 
                 var p = new Producto
                 {
+                    // Código humano y estable (ROP-CAM-001): con él se nombra la imagen en el almacén y se puede recuperar si la base se pierde
+                    Codigo = $"{c.Codigo}-{s.Codigo}-{numero:000}",
                     Nombre = pe.Nombre, Descripcion = pe.Descripcion, CantidadStock = pe.Stock, PrecioVenta = pe.Precio,
                     FechaIngreso = hoy.AddDays(-rnd.Next(25, 120)),
                     MostrarStock = indice % 4 == 0,   // una cuarta parte muestra la cantidad exacta en la tienda
@@ -173,6 +180,40 @@ public sealed class DatosDeEjemplo
         _db.Productos.AddRange(productos);
         await _db.SaveChangesAsync(ct);
         return productos;
+    }
+
+    // ------------------------------------------------------------------ imágenes
+    /// <summary>
+    /// Sube al almacén las imágenes de ejemplo (incrustadas, nombradas con el código: <c>productos/ROP-CAM-001.jpg</c>) y las liga a su
+    /// producto o categoría. Si el almacén no responde se sigue sin imágenes: el resto de los datos no depende de ellas.
+    /// </summary>
+    private async Task SembrarImagenesAsync(List<Categoria> categorias, List<Producto> productos, CancellationToken ct)
+    {
+        if (_almacen is null) { _log.LogInformation("Datos de ejemplo: sin almacén de imágenes configurado; se omiten las imágenes."); return; }
+        int subidas = 0;
+        try
+        {
+            foreach (var (tipo, codigo, asignar) in categorias.Select(c => (TipoImagen.Categoria, c.Codigo, (Action<string>)(k => c.ImagenClave = k)))
+                         .Concat(productos.Select(p => (TipoImagen.Producto, p.Codigo, (Action<string>)(k => p.ImagenClave = k)))))
+            {
+                var clave = ClavesDeImagen.Clave(tipo, codigo, "jpg");
+                await using var flujo = typeof(DatosDeEjemplo).Assembly.GetManifestResourceStream(clave);   // el nombre del recurso es la clave
+                if (flujo is null) continue;   // sin foto para ese código: la tienda muestra el ícono de su categoría
+                await _almacen.GuardarAsync(clave, flujo, "image/jpeg", ct);
+                asignar(clave);
+                subidas++;
+            }
+            await _db.SaveChangesAsync(ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _log.LogWarning(ex, "Datos de ejemplo: no se pudieron subir las imágenes al almacén (¿Garage está encendido?). Se continúa sin ellas.");
+            _db.ChangeTracker.Clear();   // lo asignado a medias se descarta; las claves solo se guardan si todo salió bien
+            foreach (var c in categorias) c.ImagenClave = null;
+            foreach (var p in productos) p.ImagenClave = null;
+            return;
+        }
+        _log.LogInformation("Datos de ejemplo: {Subidas} imágenes subidas al almacén y ligadas por código.", subidas);
     }
 
     // ------------------------------------------------------------------ personal

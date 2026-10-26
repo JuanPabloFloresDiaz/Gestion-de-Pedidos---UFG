@@ -41,6 +41,13 @@ public abstract class ElementoDeCatalogo : IAuditable
 /// <summary>Categoría: agrupa subcategorías (por ejemplo, <i>Ropa</i>).</summary>
 public class Categoria : ElementoDeCatalogo
 {
+    /// <summary>
+    /// Código estable e irrepetible de la categoría (por ejemplo <c>ROP</c>); liga su imagen del almacén de objetos y permite
+    /// recuperarla si la base se restaura. Si no se indica, la base lo genera (<c>CAT-000007</c>).
+    /// </summary>
+    public string Codigo { get; set; } = default!;
+    /// <summary>Clave de la imagen en el almacén de objetos (<c>categorias/CODIGO.jpg</c>), o <c>null</c> si no tiene.</summary>
+    public string? ImagenClave { get; set; }
     /// <summary>Nombre (único).</summary>
     public string Nombre { get; set; } = "";
     /// <summary>Descripción opcional.</summary>

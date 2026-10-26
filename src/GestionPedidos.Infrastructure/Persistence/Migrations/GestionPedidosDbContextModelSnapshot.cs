@@ -22,6 +22,12 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.HasSequence<int>("SecuenciaCategorias")
+                .StartsAt(1000L);
+
+            modelBuilder.HasSequence<int>("SecuenciaProductos")
+                .StartsAt(1000L);
+
             modelBuilder.Entity("GestionPedidos.Domain.Catalogo.Categoria", b =>
                 {
                     b.Property<int>("Id")
@@ -39,6 +45,13 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                         .HasPrecision(0)
                         .HasColumnType("datetimeoffset(0)");
 
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValueSql("'CAT-' + RIGHT('000000' + CAST(NEXT VALUE FOR dbo.SecuenciaCategorias AS varchar(10)), 6)");
+
                     b.Property<DateTimeOffset>("CreadoEn")
                         .HasPrecision(0)
                         .HasColumnType("datetimeoffset(0)");
@@ -50,6 +63,10 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset?>("EliminadoEn")
                         .HasPrecision(0)
                         .HasColumnType("datetimeoffset(0)");
+
+                    b.Property<string>("ImagenClave")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -63,6 +80,9 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                         .HasColumnType("rowversion");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
 
                     b.HasIndex("Nombre")
                         .IsUnique();
@@ -2477,6 +2497,13 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                     b.Property<int>("CantidadStock")
                         .HasColumnType("int");
 
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValueSql("'PRD-' + RIGHT('000000' + CAST(NEXT VALUE FOR dbo.SecuenciaProductos AS varchar(10)), 6)");
+
                     b.Property<DateTimeOffset>("CreadoEn")
                         .HasPrecision(0)
                         .HasColumnType("datetimeoffset(0)");
@@ -2494,6 +2521,10 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("date")
                         .HasDefaultValueSql("CONVERT(date, SYSUTCDATETIME())");
+
+                    b.Property<string>("ImagenClave")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<bool>("MostrarStock")
                         .ValueGeneratedOnAdd()
@@ -2521,6 +2552,9 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Activo");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
 
                     b.HasIndex("Nombre");
 

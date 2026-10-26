@@ -10,7 +10,8 @@ public sealed record FiltroTiendaDto(int Id, string Nombre, IReadOnlyList<Opcion
 public sealed record SubcategoriaTiendaDto(int Id, string Nombre, int TotalProductos, IReadOnlyList<FiltroTiendaDto> Filtros);
 
 /// <summary>Categoría de la tienda con sus subcategorías (el menú de navegación).</summary>
-public sealed record CategoriaTiendaDto(int Id, string Nombre, string? Descripcion, int TotalProductos, IReadOnlyList<SubcategoriaTiendaDto> Subcategorias);
+public sealed record CategoriaTiendaDto(int Id, string Nombre, string? Descripcion, int TotalProductos, IReadOnlyList<SubcategoriaTiendaDto> Subcategorias,
+    string? Codigo = null, string? ImagenUrl = null);
 
 /// <summary>Una característica del producto: el filtro y la opción elegida (por ejemplo, Color: Negro).</summary>
 public sealed record DetalleProductoTiendaDto(int FiltroId, string Filtro, int OpcionId, string Valor);
@@ -21,7 +22,7 @@ public sealed record DetalleProductoTiendaDto(int FiltroId, string Filtro, int O
 /// </summary>
 public sealed record ProductoTiendaDto(int Id, string Nombre, string Descripcion, decimal Precio, int? CategoriaId, string? Categoria,
     int? SubcategoriaId, string? Subcategoria, bool Disponible, int? Existencias, int MaximoPorPedido, DateOnly FechaIngreso,
-    IReadOnlyList<DetalleProductoTiendaDto> Detalles);
+    IReadOnlyList<DetalleProductoTiendaDto> Detalles, string? Codigo = null, string? ImagenUrl = null);
 
 /// <summary>Consulta del catálogo público: texto, clasificación, opciones de filtro, precio, orden y página.</summary>
 /// <param name="Q">Texto buscado en nombre o descripción.</param>
@@ -37,3 +38,9 @@ public sealed record ProductoTiendaDto(int Id, string Nombre, string Descripcion
 public sealed record ConsultaCatalogo(string? Q = null, int? CategoriaId = null, int? SubcategoriaId = null,
     IReadOnlyList<int>? OpcionIds = null, decimal? PrecioMin = null, decimal? PrecioMax = null, bool SoloDisponibles = false,
     string? Orden = null, int? Pagina = null, int? Tamano = null);
+
+/// <summary>Resultado de volver a ligar las imágenes del almacén con sus productos y categorías por código.</summary>
+/// <param name="Enlazadas">Imágenes que se ligaron (no estaban ligadas).</param>
+/// <param name="YaEnlazadas">Imágenes que ya estaban bien ligadas.</param>
+/// <param name="SinDestino">Imágenes cuyo código no corresponde a ningún producto ni categoría.</param>
+public sealed record ReenlaceImagenesDto(int Enlazadas, int YaEnlazadas, int SinDestino);

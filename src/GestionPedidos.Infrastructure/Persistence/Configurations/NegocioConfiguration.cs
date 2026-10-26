@@ -45,6 +45,11 @@ public sealed class ProductoConfiguration : IEntityTypeConfiguration<Producto>
             t.HasCheckConstraint("CK_Productos_PrecioVenta", "[PrecioVenta] >= 0");
         });
         b.Property(x => x.Nombre).HasMaxLength(150).IsRequired();
+        // Código estable: si no se indica, la base lo genera con una secuencia (PRD-000123). Ver [BaseDatos.md §4.8].
+        b.Property(x => x.Codigo).HasMaxLength(30).IsRequired()
+            .HasDefaultValueSql("'PRD-' + RIGHT('000000' + CAST(NEXT VALUE FOR dbo.SecuenciaProductos AS varchar(10)), 6)");
+        b.Property(x => x.ImagenClave).HasMaxLength(200);
+        b.HasIndex(x => x.Codigo).IsUnique();
         b.Property(x => x.Descripcion).HasMaxLength(500).IsRequired();
         b.Property(x => x.FechaIngreso).HasColumnType("date").HasDefaultValueSql("CONVERT(date, SYSUTCDATETIME())");
         b.Property(x => x.MostrarStock).HasDefaultValue(false);

@@ -6,6 +6,8 @@ using GestionPedidos.Application.Tienda;
 using GestionPedidos.Application.Common;
 using GestionPedidos.Application.Eventos;
 using GestionPedidos.Application.Historial;
+using GestionPedidos.Application.Imagenes;
+using GestionPedidos.Infrastructure.Almacen;
 using GestionPedidos.Application.Seguridad;
 using GestionPedidos.Application.Usuarios;
 using GestionPedidos.Infrastructure.Historial;
@@ -39,6 +41,8 @@ public static class DependencyInjection
         servicios.AddScoped<IClasificacionRepository, ClasificacionRepository>();
         servicios.AddScoped<ICatalogoPublicoRepository, CatalogoPublicoRepository>();
         servicios.AddScoped<IPedidosClienteRepository, PedidosClienteRepository>();
+        servicios.AddScoped<IImagenesRepository, ImagenesRepository>();
+        servicios.AddSingleton<IAlmacenImagenes, AlmacenImagenesS3>();   // el cliente S3 no abre conexiones hasta que se usa
         servicios.AddSingleton<IHasherClave, HasherClave>();
         servicios.AddScoped<AdministradorInicial>();
         servicios.AddScoped<DatosDeEjemplo>();
@@ -61,6 +65,8 @@ public static class DependencyInjection
         servicios.AddScoped<ListarCiudades>();
         servicios.AddScoped<ListarActividades>();
         servicios.AddScoped<ConsultarCatalogoPublico>();
+        servicios.AddScoped<ObtenerImagen>();
+        servicios.AddScoped<GestionarImagenes>();
         servicios.AddScoped<PrepararPedidoDeCliente>();
         servicios.AddScoped<RealizarPedidoDeCliente>();
         servicios.AddScoped<ListarPedidosDeCliente>();

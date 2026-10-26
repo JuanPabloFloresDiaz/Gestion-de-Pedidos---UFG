@@ -11,9 +11,13 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Identity.Core" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <!-- Cliente S3 para Garage (almacén de imágenes) -->
+    <PackageReference Include="AWSSDK.S3" />
   </ItemGroup>
   <ItemGroup>
     <!-- Catálogo geográfico de El Salvador: 14 departamentos y 262 distritos -->
     <EmbeddedResource Include="..\..\seed\el-salvador-geo.json" LogicalName="el-salvador-geo.json" />
+    <!-- Imágenes de ejemplo: se llaman como el CÓDIGO del producto o de la categoría (productos/ROP-CAM-001.jpg; el nombre del recurso es la misma clave que se usa en el almacén) -->
+    <EmbeddedResource Include="..\..\seed\imagenes\**\*.jpg" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

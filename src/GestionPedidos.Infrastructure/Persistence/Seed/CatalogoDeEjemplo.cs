@@ -10,10 +10,10 @@ internal sealed record FiltroEj(string Nombre, string[] Opciones);
 internal sealed record ProductoEj(string Nombre, string Descripcion, decimal Precio, int Stock, string Detalle, bool Activo = true);
 
 /// <summary>Subcategoría de ejemplo.</summary>
-internal sealed record SubcategoriaEj(string Nombre, string Descripcion, FiltroEj[] Filtros, ProductoEj[] Productos);
+internal sealed record SubcategoriaEj(string Codigo, string Nombre, string Descripcion, FiltroEj[] Filtros, ProductoEj[] Productos);
 
 /// <summary>Categoría de ejemplo.</summary>
-internal sealed record CategoriaEj(string Nombre, string Descripcion, SubcategoriaEj[] Subcategorias);
+internal sealed record CategoriaEj(string Codigo, string Nombre, string Descripcion, SubcategoriaEj[] Subcategorias);
 
 /// <summary>
 /// Datos realistas del catálogo para desarrollo y demostraciones ([CatalogoProductos.md §11]): 6 categorías con 3 a 5
@@ -30,15 +30,17 @@ internal static class CatalogoDeEjemplo
 
     /// <summary>Categoría que se deja inactiva y vacía a propósito, para probar la eliminación definitiva.</summary>
     public const string CategoriaInactiva = "Temporada pasada";
+    /// <summary>Código de la categoría inactiva de ejemplo.</summary>
+    public const string CodigoCategoriaInactiva = "TPA";
     /// <summary>Opción que se deja inactiva a propósito (Color de camisas).</summary>
     public const string OpcionInactiva = "Fucsia";
 
     /// <summary>Las categorías de ejemplo.</summary>
     public static readonly CategoriaEj[] Categorias =
     {
-        new("Ropa", "Prendas de vestir para toda ocasión y clima", new[]
+        new("ROP", "Ropa", "Prendas de vestir para toda ocasión y clima", new[]
         {
-            new SubcategoriaEj("Camisas", "Camisas y camisetas para hombre y mujer",
+            new SubcategoriaEj("CAM", "Camisas", "Camisas y camisetas para hombre y mujer",
                 new[] { F("Clima", Clima), F("Color", "Blanco", "Azul", "Celeste", "Negro", "Rojo", "Fucsia"), F("Material", "Algodón", "Lino", "Poliéster"),
                         F("Marca", "Polo Club", "Arrow Street", "Basement"), F("Talla", TallasRopa) },
                 new[]
@@ -47,7 +49,7 @@ internal static class CatalogoDeEjemplo
                     P("Camisa de lino manga corta", "Tela ligera y fresca para los días de calor.", 19.50m, 55, "Clima=Cálido;Color=Blanco;Material=Lino;Marca=Basement;Talla=L"),
                     P("Camiseta polo clásica", "Polo de piqué con bordado en el pecho.", 16.00m, 80, "Clima=Cálido;Color=Azul;Material=Algodón;Marca=Polo Club;Talla=M"),
                 }),
-            new SubcategoriaEj("Pantalones", "Jeans, de vestir y casuales",
+            new SubcategoriaEj("PAN", "Pantalones", "Jeans, de vestir y casuales",
                 new[] { F("Clima", Clima), F("Color", "Negro", "Azul", "Gris", "Beige", "Verde"), F("Material", "Mezclilla", "Gabardina", "Algodón"),
                         F("Marca", "Denim Co", "Urban Fit", "Classic Wear"), F("Talla", "28", "30", "32", "34", "36") },
                 new[]
@@ -56,7 +58,7 @@ internal static class CatalogoDeEjemplo
                     P("Pantalón de vestir de gabardina", "Corte recto, perfecto para ocasiones formales.", 29.99m, 35, "Clima=Fresco;Color=Gris;Material=Gabardina;Marca=Classic Wear;Talla=34"),
                     P("Pantalón cargo con bolsillos", "Cómodo y resistente para el día a día.", 27.50m, 45, "Clima=Mixto;Color=Verde;Material=Algodón;Marca=Urban Fit;Talla=30"),
                 }),
-            new SubcategoriaEj("Calzado", "Tenis, botas y sandalias",
+            new SubcategoriaEj("CAL", "Calzado", "Tenis, botas y sandalias",
                 new[] { F("Clima", Clima), F("Color", Colores), F("Material", "Cuero", "Lona", "Sintético", "Malla"),
                         F("Marca", "Stride", "Urban Fit", "TrailOne"), F("Talla", "38", "39", "40", "41", "42", "43") },
                 new[]
@@ -65,7 +67,7 @@ internal static class CatalogoDeEjemplo
                     P("Botas de cuero", "Botas resistentes con suela antideslizante.", 79.00m, 20, "Clima=Frío;Color=Negro;Material=Cuero;Marca=TrailOne;Talla=41"),
                     P("Sandalias casuales", "Sandalias cómodas para el verano.", 22.00m, 50, "Clima=Cálido;Color=Beige;Material=Sintético;Marca=Urban Fit;Talla=39"),
                 }),
-            new SubcategoriaEj("Chaquetas y abrigos", "Para días frescos, fríos o de lluvia",
+            new SubcategoriaEj("CHA", "Chaquetas y abrigos", "Para días frescos, fríos o de lluvia",
                 new[] { F("Clima", "Frío", "Fresco", "Lluvia"), F("Color", Colores), F("Material", "Poliéster", "Nylon", "Lana", "Cuero"),
                         F("Marca", "TrailOne", "Classic Wear", "Basement"), F("Talla", TallasRopa) },
                 new[]
@@ -73,7 +75,7 @@ internal static class CatalogoDeEjemplo
                     P("Chaqueta rompevientos impermeable", "Ligera y plegable, con capucha ajustable.", 39.99m, 42, "Clima=Lluvia;Color=Azul;Material=Nylon;Marca=TrailOne;Talla=L"),
                     P("Abrigo largo de lana", "Abrigo elegante para las noches frías.", 89.00m, 12, "Clima=Frío;Color=Gris;Material=Lana;Marca=Classic Wear;Talla=M"),
                 }),
-            new SubcategoriaEj("Complementos", "Cinturones, gorras, bufandas y más",
+            new SubcategoriaEj("COM", "Complementos", "Cinturones, gorras, bufandas y más",
                 new[] { F("Color", Colores), F("Material", "Cuero", "Tela", "Lana", "Metal"), F("Marca", "Classic Wear", "Basement", "Urban Fit") },
                 new[]
                 {
@@ -83,9 +85,9 @@ internal static class CatalogoDeEjemplo
                 }),
         }),
 
-        new("Tecnología", "Celulares, computadoras, audio y accesorios", new[]
+        new("TEC", "Tecnología", "Celulares, computadoras, audio y accesorios", new[]
         {
-            new SubcategoriaEj("Celulares", "Teléfonos inteligentes",
+            new SubcategoriaEj("CEL", "Celulares", "Teléfonos inteligentes",
                 new[] { F("Marca", "Nova", "Zenith", "Orbit"), F("Almacenamiento", "64 GB", "128 GB", "256 GB"), F("Memoria RAM", "4 GB", "6 GB", "8 GB"),
                         F("Color", "Negro", "Azul", "Plata"), F("Pantalla", "6.1\"", "6.5\"", "6.7\"") },
                 new[]
@@ -94,7 +96,7 @@ internal static class CatalogoDeEjemplo
                     P("Zenith Pro 256 GB", "Gama alta con pantalla AMOLED y carga rápida.", 449.00m, 14, "Marca=Zenith;Almacenamiento=256 GB;Memoria RAM=8 GB;Color=Azul;Pantalla=6.7\""),
                     P("Orbit Lite 64 GB", "Sencillo, ligero y económico.", 139.00m, 40, "Marca=Orbit;Almacenamiento=64 GB;Memoria RAM=4 GB;Color=Plata;Pantalla=6.1\""),
                 }),
-            new SubcategoriaEj("Laptops", "Computadoras portátiles para estudio, trabajo y juegos",
+            new SubcategoriaEj("LAP", "Laptops", "Computadoras portátiles para estudio, trabajo y juegos",
                 new[] { F("Marca", "Nova", "Zenith", "Orbit"), F("Memoria RAM", "8 GB", "16 GB", "32 GB"), F("Almacenamiento", "256 GB SSD", "512 GB SSD", "1 TB SSD"), F("Pantalla", "14\"", "15.6\"") },
                 new[]
                 {
@@ -102,7 +104,7 @@ internal static class CatalogoDeEjemplo
                     P("Nova Gamer 15", "Procesador de alto rendimiento y gráficos dedicados.", 1199.00m, 6, "Marca=Nova;Memoria RAM=32 GB;Almacenamiento=1 TB SSD;Pantalla=15.6\""),
                     P("Orbit Air 15", "Equilibrio entre precio y desempeño.", 489.00m, 18, "Marca=Orbit;Memoria RAM=8 GB;Almacenamiento=256 GB SSD;Pantalla=15.6\""),
                 }),
-            new SubcategoriaEj("Audio", "Audífonos y bocinas",
+            new SubcategoriaEj("AUD", "Audio", "Audífonos y bocinas",
                 new[] { F("Tipo", "Audífonos inalámbricos", "Audífonos con cable", "Bocina portátil"), F("Marca", "Nova", "Zenith", "SoundWave"),
                         F("Color", "Negro", "Blanco", "Azul", "Rojo"), F("Conectividad", "Bluetooth", "Cable 3.5 mm", "USB-C") },
                 new[]
@@ -111,7 +113,7 @@ internal static class CatalogoDeEjemplo
                     P("Bocina portátil resistente al agua", "Sonido potente y certificación IPX7.", 45.00m, 28, "Tipo=Bocina portátil;Marca=Zenith;Color=Azul;Conectividad=Bluetooth"),
                     P("Audífonos con cable", "Clásicos, con micrófono integrado.", 12.99m, 100, "Tipo=Audífonos con cable;Marca=Nova;Color=Blanco;Conectividad=Cable 3.5 mm"),
                 }),
-            new SubcategoriaEj("Accesorios", "Cargadores, cables, baterías y periféricos",
+            new SubcategoriaEj("ACC", "Accesorios", "Cargadores, cables, baterías y periféricos",
                 new[] { F("Tipo", "Cargador", "Cable", "Batería externa", "Mouse"), F("Marca", "Nova", "Zenith", "Orbit"), F("Color", "Negro", "Blanco", "Gris") },
                 new[]
                 {
@@ -121,9 +123,9 @@ internal static class CatalogoDeEjemplo
                 }),
         }),
 
-        new("Hogar y cocina", "Todo para equipar y decorar la casa", new[]
+        new("HOG", "Hogar y cocina", "Todo para equipar y decorar la casa", new[]
         {
-            new SubcategoriaEj("Electrodomésticos pequeños", "Pequeños aparatos para la cocina",
+            new SubcategoriaEj("ELE", "Electrodomésticos pequeños", "Pequeños aparatos para la cocina",
                 new[] { F("Tipo", "Licuadora", "Cafetera", "Tostadora", "Freidora de aire", "Batidora"), F("Marca", "HomeChef", "Casa Viva", "Kitchen+"),
                         F("Color", "Negro", "Blanco", "Acero"), F("Potencia", "300 W", "600 W", "1000 W", "1500 W") },
                 new[]
@@ -132,7 +134,7 @@ internal static class CatalogoDeEjemplo
                     P("Freidora de aire de 4 litros", "Cocina con poco o nada de aceite.", 79.00m, 22, "Tipo=Freidora de aire;Marca=Kitchen+;Color=Negro;Potencia=1500 W"),
                     P("Cafetera de goteo de 12 tazas", "Con temporizador y plato calefactor.", 32.50m, 26, "Tipo=Cafetera;Marca=Casa Viva;Color=Acero;Potencia=1000 W"),
                 }),
-            new SubcategoriaEj("Utensilios y ollas", "Para cocinar, preparar y almacenar",
+            new SubcategoriaEj("UTE", "Utensilios y ollas", "Para cocinar, preparar y almacenar",
                 new[] { F("Material", "Acero inoxidable", "Antiadherente", "Hierro fundido", "Vidrio", "Silicona", "Bambú"), F("Marca", "HomeChef", "Casa Viva", "Kitchen+"),
                         F("Uso", "Cocción", "Preparación", "Almacenamiento") },
                 new[]
@@ -141,7 +143,7 @@ internal static class CatalogoDeEjemplo
                     P("Sartén antiadherente de 28 cm", "Apta para todo tipo de cocina.", 19.99m, 44, "Material=Antiadherente;Marca=Kitchen+;Uso=Cocción"),
                     P("Tabla de cortar de bambú", "Resistente y fácil de limpiar.", 11.50m, 65, "Material=Bambú;Marca=Casa Viva;Uso=Preparación"),
                 }),
-            new SubcategoriaEj("Decoración", "Detalles para darle vida a los espacios",
+            new SubcategoriaEj("DEC", "Decoración", "Detalles para darle vida a los espacios",
                 new[] { F("Estilo", "Moderno", "Rústico", "Minimalista"), F("Material", "Cerámica", "Madera", "Vidrio", "Tela"), F("Color", "Blanco", "Negro", "Beige", "Verde", "Azul") },
                 new[]
                 {
@@ -149,7 +151,7 @@ internal static class CatalogoDeEjemplo
                     P("Cojín decorativo", "Funda lavable con relleno suave.", 9.99m, 85, "Estilo=Moderno;Material=Tela;Color=Verde"),
                     P("Reloj de pared de madera", "Mecanismo silencioso, 35 cm. Descontinuado.", 21.00m, 19, "Estilo=Rústico;Material=Madera;Color=Beige", activo: false),
                 }),
-            new SubcategoriaEj("Ropa de cama", "Sábanas, edredones y almohadas",
+            new SubcategoriaEj("CAMA", "Ropa de cama", "Sábanas, edredones y almohadas",
                 new[] { F("Tamaño", "Individual", "Matrimonial", "Queen", "King"), F("Material", "Algodón", "Microfibra", "Poliéster"), F("Color", "Blanco", "Gris", "Azul", "Beige"),
                         F("Clima", "Cálido", "Fresco", "Frío") },
                 new[]
@@ -159,9 +161,9 @@ internal static class CatalogoDeEjemplo
                 }),
         }),
 
-        new("Deportes", "Equipo y accesorios para entrenar y competir", new[]
+        new("DEP", "Deportes", "Equipo y accesorios para entrenar y competir", new[]
         {
-            new SubcategoriaEj("Fútbol", "Balones, calzado y protección",
+            new SubcategoriaEj("FUT", "Fútbol", "Balones, calzado y protección",
                 new[] { F("Tipo", "Balón", "Zapatos", "Espinilleras", "Uniforme"), F("Marca", "Goal Pro", "Stride", "TrailOne"), F("Color", "Blanco", "Negro", "Azul", "Rojo", "Verde") },
                 new[]
                 {
@@ -169,7 +171,7 @@ internal static class CatalogoDeEjemplo
                     P("Espinilleras de protección", "Ligeras, con almohadillado de espuma.", 12.00m, 60, "Tipo=Espinilleras;Marca=Goal Pro;Color=Negro"),
                     P("Zapatos de fútbol para césped sintético", "Tacos cortos y ajuste firme.", 49.90m, 24, "Tipo=Zapatos;Marca=Stride;Color=Azul"),
                 }),
-            new SubcategoriaEj("Fitness y gimnasio", "Para entrenar en casa o en el gimnasio",
+            new SubcategoriaEj("FIT", "Fitness y gimnasio", "Para entrenar en casa o en el gimnasio",
                 new[] { F("Tipo", "Mancuernas", "Banda elástica", "Colchoneta", "Cuerda para saltar"), F("Peso", "2 kg", "5 kg", "10 kg"), F("Marca", "Goal Pro", "Stride", "FitLife"),
                         F("Color", "Negro", "Azul", "Morado", "Verde") },
                 new[]
@@ -178,14 +180,14 @@ internal static class CatalogoDeEjemplo
                     P("Colchoneta de yoga", "Espesor de 6 mm, antideslizante.", 18.50m, 40, "Tipo=Colchoneta;Marca=FitLife;Color=Morado"),
                     P("Set de bandas de resistencia", "Cinco niveles de resistencia con bolsa.", 13.00m, 55, "Tipo=Banda elástica;Marca=Stride;Color=Verde"),
                 }),
-            new SubcategoriaEj("Ciclismo", "Seguridad y accesorios para la bicicleta",
+            new SubcategoriaEj("CIC", "Ciclismo", "Seguridad y accesorios para la bicicleta",
                 new[] { F("Tipo", "Casco", "Luces", "Bomba de aire", "Guantes"), F("Marca", "TrailOne", "Goal Pro", "FitLife"), F("Color", "Negro", "Rojo", "Azul"), F("Talla", "S", "M", "L") },
                 new[]
                 {
                     P("Casco de ciclismo", "Ventilado, ajustable y certificado.", 35.00m, 21, "Tipo=Casco;Marca=TrailOne;Color=Rojo;Talla=M"),
                     P("Luz LED recargable para bicicleta", "Tres modos de luz, carga USB.", 11.00m, 64, "Tipo=Luces;Marca=FitLife;Color=Negro;Talla=M"),
                 }),
-            new SubcategoriaEj("Running y outdoor", "Hidratación y accesorios para salir a correr o caminar",
+            new SubcategoriaEj("RUN", "Running y outdoor", "Hidratación y accesorios para salir a correr o caminar",
                 new[] { F("Tipo", "Mochila de hidratación", "Botella térmica", "Lentes deportivos", "Gorra"), F("Marca", "TrailOne", "Stride", "FitLife"), F("Color", "Negro", "Azul", "Verde", "Naranja") },
                 new[]
                 {
@@ -195,9 +197,9 @@ internal static class CatalogoDeEjemplo
                 }),
         }),
 
-        new("Belleza y cuidado personal", "Cuidado de la piel, el cabello y fragancias", new[]
+        new("BEL", "Belleza y cuidado personal", "Cuidado de la piel, el cabello y fragancias", new[]
         {
-            new SubcategoriaEj("Cuidado de la piel", "Limpieza, hidratación y protección",
+            new SubcategoriaEj("PIE", "Cuidado de la piel", "Limpieza, hidratación y protección",
                 new[] { F("Tipo", "Limpiador", "Hidratante", "Protector solar", "Sérum"), F("Tipo de piel", "Seca", "Mixta", "Grasa", "Todo tipo"),
                         F("Marca", "Dermalia", "Aqua Pura", "Natura Sol"), F("Contenido", "50 ml", "100 ml", "200 ml") },
                 new[]
@@ -206,7 +208,7 @@ internal static class CatalogoDeEjemplo
                     P("Crema hidratante facial", "Con ácido hialurónico, de rápida absorción.", 18.00m, 45, "Tipo=Hidratante;Tipo de piel=Mixta;Marca=Dermalia;Contenido=50 ml"),
                     P("Limpiador facial en gel", "Remueve impurezas sin resecar.", 11.90m, 52, "Tipo=Limpiador;Tipo de piel=Grasa;Marca=Aqua Pura;Contenido=200 ml"),
                 }),
-            new SubcategoriaEj("Cuidado del cabello", "Shampoo, acondicionador y tratamientos",
+            new SubcategoriaEj("CAB", "Cuidado del cabello", "Shampoo, acondicionador y tratamientos",
                 new[] { F("Tipo", "Shampoo", "Acondicionador", "Mascarilla", "Tratamiento"), F("Tipo de cabello", "Seco", "Graso", "Teñido", "Todo tipo"),
                         F("Marca", "Dermalia", "Aqua Pura", "Natura Sol"), F("Contenido", "200 ml", "400 ml", "500 ml") },
                 new[]
@@ -214,7 +216,7 @@ internal static class CatalogoDeEjemplo
                     P("Shampoo reparador", "Fortalece y reduce el quiebre.", 8.99m, 80, "Tipo=Shampoo;Tipo de cabello=Seco;Marca=Dermalia;Contenido=400 ml"),
                     P("Mascarilla de keratina", "Tratamiento profundo semanal.", 13.50m, 34, "Tipo=Mascarilla;Tipo de cabello=Teñido;Marca=Natura Sol;Contenido=200 ml"),
                 }),
-            new SubcategoriaEj("Fragancias", "Perfumes y colonias",
+            new SubcategoriaEj("FRA", "Fragancias", "Perfumes y colonias",
                 new[] { F("Para", "Mujer", "Hombre", "Unisex"), F("Familia olfativa", "Cítrica", "Floral", "Amaderada", "Oriental"), F("Marca", "Aura", "Maison Sol", "Dermalia"),
                         F("Contenido", "50 ml", "100 ml") },
                 new[]
@@ -225,9 +227,9 @@ internal static class CatalogoDeEjemplo
                 }),
         }),
 
-        new("Papelería y escolar", "Útiles para la escuela, la universidad y la oficina", new[]
+        new("PAP", "Papelería y escolar", "Útiles para la escuela, la universidad y la oficina", new[]
         {
-            new SubcategoriaEj("Cuadernos y libretas", "Para tomar apuntes y dibujar",
+            new SubcategoriaEj("CUA", "Cuadernos y libretas", "Para tomar apuntes y dibujar",
                 new[] { F("Tamaño", "A5", "A4", "Carta"), F("Tipo de hoja", "Rayado", "Cuadriculado", "Blanco"), F("Marca", "Scribe", "Papel Plus"), F("Hojas", "80", "100", "200") },
                 new[]
                 {
@@ -235,7 +237,7 @@ internal static class CatalogoDeEjemplo
                     P("Libreta A5 cuadriculada", "Tapa flexible y cierre elástico.", 3.99m, 110, "Tamaño=A5;Tipo de hoja=Cuadriculado;Marca=Papel Plus;Hojas=80"),
                     P("Block de dibujo A4", "Papel de 120 g, ideal para lápices y acuarela.", 4.50m, 75, "Tamaño=A4;Tipo de hoja=Blanco;Marca=Scribe;Hojas=100"),
                 }),
-            new SubcategoriaEj("Escritura y arte", "Bolígrafos, lápices, marcadores y colores",
+            new SubcategoriaEj("ESC", "Escritura y arte", "Bolígrafos, lápices, marcadores y colores",
                 new[] { F("Tipo", "Bolígrafos", "Lápices", "Marcadores", "Colores"), F("Marca", "Scribe", "Papel Plus", "ArteViva"), F("Color", "Azul", "Negro", "Surtido"), F("Cantidad", "6", "8", "12", "24") },
                 new[]
                 {
@@ -243,7 +245,7 @@ internal static class CatalogoDeEjemplo
                     P("Marcadores permanentes (8 unidades)", "Punta redonda, colores surtidos.", 6.25m, 90, "Tipo=Marcadores;Marca=ArteViva;Color=Surtido;Cantidad=8"),
                     P("Colores de madera (24 unidades)", "Mina suave y pigmentada.", 7.90m, 70, "Tipo=Colores;Marca=ArteViva;Color=Surtido;Cantidad=24"),
                 }),
-            new SubcategoriaEj("Mochilas y organización", "Mochilas, estuches y loncheras",
+            new SubcategoriaEj("MOC", "Mochilas y organización", "Mochilas, estuches y loncheras",
                 new[] { F("Tipo", "Mochila", "Lonchera", "Estuche", "Archivador"), F("Marca", "Scribe", "Papel Plus", "TrailOne"), F("Color", "Negro", "Azul", "Rojo", "Gris"),
                         F("Capacidad", "15 L", "20 L", "30 L") },
                 new[]

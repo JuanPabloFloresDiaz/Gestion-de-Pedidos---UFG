@@ -55,8 +55,13 @@ public class GestionPedidosDbContext : DbContext
     public DbSet<Actividad> Actividades => Set<Actividad>();
 
     /// <inheritdoc/>
-    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(GestionPedidosDbContext).Assembly);
+        // Secuencias de los códigos generados por la base (PRD-000123, CAT-000007) cuando no se indica uno
+        modelBuilder.HasSequence<int>("SecuenciaProductos").StartsAt(1000);
+        modelBuilder.HasSequence<int>("SecuenciaCategorias").StartsAt(1000);
+    }
 
     /// <inheritdoc/>
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
