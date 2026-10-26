@@ -61,5 +61,5 @@ public sealed class ProductoViewModel : ViewModelBase
 
     /// <summary>Línea de carrito de un producto (para agregar desde el detalle o desde una tarjeta).</summary>
     public static LineaCarrito LineaDe(ProductoTiendaDto p, int cantidad) => new(p.Id, p.Nombre, p.Precio, cantidad, p.MaximoPorPedido,
-        TiendaVisual.Icono(p.Subcategoria, p.Categoria), TiendaVisual.Tono(p.CategoriaId));
+        p.Subcategoria, p.Categoria, p.CategoriaId, p.ImagenUrl);
 }

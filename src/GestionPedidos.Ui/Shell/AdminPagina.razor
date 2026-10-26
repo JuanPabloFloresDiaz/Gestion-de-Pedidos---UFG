@@ -51,13 +51,13 @@
                 {
                     <div class="pestana @(doc == Documentos.Activo ? "activa" : "")" role="tab" aria-selected="@(doc == Documentos.Activo)" @key="doc.Clave">
                         <button class="pestana-titulo" @onclick="() => Documentos.Activar(doc.Clave)">@doc.Titulo</button>
-                        <button class="pestana-cerrar" aria-label="Cerrar @doc.Titulo" @onclick="() => Documentos.Cerrar(doc.Clave)">×</button>
+                        <button class="pestana-cerrar" aria-label="Cerrar @doc.Titulo" @onclick="() => Documentos.Cerrar(doc.Clave)"><Icono Svg="Lucide.X" /></button>
                     </div>
                 }
             </div>
-            <button class="pestana-nueva" title="Nueva pestaña (Alt+N)" aria-label="Nueva pestaña" @onclick="NuevaPestana">+</button>
+            <button class="pestana-nueva" title="Nueva pestaña (Alt+N)" aria-label="Nueva pestaña" @onclick="NuevaPestana"><Icono Svg="Lucide.Plus" /></button>
             <button class="pestana-recargar @(_recargando ? "girando" : "")" title="Recargar la pestaña (Alt+R)" aria-label="Recargar la pestaña"
-                    disabled="@(Documentos.Activo is null)" @onclick="Recargar"><span aria-hidden="true">↻</span></button>
+                    disabled="@(Documentos.Activo is null)" @onclick="Recargar"><Icono Svg="Lucide.RefreshCw" /></button>
         </div>
 
         <main class="documentos" @onclick="CerrarMenus">
@@ -85,7 +85,7 @@
 
         <footer class="barra-estado">
             <span>Usuario: <strong>@Sesion.Usuario?.NombreUsuario</strong> · Rol: <strong>@Sesion.Usuario?.Rol</strong></span>
-            <span class="estado-mensaje">@(Avisos.Ultimo is { } ultimo ? $"{(ultimo.Tipo == TipoAviso.Exito ? "✔ " : "")}{ultimo.Texto}" : "")</span>
+            <span class="estado-mensaje">@(Avisos.Ultimo is { } ultimo ? ultimo.Texto : "")</span>
             <span>Sesión hasta las @(Sesion.Actual?.ExpiraEn.ToLocalTime().ToString("HH:mm"))</span>
         </footer>
     </div>

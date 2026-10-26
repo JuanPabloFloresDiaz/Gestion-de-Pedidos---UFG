@@ -12,7 +12,7 @@
 
 <div class="catalogo">
     <button class="boton boton-secundario catalogo-filtros-boton" @onclick="() => _abierto = !_abierto" aria-expanded="@_abierto">
-        ⚙ Filtros@(Vm.Aplicados.Count > 0 ? $" ({Vm.Aplicados.Count})" : "")
+        <Icono Svg="Lucide.SlidersHorizontal" /> Filtros@(Vm.Aplicados.Count > 0 ? $" ({Vm.Aplicados.Count})" : "")
     </button>
 
     <aside class="catalogo-lateral @(_abierto ? "abierto" : "")" aria-label="Categorías y filtros">
@@ -103,7 +103,7 @@
             <div class="chips-aplicados" aria-label="Filtros aplicados">
                 @foreach (var a in Vm.Aplicados)
                 {
-                    <button class="chip-filtro" aria-label="Quitar filtro @a.Texto" @onclick="() => Ir(a.Sin)">@a.Texto <span aria-hidden="true">×</span></button>
+                    <button class="chip-filtro" aria-label="Quitar filtro @a.Texto" @onclick="() => Ir(a.Sin)">@a.Texto <Icono Svg="Lucide.X" /></button>
                 }
             </div>
         }
@@ -126,7 +126,7 @@
         else if (string.IsNullOrEmpty(Vm.Error))
         {
             <div class="vacio">
-                <div class="vacio-icono" aria-hidden="true">🔎</div>
+                <div class="vacio-icono"><Icono Svg="Lucide.SearchX" Clase="icono-vacio" /></div>
                 <h2>No encontramos productos</h2>
                 <p>Prueba quitando algún filtro o buscando otra palabra.</p>
                 <a class="boton boton-primario" href="/tienda">Ver todo el catálogo</a>

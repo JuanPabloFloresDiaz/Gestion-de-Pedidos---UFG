@@ -5,7 +5,7 @@
 <PaginaModulo Titulo="Historial de actividades" Error="@Vm.Error">
     <Acciones>
         <span class="solo-lectura">Solo lectura</span>
-        <Boton Cargando="Vm.Cargando" AlHacerClic="Vm.RecargarAsync">↻ Actualizar</Boton>
+        <Boton Cargando="Vm.Cargando" AlHacerClic="Vm.RecargarAsync"><Icono Svg="Lucide.RefreshCw" /> Actualizar</Boton>
     </Acciones>
     <Filtros>
         <CampoTexto Etiqueta="Buscar" Placeholder="Texto del detalle" @bind-Valor="Vm.Texto" AlPresionarEnter="Vm.BuscarAsync" />

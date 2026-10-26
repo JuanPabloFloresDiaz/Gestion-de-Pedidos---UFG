@@ -5,7 +5,7 @@
 
 <div class="apariencia">
     <button type="button" class="menu-boton" aria-haspopup="dialog" aria-expanded="@_abierto" title="Cambiar la apariencia"
-            @onclick="Alternar"><span aria-hidden="true">🎨</span> Apariencia</button>
+            @onclick="Alternar"><Icono Svg="Lucide.Palette" /> Apariencia</button>
     @if (_abierto)
     {
         <div class="apariencia-fondo" @onclick="Cerrar"></div>

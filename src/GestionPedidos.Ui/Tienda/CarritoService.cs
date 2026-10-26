@@ -9,9 +9,12 @@ namespace GestionPedidos.Ui.Tienda;
 /// <param name="Precio">Precio por unidad cuando se agregó.</param>
 /// <param name="Cantidad">Unidades.</param>
 /// <param name="Maximo">Tope por pedido que informó la tienda.</param>
-/// <param name="Icono">Ícono de su categoría (solo presentación).</param>
-/// <param name="Tono">Tono de su categoría (solo presentación).</param>
-public sealed record LineaCarrito(int ProductoId, string Nombre, decimal Precio, int Cantidad, int Maximo, string Icono, int Tono)
+/// <param name="Subcategoria">Subcategoría (para el ícono de respaldo).</param>
+/// <param name="Categoria">Categoría (para el ícono de respaldo).</param>
+/// <param name="CategoriaId">Categoría (para su tono).</param>
+/// <param name="ImagenUrl">Foto del producto, si tiene.</param>
+public sealed record LineaCarrito(int ProductoId, string Nombre, decimal Precio, int Cantidad, int Maximo, string? Subcategoria = null,
+    string? Categoria = null, int? CategoriaId = null, string? ImagenUrl = null)
 {
     /// <summary>Precio × cantidad.</summary>
     public decimal Subtotal => Precio * Cantidad;

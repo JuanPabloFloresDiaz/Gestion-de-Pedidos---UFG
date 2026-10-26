@@ -16,7 +16,7 @@
 else if (!Sesion.Autenticada)
 {
     <div class="vacio">
-        <div class="vacio-icono" aria-hidden="true">🔐</div>
+        <div class="vacio-icono"><Icono Svg="Lucide.LockKeyhole" Clase="icono-vacio" /></div>
         <h2>Ingresa para ver tus pedidos</h2>
         <a class="boton boton-primario" href="/ingresar?retorno=%2Fmis-pedidos">Ingresar</a>
     </div>
@@ -36,7 +36,7 @@ else
     @if (Vm.Cargado && Vm.Pagina is { Elementos.Count: 0 })
     {
         <div class="vacio">
-            <div class="vacio-icono" aria-hidden="true">📦</div>
+            <div class="vacio-icono"><Icono Svg="Lucide.PackageOpen" Clase="icono-vacio" /></div>
             <h2>Todavía no has hecho pedidos</h2>
             <a class="boton boton-primario" href="/tienda">Ir a la tienda</a>
         </div>

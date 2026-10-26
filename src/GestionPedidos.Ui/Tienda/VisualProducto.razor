@@ -1,9 +1,18 @@
-@* Imagen de un producto sin fotos: ícono de su categoría sobre un fondo pastel de su tono (cambia con el modo claro/oscuro). *@
-<div class="visual @Clase" style="--h:@Tono" role="img" aria-label="@Etiqueta"><span aria-hidden="true">@Icono</span></div>
+@* Imagen de un producto o categoría: la foto del almacén de imágenes y, debajo, un respaldo (ícono de su categoría sobre un fondo pastel
+   de su tono) que se ve mientras carga o si no hay foto o falla. *@
+<div class="visual @Clase" style="--h:@Tono" role="img" aria-label="@Etiqueta">
+    <Icono Svg="Svg" />
+    @if (!string.IsNullOrEmpty(ImagenUrl))
+    {
+        <img src="@ImagenUrl" alt="" loading="lazy" decoding="async" style="opacity:0" onload="this.style.opacity=1" onerror="this.remove()" />
+    }
+</div>
 
 @code {
-    /// <summary>Ícono (emoji) a mostrar.</summary>
-    [Parameter] public string Icono { get; set; } = "🛍️";
+    /// <summary>Ícono de respaldo.</summary>
+    [Parameter] public SvgIcon Svg { get; set; } = TiendaVisual.Icono(null, null);
+    /// <summary>Dirección de la foto (<c>/imagenes/productos/CODIGO</c>), o <c>null</c> si no tiene.</summary>
+    [Parameter] public string? ImagenUrl { get; set; }
     /// <summary>Tono de color (0–359).</summary>
     [Parameter] public int Tono { get; set; } = 215;
     /// <summary>Clase extra de tamaño (por ejemplo, <c>visual-grande</c>).</summary>

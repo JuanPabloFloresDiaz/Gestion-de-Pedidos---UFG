@@ -339,3 +339,10 @@ a { color: var(--color-primario); }
 :root { --pastel-s: 78%; --pastel-l: 92%; --pastel-l2: 85%; }
 @media (prefers-color-scheme: dark) { :root:not([data-modo="claro"]) { --pastel-s: 34%; --pastel-l: 24%; --pastel-l2: 31%; } }
 :root[data-modo="oscuro"] { --pastel-s: 34%; --pastel-l: 24%; --pastel-l2: 31%; }
+
+/* ---- Íconos (Lucide): trazo con el color del texto, tamaño relativo a la letra ---- */
+svg.icono { width: 1.15em; height: 1.15em; flex: none; vertical-align: -.2em; stroke-width: 2; }
+svg.icono-grande { width: 1.45em; height: 1.45em; }
+.boton svg.icono, .menu-boton svg.icono, .enlace svg.icono { margin-right: 2px; }
+.aviso-icono { display: inline-flex; } .aviso-cerrar svg.icono, .pestana-cerrar svg.icono, .pestana-nueva svg.icono, .pestana-recargar svg.icono { width: 1em; height: 1em; vertical-align: middle; }
+.opcion-chip button svg.icono { width: .95em; height: .95em; vertical-align: middle; }

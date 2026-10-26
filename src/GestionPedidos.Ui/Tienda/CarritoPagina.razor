@@ -12,7 +12,7 @@
 @if (Carrito.Lineas.Count == 0)
 {
     <div class="vacio">
-        <div class="vacio-icono" aria-hidden="true">🛒</div>
+        <div class="vacio-icono"><Icono Svg="Lucide.ShoppingCart" Clase="icono-vacio" /></div>
         <h2>Tu carrito está vacío</h2>
         <p>Explora el catálogo y agrega lo que te guste.</p>
         <a class="boton boton-primario" href="/tienda">Ir a la tienda</a>
@@ -25,16 +25,16 @@ else
             @foreach (var l in Carrito.Lineas)
             {
                 <li class="carrito-linea" @key="l.ProductoId">
-                    <a href="/producto/@l.ProductoId"><VisualProducto Icono="@l.Icono" Tono="l.Tono" Clase="visual-mini" Etiqueta="@l.Nombre" /></a>
+                    <a href="/producto/@l.ProductoId"><VisualProducto Svg="TiendaVisual.Icono(l.Subcategoria, l.Categoria)" ImagenUrl="@l.ImagenUrl" Tono="TiendaVisual.Tono(l.CategoriaId)" Clase="visual-mini" Etiqueta="@l.Nombre" /></a>
                     <div class="carrito-datos">
                         <a href="/producto/@l.ProductoId"><strong>@l.Nombre</strong></a>
                         <small class="nota">@TiendaVisual.Dinero(l.Precio) c/u</small>
                         <button class="enlace enlace-peligro" @onclick="() => Carrito.QuitarAsync(l.ProductoId)">Quitar</button>
                     </div>
                     <div class="cantidad" role="group" aria-label="Cantidad de @l.Nombre">
-                        <button aria-label="Una menos" disabled="@(l.Cantidad <= 1)" @onclick="() => Carrito.CambiarCantidadAsync(l.ProductoId, l.Cantidad - 1)">−</button>
+                        <button aria-label="Una menos" disabled="@(l.Cantidad <= 1)" @onclick="() => Carrito.CambiarCantidadAsync(l.ProductoId, l.Cantidad - 1)"><Icono Svg="Lucide.Minus" /></button>
                         <span>@l.Cantidad</span>
-                        <button aria-label="Una más" disabled="@(l.Cantidad >= l.Maximo)" @onclick="() => Carrito.CambiarCantidadAsync(l.ProductoId, l.Cantidad + 1)">+</button>
+                        <button aria-label="Una más" disabled="@(l.Cantidad >= l.Maximo)" @onclick="() => Carrito.CambiarCantidadAsync(l.ProductoId, l.Cantidad + 1)"><Icono Svg="Lucide.Plus" /></button>
                     </div>
                     <strong class="carrito-subtotal">@TiendaVisual.Dinero(l.Subtotal)</strong>
                 </li>

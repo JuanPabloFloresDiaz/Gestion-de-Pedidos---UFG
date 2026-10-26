@@ -2,11 +2,11 @@
 @if (TotalPaginas > 0)
 {
     <nav class="paginador" aria-label="Paginación">
-        <button class="boton boton-secundario" disabled="@(Pagina <= 1)" @onclick="() => Ir(1)" aria-label="Primera página">«</button>
-        <button class="boton boton-secundario" disabled="@(Pagina <= 1)" @onclick="() => Ir(Pagina - 1)" aria-label="Página anterior">‹</button>
+        <button class="boton boton-secundario" disabled="@(Pagina <= 1)" @onclick="() => Ir(1)" aria-label="Primera página"><Icono Svg="Lucide.ChevronsLeft" /></button>
+        <button class="boton boton-secundario" disabled="@(Pagina <= 1)" @onclick="() => Ir(Pagina - 1)" aria-label="Página anterior"><Icono Svg="Lucide.ChevronLeft" /></button>
         <span>Página @Pagina de @TotalPaginas · @Total resultado@(Total == 1 ? "" : "s")</span>
-        <button class="boton boton-secundario" disabled="@(Pagina >= TotalPaginas)" @onclick="() => Ir(Pagina + 1)" aria-label="Página siguiente">›</button>
-        <button class="boton boton-secundario" disabled="@(Pagina >= TotalPaginas)" @onclick="() => Ir(TotalPaginas)" aria-label="Última página">»</button>
+        <button class="boton boton-secundario" disabled="@(Pagina >= TotalPaginas)" @onclick="() => Ir(Pagina + 1)" aria-label="Página siguiente"><Icono Svg="Lucide.ChevronRight" /></button>
+        <button class="boton boton-secundario" disabled="@(Pagina >= TotalPaginas)" @onclick="() => Ir(TotalPaginas)" aria-label="Última página"><Icono Svg="Lucide.ChevronsRight" /></button>
     </nav>
 }
 

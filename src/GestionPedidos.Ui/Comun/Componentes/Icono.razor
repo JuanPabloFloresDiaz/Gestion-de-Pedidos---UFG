@@ -1,0 +1,15 @@
+@* Ícono SVG del kit. Usa la librería Lucide (Blazicons.Lucide): íconos modernos, de trazo, incrustados en la aplicación, así que
+   funcionan sin internet y en el escritorio. Es el único componente que conoce la librería: si algún día se cambia, solo se toca aquí. *@
+@using Blazicons
+<Blazicon Svg="Svg" class="@Clases" aria-hidden="@(Etiqueta is null ? "true" : null)" role="@(Etiqueta is null ? null : "img")" aria-label="@Etiqueta" />
+
+@code {
+    /// <summary>Ícono a dibujar (por ejemplo <c>Lucide.ShoppingCart</c>).</summary>
+    [Parameter, EditorRequired] public SvgIcon Svg { get; set; } = default!;
+    /// <summary>Clases extra (por ejemplo <c>icono-grande</c>).</summary>
+    [Parameter] public string? Clase { get; set; }
+    /// <summary>Texto para lectores de pantalla; si es nulo, el ícono es decorativo.</summary>
+    [Parameter] public string? Etiqueta { get; set; }
+
+    private string Clases => string.IsNullOrEmpty(Clase) ? "icono" : $"icono {Clase}";
+}

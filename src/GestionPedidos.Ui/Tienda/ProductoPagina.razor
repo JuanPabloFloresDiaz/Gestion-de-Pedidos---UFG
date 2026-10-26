@@ -15,7 +15,7 @@
     </nav>
 
     <section class="producto">
-        <VisualProducto Icono="@TiendaVisual.Icono(p.Subcategoria, p.Categoria)" Tono="TiendaVisual.Tono(p.CategoriaId)" Clase="visual-grande" Etiqueta="@p.Nombre" />
+        <VisualProducto Svg="TiendaVisual.Icono(p.Subcategoria, p.Categoria)" ImagenUrl="@p.ImagenUrl" Tono="TiendaVisual.Tono(p.CategoriaId)" Clase="visual-grande" Etiqueta="@p.Nombre" />
         <div class="producto-info">
             <small class="tarjeta-categoria">@(p.Subcategoria ?? "Sin clasificar")</small>
             <h1>@p.Nombre</h1>
@@ -29,9 +29,9 @@
             {
                 <div class="producto-compra">
                     <div class="cantidad" role="group" aria-label="Cantidad">
-                        <button aria-label="Una menos" disabled="@(Vm.Cantidad <= 1)" @onclick="() => Vm.CambiarCantidad(-1)">−</button>
+                        <button aria-label="Una menos" disabled="@(Vm.Cantidad <= 1)" @onclick="() => Vm.CambiarCantidad(-1)"><Icono Svg="Lucide.Minus" /></button>
                         <span aria-live="polite">@Vm.Cantidad</span>
-                        <button aria-label="Una más" disabled="@(Vm.Cantidad >= p.MaximoPorPedido)" @onclick="() => Vm.CambiarCantidad(1)">+</button>
+                        <button aria-label="Una más" disabled="@(Vm.Cantidad >= p.MaximoPorPedido)" @onclick="() => Vm.CambiarCantidad(1)"><Icono Svg="Lucide.Plus" /></button>
                     </div>
                     <Boton Variante="Primario" AlHacerClic="Vm.AgregarAlCarritoAsync">Agregar al carrito</Boton>
                     <Boton AlHacerClic="ComprarAhora">Comprar ahora</Boton>
@@ -66,7 +66,7 @@
 else if (Vm.NoEncontrado)
 {
     <div class="vacio">
-        <div class="vacio-icono" aria-hidden="true">🫥</div>
+        <div class="vacio-icono"><Icono Svg="Lucide.PackageX" Clase="icono-vacio" /></div>
         <h1>Este producto ya no está disponible</h1>
         <p>Puede que se haya retirado de la tienda.</p>
         <a class="boton boton-primario" href="/tienda">Ver el catálogo</a>

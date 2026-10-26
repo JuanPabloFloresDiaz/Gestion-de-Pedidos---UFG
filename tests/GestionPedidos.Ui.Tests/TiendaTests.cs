@@ -80,7 +80,7 @@ public class TiendaTests
     public void Retorno_SoloAceptaRutasInternas(string? ruta, bool esperado) => Assert.Equal(esperado, Retorno.EsRutaInterna(ruta));
 
     // ---------- Carrito ----------
-    private static LineaCarrito Linea(int id, int cantidad = 1, int maximo = 5, decimal precio = 10m) => new(id, $"P{id}", precio, cantidad, maximo, "🛍️", 200);
+    private static LineaCarrito Linea(int id, int cantidad = 1, int maximo = 5, decimal precio = 10m) => new(id, $"P{id}", precio, cantidad, maximo, "Camisas", "Ropa", 1);
 
     [Fact]
     public async Task Carrito_AgregaSumaYNoPasaDelMaximo_Total_YPersiste()
@@ -291,7 +291,7 @@ public class PedidoClienteTests
         var e = new Entorno();
         e.Manejador.Responder = responder;
         var carrito = new CarritoService(new JsFalso());
-        await carrito.AgregarAsync(new LineaCarrito(1, "Camisa", 24.99m, 2, 10, "👕", 200));
+        await carrito.AgregarAsync(new LineaCarrito(1, "Camisa", 24.99m, 2, 10, "Camisas", "Ropa", 1));
         return (e, carrito, new PedidoViewModel(new PedidosClienteService(e.Api), carrito, new Microsoft.Extensions.Time.Testing.FakeTimeProvider(Ahora)));
     }
 

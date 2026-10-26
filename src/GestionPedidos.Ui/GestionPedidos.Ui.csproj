@@ -11,5 +11,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\GestionPedidos.Contracts\GestionPedidos.Contracts.csproj" />
     <PackageReference Include="Microsoft.Extensions.Http" />
+    <!-- Íconos SVG (Lucide, más de 1 600) incrustados en la aplicación: funcionan sin internet, también en el escritorio -->
+    <PackageReference Include="Blazicons.Lucide" />
   </ItemGroup>
 </Project>

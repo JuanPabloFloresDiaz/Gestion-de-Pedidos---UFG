@@ -21,13 +21,13 @@ else
 
             <form class="tienda-buscar" role="search" @onsubmit="Buscar" @onsubmit:preventDefault>
                 <input type="search" placeholder="Buscar productos…" aria-label="Buscar productos" value="@_texto" @oninput="e => _texto = e.Value?.ToString()" />
-                <button type="submit" aria-label="Buscar">🔍</button>
+                <button type="submit" aria-label="Buscar"><Icono Svg="Lucide.Search" /></button>
             </form>
 
             <div class="tienda-acciones">
                 <BotonApariencia />
                 <a class="tienda-carrito" href="/carrito" aria-label="Carrito, @Carrito.Cantidad producto@(Carrito.Cantidad == 1 ? "" : "s")">
-                    <span aria-hidden="true">🛒</span>
+                    <Icono Svg="Lucide.ShoppingCart" Clase="icono-grande" />
                     @if (Carrito.Cantidad > 0) { <span class="insignia-carrito">@Carrito.Cantidad</span> }
                 </a>
                 @if (Sesion.Autenticada)
@@ -58,7 +58,7 @@ else
             <a href="/tienda" class="@(Activo(null))">Todo</a>
             @foreach (var c in _categorias)
             {
-                <a href="/tienda?categoria=@c.Id" class="@(Activo(c.Id))">@TiendaVisual.Icono(null, c.Nombre) @c.Nombre</a>
+                <a href="/tienda?categoria=@c.Id" class="@(Activo(c.Id))"><Icono Svg="TiendaVisual.Icono(null, c.Nombre)" /> @c.Nombre</a>
             }
         </nav>
     </header>
@@ -69,6 +69,7 @@ else
         <div>
             <strong>Tienda GP</strong>
             <p>Proyecto de Programación Orientada a Eventos · Universidad Francisco Gavidia.</p>
+            <p class="pie-creditos">Fotografías de ejemplo: <a href="https://commons.wikimedia.org/" rel="noopener">Wikimedia Commons</a> (licencias CC0, CC BY y CC BY-SA; autores en el repositorio).</p>
         </div>
         <div>
             <strong>Compra</strong>

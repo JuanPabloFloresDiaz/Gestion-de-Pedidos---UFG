@@ -6,9 +6,9 @@
     @foreach (var aviso in _visibles)
     {
         <div class="aviso aviso-@aviso.Tipo.ToString().ToLowerInvariant()" role="status" @key="aviso.Id">
-            <span class="aviso-icono">@Icono(aviso.Tipo)</span>
+            <span class="aviso-icono"><Icono Svg="IconoDe(aviso.Tipo)" /></span>
             <span>@aviso.Texto</span>
-            <button class="aviso-cerrar" aria-label="Cerrar aviso" @onclick="() => Quitar(aviso)">×</button>
+            <button class="aviso-cerrar" aria-label="Cerrar aviso" @onclick="() => Quitar(aviso)"><Icono Svg="Lucide.X" /></button>
         </div>
     }
 </div>
@@ -32,9 +32,9 @@
         if (_visibles.Remove(aviso)) StateHasChanged();
     }
 
-    private static string Icono(TipoAviso tipo) => tipo switch
+    private static SvgIcon IconoDe(TipoAviso tipo) => tipo switch
     {
-        TipoAviso.Exito => "✔", TipoAviso.Advertencia => "⚠", TipoAviso.Error => "✖", _ => "ℹ",
+        TipoAviso.Exito => Lucide.CircleCheck, TipoAviso.Advertencia => Lucide.TriangleAlert, TipoAviso.Error => Lucide.CircleX, _ => Lucide.Info,
     };
 
     /// <summary>Baja de la suscripción.</summary>

@@ -20,24 +20,30 @@
                 <a class="boton boton-secundario" href="/registro">Crear mi cuenta</a>
             </div>
             <ul class="portada-ventajas">
-                <li>✔ Pedidos con seguimiento</li><li>✔ Productos descritos al detalle</li><li>✔ Entregas en todo El Salvador</li>
+                <li><Icono Svg="Lucide.PackageCheck" /> Pedidos con seguimiento</li><li><Icono Svg="Lucide.Tags" /> Productos descritos al detalle</li><li><Icono Svg="Lucide.Truck" /> Entregas en todo El Salvador</li>
             </ul>
         </div>
         <div class="portada-collage" aria-hidden="true">
             @foreach (var (c, i) in Vm.Categorias.Take(4).Select((c, i) => (c, i)))
             {
-                <div class="collage-pieza pieza-@i" style="--h:@TiendaVisual.Tono(c.Id)"><span>@TiendaVisual.Icono(null, c.Nombre)</span></div>
+                <div class="collage-pieza pieza-@i" style="--h:@TiendaVisual.Tono(c.Id)">
+                    <Icono Svg="TiendaVisual.Icono(null, c.Nombre)" />
+                    @if (c.ImagenUrl is not null) { <img src="@c.ImagenUrl" alt="" loading="lazy" onerror="this.remove()" /> }
+                </div>
             }
         </div>
     </section>
 
     <section class="seccion">
-        <div class="seccion-cabecera"><h2>Compra por categoría</h2><a href="/tienda">Ver todo →</a></div>
+        <div class="seccion-cabecera"><h2>Compra por categoría</h2><a class="enlace-flecha" href="/tienda">Ver todo <Icono Svg="Lucide.ArrowRight" /></a></div>
         <div class="categorias-tarjetas">
             @foreach (var c in Vm.Categorias)
             {
                 <a class="categoria-tarjeta" href="/tienda?categoria=@c.Id" style="--h:@TiendaVisual.Tono(c.Id)">
-                    <span class="categoria-icono" aria-hidden="true">@TiendaVisual.Icono(null, c.Nombre)</span>
+                    <span class="categoria-imagen" aria-hidden="true">
+                        <Icono Svg="TiendaVisual.Icono(null, c.Nombre)" />
+                        @if (c.ImagenUrl is not null) { <img src="@c.ImagenUrl" alt="" loading="lazy" onerror="this.remove()" /> }
+                    </span>
                     <strong>@c.Nombre</strong>
                     <small>@c.TotalProductos productos · @c.Subcategorias.Count subcategorías</small>
                 </a>
@@ -46,7 +52,7 @@
     </section>
 
     <section class="seccion">
-        <div class="seccion-cabecera"><h2>Recién llegados</h2><a href="/tienda?orden=nuevos">Ver más →</a></div>
+        <div class="seccion-cabecera"><h2>Recién llegados</h2><a class="enlace-flecha" href="/tienda?orden=nuevos">Ver más <Icono Svg="Lucide.ArrowRight" /></a></div>
         @if (!string.IsNullOrEmpty(Vm.Error)) { <div class="alerta alerta-error" role="alert">@Vm.Error</div> }
         <div class="cuadricula cuadricula-4">
             @if (!Vm.Cargado)

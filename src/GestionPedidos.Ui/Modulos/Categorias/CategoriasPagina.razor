@@ -96,13 +96,13 @@
                                     @o.Valor
                                     @if (o.Activo)
                                     {
-                                        @if (Puede(Permisos.CategoriasEditar)) { <button aria-label="Editar @o.Valor" title="Editar" @onclick="() => Vm.Editar(o)">✎</button> }
-                                        @if (Puede(Permisos.CategoriasDesactivar)) { <button aria-label="Dar de baja @o.Valor" title="Dar de baja" @onclick="() => Vm.SolicitarCambioEstado(Dto(o))">×</button> }
+                                        @if (Puede(Permisos.CategoriasEditar)) { <button aria-label="Editar @o.Valor" title="Editar" @onclick="() => Vm.Editar(o)"><Icono Svg="Lucide.Pencil" /></button> }
+                                        @if (Puede(Permisos.CategoriasDesactivar)) { <button aria-label="Dar de baja @o.Valor" title="Dar de baja" @onclick="() => Vm.SolicitarCambioEstado(Dto(o))"><Icono Svg="Lucide.X" /></button> }
                                     }
                                     else
                                     {
-                                        @if (Puede(Permisos.CategoriasDesactivar)) { <button aria-label="Reactivar @o.Valor" title="Reactivar" @onclick="() => Vm.SolicitarCambioEstado(Dto(o))">↺</button> }
-                                        @if (Puede(Permisos.CategoriasEliminar)) { <button aria-label="Eliminar @o.Valor" title="Eliminar definitivamente" @onclick="() => Vm.SolicitarEliminacion(Dto(o))">🗑</button> }
+                                        @if (Puede(Permisos.CategoriasDesactivar)) { <button aria-label="Reactivar @o.Valor" title="Reactivar" @onclick="() => Vm.SolicitarCambioEstado(Dto(o))"><Icono Svg="Lucide.RotateCcw" /></button> }
+                                        @if (Puede(Permisos.CategoriasEliminar)) { <button aria-label="Eliminar @o.Valor" title="Eliminar definitivamente" @onclick="() => Vm.SolicitarEliminacion(Dto(o))"><Icono Svg="Lucide.Trash" /></button> }
                                     }
                                 </span>
                             }

@@ -204,3 +204,33 @@
 .estado-entregado { background: color-mix(in srgb, var(--color-exito) 20%, transparent); color: var(--color-exito); }
 .estado-cancelado { background: var(--color-superficie-2); color: var(--color-texto-suave); }
 .entrega-datos + small { display: block; margin-bottom: 14px; }
+
+/* ---- Íconos y fotos de la tienda ---- */
+.visual { position: relative; overflow: hidden; }
+.visual svg.icono { width: clamp(2.6rem, 6vw, 3.6rem); height: clamp(2.6rem, 6vw, 3.6rem); opacity: .75; color: color-mix(in srgb, var(--color-texto) 70%, transparent); stroke-width: 1.5; }
+.visual-grande svg.icono { width: clamp(5rem, 14vw, 9rem); height: clamp(5rem, 14vw, 9rem); }
+.visual-mini svg.icono { width: 1.8rem; height: 1.8rem; }
+/* La foto se ve completa (no recortada) sobre el fondo pastel del respaldo */
+.visual img { transition: opacity .25s ease; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: var(--color-superficie); }
+.agotado .visual img { filter: grayscale(.7); }
+.vacio-icono { display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%; background: color-mix(in srgb, var(--color-primario) 12%, transparent); color: var(--color-primario); }
+svg.icono-vacio { width: 2.6rem; height: 2.6rem; stroke-width: 1.6; }
+.tienda-buscar button svg.icono { width: 1.25em; height: 1.25em; color: var(--color-texto-suave); }
+.tienda-carrito svg.icono-grande { width: 1.35em; height: 1.35em; }
+.tienda-categorias a { display: inline-flex; align-items: center; gap: 6px; }
+.portada-ventajas li { display: inline-flex; align-items: center; gap: 6px; } .portada-ventajas svg.icono { color: var(--color-primario); }
+.enlace-flecha { display: inline-flex; align-items: center; gap: 4px; }
+.collage-pieza { position: relative; overflow: hidden; }
+.collage-pieza svg.icono { width: clamp(2.4rem, 6vw, 4rem); height: clamp(2.4rem, 6vw, 4rem); opacity: .7; }
+.collage-pieza img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.categoria-tarjeta { padding: 0; overflow: hidden; }
+.categoria-imagen { position: relative; display: grid; place-items: center; aspect-ratio: 16 / 10; overflow: hidden; }
+.categoria-imagen svg.icono { width: 2.4rem; height: 2.4rem; opacity: .7; }
+.categoria-imagen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .3s ease; }
+.categoria-tarjeta:hover .categoria-imagen img { transform: scale(1.06); }
+.categoria-tarjeta strong, .categoria-tarjeta small { padding: 0 16px; } .categoria-tarjeta strong { padding-top: 12px; } .categoria-tarjeta small { padding-bottom: 14px; }
+.catalogo-filtros-boton svg.icono { margin-right: 6px; }
+.cantidad button svg.icono { vertical-align: middle; }
+.chip-filtro svg.icono { width: .95em; height: .95em; }
+
+.pie-creditos { font-size: .82rem; margin-top: 6px !important; }

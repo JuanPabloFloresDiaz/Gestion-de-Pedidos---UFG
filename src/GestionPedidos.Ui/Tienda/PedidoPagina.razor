@@ -17,7 +17,7 @@
 else if (!Sesion.Autenticada)
 {
     <div class="vacio">
-        <div class="vacio-icono" aria-hidden="true">🔐</div>
+        <div class="vacio-icono"><Icono Svg="Lucide.LockKeyhole" Clase="icono-vacio" /></div>
         <h2>Ingresa para hacer tu pedido</h2>
         <a class="boton boton-primario" href="/ingresar?retorno=%2Fpedido">Ingresar</a>
         <a class="enlace" href="/registro?retorno=%2Fpedido">Crear una cuenta</a>
@@ -32,7 +32,7 @@ else if (!Sesion.TienePermiso(Permisos.MisPedidosCrear))
 else if (Carrito.Lineas.Count == 0)
 {
     <div class="vacio">
-        <div class="vacio-icono" aria-hidden="true">🛒</div>
+        <div class="vacio-icono"><Icono Svg="Lucide.ShoppingCart" Clase="icono-vacio" /></div>
         <h2>Tu carrito está vacío</h2>
         <a class="boton boton-primario" href="/tienda">Ir a la tienda</a>
     </div>
