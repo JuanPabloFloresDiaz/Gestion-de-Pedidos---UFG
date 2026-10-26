@@ -19,6 +19,10 @@ namespace GestionPedidos.Infrastructure.Persistence.Seed;
 /// pedidos con sus líneas en distintos estados y el historial correspondiente. Es <b>determinista</b> (misma semilla,
 /// mismos datos) e <b>idempotente</b>: si la base ya tiene categorías, productos o clientes no hace nada.
 /// </summary>
+/// <remarks>
+/// Los datos del catálogo (categorías, filtros, productos) están en <c>CatalogoDeEjemplo.cs</c> (esta misma carpeta) y las imágenes en
+/// <c>seed/imagenes/</c>. Mapa completo del repositorio: <c>docs/Equipo/DondeEstaCadaCosa.md</c>.
+/// </remarks>
 public sealed class DatosDeEjemplo
 {
     /// <summary>Contraseña de todos los usuarios de ejemplo (personal y clientes web). Solo para desarrollo.</summary>

@@ -17,8 +17,12 @@ internal sealed record CategoriaEj(string Codigo, string Nombre, string Descripc
 
 /// <summary>
 /// Datos realistas del catálogo para desarrollo y demostraciones ([CatalogoProductos.md §11]): 6 categorías con 3 a 5
-/// subcategorías, sus filtros con opciones y de 2 a 3 productos por subcategoría (precios en dólares).
+/// subcategorías, sus filtros con opciones y de 2 a 3 productos por subcategoría (precios en dólares), salvo Celulares (25) y Laptops (35),
+/// que llevan marcas reales (Samsung, Motorola, HP, ASUS…) para probar filtros, paginación y rendimiento con volumen.
 /// </summary>
+// DÓNDE EDITAR: aquí se cambian o agregan productos de ejemplo. El código de cada producto sale de su posición en la lista (CAT-SUB-001, 002…):
+// agreguen siempre AL FINAL de la subcategoría para no correr los números ni el nombre de las imágenes (seed/imagenes/productos/CODIGO.jpg).
+// Quién lo ejecuta: DatosDeEjemplo.cs. Mapa del repositorio: docs/Equipo/DondeEstaCadaCosa.md
 internal static class CatalogoDeEjemplo
 {
     private static FiltroEj F(string nombre, params string[] opciones) => new(nombre, opciones);
@@ -87,22 +91,84 @@ internal static class CatalogoDeEjemplo
 
         new("TEC", "Tecnología", "Celulares, computadoras, audio y accesorios", new[]
         {
+            // 25 teléfonos de 12 marcas
             new SubcategoriaEj("CEL", "Celulares", "Teléfonos inteligentes",
-                new[] { F("Marca", "Nova", "Zenith", "Orbit"), F("Almacenamiento", "64 GB", "128 GB", "256 GB"), F("Memoria RAM", "4 GB", "6 GB", "8 GB"),
-                        F("Color", "Negro", "Azul", "Plata"), F("Pantalla", "6.1\"", "6.5\"", "6.7\"") },
+                new[] { F("Marca", "Samsung", "Motorola", "Xiaomi", "Apple", "Google", "OPPO", "realme", "Nokia", "OnePlus", "Honor", "Sony", "Huawei"),
+                        F("Almacenamiento", "64 GB", "128 GB", "256 GB", "512 GB"),
+                        F("Memoria RAM", "4 GB", "6 GB", "8 GB", "12 GB"),
+                        F("Color", "Negro", "Azul", "Plata", "Blanco", "Verde", "Morado", "Dorado"),
+                        F("Pantalla", "6.1\"", "6.4\"", "6.6\"", "6.7\"", "6.8\"") },
                 new[]
                 {
-                    P("Nova X5 128 GB", "Cámara dual de 50 MP y batería de todo el día.", 249.00m, 25, "Marca=Nova;Almacenamiento=128 GB;Memoria RAM=6 GB;Color=Negro;Pantalla=6.5\""),
-                    P("Zenith Pro 256 GB", "Gama alta con pantalla AMOLED y carga rápida.", 449.00m, 14, "Marca=Zenith;Almacenamiento=256 GB;Memoria RAM=8 GB;Color=Azul;Pantalla=6.7\""),
-                    P("Orbit Lite 64 GB", "Sencillo, ligero y económico.", 139.00m, 40, "Marca=Orbit;Almacenamiento=64 GB;Memoria RAM=4 GB;Color=Plata;Pantalla=6.1\""),
+                    P("Samsung Galaxy S24 Ultra", "Cámara de 200 MP, lápiz S Pen y pantalla enorme.", 1299m, 8, "Marca=Samsung;Almacenamiento=256 GB;Memoria RAM=12 GB;Color=Plata;Pantalla=6.8\""),
+                    P("Samsung Galaxy S23", "Compacto, rápido y con excelente cámara.", 799m, 10, "Marca=Samsung;Almacenamiento=256 GB;Memoria RAM=8 GB;Color=Dorado;Pantalla=6.1\""),
+                    P("Samsung Galaxy A55", "Gama media con pantalla AMOLED y marco de metal.", 449m, 22, "Marca=Samsung;Almacenamiento=256 GB;Memoria RAM=8 GB;Color=Blanco;Pantalla=6.6\""),
+                    P("Samsung Galaxy A35", "Pantalla fluida y batería de larga duración.", 349m, 26, "Marca=Samsung;Almacenamiento=128 GB;Memoria RAM=6 GB;Color=Blanco;Pantalla=6.6\""),
+                    P("Samsung Galaxy A15", "Básico y confiable para el día a día.", 169m, 35, "Marca=Samsung;Almacenamiento=128 GB;Memoria RAM=4 GB;Color=Azul;Pantalla=6.6\""),
+                    P("Motorola Moto G54 5G", "5G accesible con batería para dos días.", 199m, 30, "Marca=Motorola;Almacenamiento=128 GB;Memoria RAM=6 GB;Color=Azul;Pantalla=6.6\""),
+                    P("Motorola Edge 40 Neo", "Pantalla curva y carga rápida de 68 W.", 379m, 16, "Marca=Motorola;Almacenamiento=256 GB;Memoria RAM=8 GB;Color=Azul;Pantalla=6.6\""),
+                    P("Motorola Moto G84 5G", "Pantalla pOLED y sonido estéreo.", 279m, 20, "Marca=Motorola;Almacenamiento=256 GB;Memoria RAM=8 GB;Color=Azul;Pantalla=6.6\""),
+                    P("Motorola Razr 40", "Plegable de bolsillo con pantalla externa útil.", 699m, 7, "Marca=Motorola;Almacenamiento=256 GB;Memoria RAM=8 GB;Color=Morado;Pantalla=6.7\""),
+                    P("Xiaomi Redmi Note 13 Pro", "Cámara de 200 MP en gama media.", 329m, 24, "Marca=Xiaomi;Almacenamiento=256 GB;Memoria RAM=8 GB;Color=Dorado;Pantalla=6.7\""),
+                    P("Xiaomi 13T", "Óptica Leica y carga ultrarrápida.", 549m, 12, "Marca=Xiaomi;Almacenamiento=256 GB;Memoria RAM=12 GB;Color=Azul;Pantalla=6.7\""),
+                    P("POCO X6 Pro", "Rendimiento de juego a precio contenido.", 299m, 18, "Marca=Xiaomi;Almacenamiento=256 GB;Memoria RAM=8 GB;Color=Negro;Pantalla=6.7\""),
+                    P("Xiaomi 14", "Compacto de gama alta con cámara Leica.", 699m, 9, "Marca=Xiaomi;Almacenamiento=256 GB;Memoria RAM=12 GB;Color=Negro;Pantalla=6.1\""),
+                    P("Apple iPhone 13 Pro", "Pantalla ProMotion y sistema de tres cámaras.", 799m, 10, "Marca=Apple;Almacenamiento=256 GB;Memoria RAM=6 GB;Color=Azul;Pantalla=6.1\""),
+                    P("Apple iPhone 14", "Gran cámara y modo de acción para video.", 699m, 12, "Marca=Apple;Almacenamiento=128 GB;Memoria RAM=6 GB;Color=Azul;Pantalla=6.1\""),
+                    P("Apple iPhone 13", "Un clásico vigente: rápido y con excelente cámara.", 599m, 14, "Marca=Apple;Almacenamiento=128 GB;Memoria RAM=4 GB;Color=Azul;Pantalla=6.1\""),
+                    P("Google Pixel 7 Pro", "La mejor fotografía computacional de Android.", 599m, 8, "Marca=Google;Almacenamiento=256 GB;Memoria RAM=12 GB;Color=Negro;Pantalla=6.7\""),
+                    P("Google Pixel 7a", "Cámara de Pixel a precio razonable.", 449m, 13, "Marca=Google;Almacenamiento=128 GB;Memoria RAM=8 GB;Color=Blanco;Pantalla=6.1\""),
+                    P("OPPO Find X6", "Cámara Hasselblad y acabado en cuero vegano.", 899m, 6, "Marca=OPPO;Almacenamiento=256 GB;Memoria RAM=12 GB;Color=Dorado;Pantalla=6.7\""),
+                    P("realme 11 Pro+", "Cámara de 200 MP y diseño con acabado de cuero.", 399m, 15, "Marca=realme;Almacenamiento=256 GB;Memoria RAM=8 GB;Color=Verde;Pantalla=6.7\""),
+                    P("Nokia G42 5G", "Resistente y reparable, con tres años de actualizaciones.", 229m, 17, "Marca=Nokia;Almacenamiento=128 GB;Memoria RAM=6 GB;Color=Negro;Pantalla=6.6\""),
+                    P("OnePlus Nord CE 3", "Carga rápida de 80 W y pantalla de 120 Hz.", 349m, 14, "Marca=OnePlus;Almacenamiento=128 GB;Memoria RAM=8 GB;Color=Plata;Pantalla=6.7\""),
+                    P("Honor 90", "Pantalla curva con cámara de 200 MP.", 449m, 11, "Marca=Honor;Almacenamiento=256 GB;Memoria RAM=8 GB;Color=Azul;Pantalla=6.7\""),
+                    P("Sony Xperia 10 V", "Ligero, con batería enorme y jack de audífonos.", 399m, 9, "Marca=Sony;Almacenamiento=128 GB;Memoria RAM=6 GB;Color=Azul;Pantalla=6.1\""),
+                    P("Huawei P30", "Fotografía nocturna destacada y diseño en degradado.", 349m, 8, "Marca=Huawei;Almacenamiento=128 GB;Memoria RAM=6 GB;Color=Plata;Pantalla=6.1\""),
                 }),
+            // 35 portátiles de 9 marcas (la tienda de ejemplo necesita volumen para probar filtros, paginación y rendimiento)
             new SubcategoriaEj("LAP", "Laptops", "Computadoras portátiles para estudio, trabajo y juegos",
-                new[] { F("Marca", "Nova", "Zenith", "Orbit"), F("Memoria RAM", "8 GB", "16 GB", "32 GB"), F("Almacenamiento", "256 GB SSD", "512 GB SSD", "1 TB SSD"), F("Pantalla", "14\"", "15.6\"") },
+                new[] { F("Marca", "HP", "ASUS", "Lenovo", "Dell", "Acer", "MSI", "Apple", "Samsung", "Huawei"),
+                        F("Memoria RAM", "8 GB", "16 GB", "32 GB"),
+                        F("Almacenamiento", "256 GB SSD", "512 GB SSD", "1 TB SSD"),
+                        F("Pantalla", "13.3\"", "14\"", "15.6\"", "16\"") },
                 new[]
                 {
-                    P("Zenith Book 14", "Ultraligera para estudiantes y oficina.", 649.00m, 12, "Marca=Zenith;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=14\""),
-                    P("Nova Gamer 15", "Procesador de alto rendimiento y gráficos dedicados.", 1199.00m, 6, "Marca=Nova;Memoria RAM=32 GB;Almacenamiento=1 TB SSD;Pantalla=15.6\""),
-                    P("Orbit Air 15", "Equilibrio entre precio y desempeño.", 489.00m, 18, "Marca=Orbit;Memoria RAM=8 GB;Almacenamiento=256 GB SSD;Pantalla=15.6\""),
+                    P("HP Pavilion 15", "Portátil versátil para el día a día, con pantalla Full HD y teclado numérico.", 649m, 18, "Marca=HP;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=15.6\""),
+                    P("HP Victus 16", "Portátil gamer con gráficos dedicados y buena ventilación.", 849m, 12, "Marca=HP;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=16\""),
+                    P("HP 14 Laptop", "Ligera y económica para estudiar y trabajar.", 399m, 30, "Marca=HP;Memoria RAM=8 GB;Almacenamiento=256 GB SSD;Pantalla=14\""),
+                    P("HP ProBook 450 G9", "Equipo de oficina resistente y con seguridad empresarial.", 729m, 15, "Marca=HP;Memoria RAM=8 GB;Almacenamiento=256 GB SSD;Pantalla=15.6\""),
+                    P("HP EliteBook 840 G9", "Ultraportátil profesional con cámara web de alta calidad.", 1199m, 9, "Marca=HP;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=14\""),
+                    P("HP Envy 15", "Diseño cuidado y potencia para creación de contenido.", 999m, 10, "Marca=HP;Memoria RAM=16 GB;Almacenamiento=1 TB SSD;Pantalla=15.6\""),
+                    P("ASUS VivoBook 15", "Portátil de uso general con teclado cómodo y batería de buena duración.", 519m, 24, "Marca=ASUS;Memoria RAM=8 GB;Almacenamiento=512 GB SSD;Pantalla=15.6\""),
+                    P("ASUS VivoBook Go 14", "Compacta y liviana, perfecta para llevar a clases.", 429m, 22, "Marca=ASUS;Memoria RAM=8 GB;Almacenamiento=256 GB SSD;Pantalla=14\""),
+                    P("ASUS ExpertBook B1", "Pensada para empresas: robusta y fácil de administrar.", 629m, 14, "Marca=ASUS;Memoria RAM=8 GB;Almacenamiento=256 GB SSD;Pantalla=14\""),
+                    P("ASUS TUF Gaming F15", "Gamer con chasis reforzado y teclado retroiluminado.", 999m, 11, "Marca=ASUS;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=15.6\""),
+                    P("ASUS Zenbook 14 OLED", "Pantalla OLED brillante en un cuerpo delgado y elegante.", 899m, 10, "Marca=ASUS;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=14\""),
+                    P("ASUS ROG Strix G16", "Máximo rendimiento para juegos, con teclado RGB.", 1399m, 6, "Marca=ASUS;Memoria RAM=16 GB;Almacenamiento=1 TB SSD;Pantalla=16\""),
+                    P("Lenovo IdeaPad 3 15", "Opción accesible para tareas escolares y de oficina.", 449m, 28, "Marca=Lenovo;Memoria RAM=8 GB;Almacenamiento=256 GB SSD;Pantalla=15.6\""),
+                    P("Lenovo ThinkPad E14", "Teclado legendario y durabilidad para el trabajo diario.", 899m, 12, "Marca=Lenovo;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=14\""),
+                    P("Lenovo Legion 5", "Potencia para jugar y editar, con buena disipación de calor.", 1099m, 8, "Marca=Lenovo;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=15.6\""),
+                    P("Lenovo Yoga Slim 7", "Delgada y rápida, con acabado metálico.", 1049m, 10, "Marca=Lenovo;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=14\""),
+                    P("Lenovo ThinkPad X1 Carbon", "Ultraligera de fibra de carbono para ejecutivos.", 1799m, 5, "Marca=Lenovo;Memoria RAM=16 GB;Almacenamiento=1 TB SSD;Pantalla=14\""),
+                    P("Dell Inspiron 15 3520", "Equilibrio entre precio y desempeño para la familia.", 479m, 26, "Marca=Dell;Memoria RAM=8 GB;Almacenamiento=256 GB SSD;Pantalla=15.6\""),
+                    P("Dell Vostro 3520", "Para pequeñas empresas: sólida y con buena conectividad.", 519m, 20, "Marca=Dell;Memoria RAM=8 GB;Almacenamiento=256 GB SSD;Pantalla=15.6\""),
+                    P("Dell Latitude 5440", "Seguridad y movilidad para equipos de trabajo.", 1099m, 9, "Marca=Dell;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=14\""),
+                    P("Dell Alienware m16", "Gamer de gama alta con pantalla de alta frecuencia.", 1999m, 4, "Marca=Dell;Memoria RAM=32 GB;Almacenamiento=1 TB SSD;Pantalla=16\""),
+                    P("Dell XPS 13", "Compacta, de bordes finos y construcción premium.", 1199m, 7, "Marca=Dell;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=13.3\""),
+                    P("Acer Aspire 5", "Portátil todoterreno con pantalla Full HD.", 499m, 25, "Marca=Acer;Memoria RAM=8 GB;Almacenamiento=512 GB SSD;Pantalla=15.6\""),
+                    P("Acer Swift Go 14", "Ligera y silenciosa, con carga rápida.", 799m, 12, "Marca=Acer;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=14\""),
+                    P("Acer Nitro 5", "Entrada al mundo gamer con excelente relación calidad-precio.", 899m, 10, "Marca=Acer;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=15.6\""),
+                    P("Acer Predator Helios 16", "Rendimiento extremo para juegos exigentes.", 1699m, 5, "Marca=Acer;Memoria RAM=32 GB;Almacenamiento=1 TB SSD;Pantalla=16\""),
+                    P("MSI Modern 14", "Portátil delgado para profesionales creativos.", 549m, 15, "Marca=MSI;Memoria RAM=8 GB;Almacenamiento=256 GB SSD;Pantalla=14\""),
+                    P("MSI Katana 15", "Gamer con diseño agresivo y teclado retroiluminado.", 1099m, 8, "Marca=MSI;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=15.6\""),
+                    P("MSI Stealth 16", "Potencia de escritorio en un chasis delgado.", 2099m, 4, "Marca=MSI;Memoria RAM=32 GB;Almacenamiento=1 TB SSD;Pantalla=16\""),
+                    P("Apple MacBook Air 13", "Ligera, silenciosa y con batería para todo el día.", 999m, 14, "Marca=Apple;Memoria RAM=8 GB;Almacenamiento=256 GB SSD;Pantalla=13.3\""),
+                    P("Apple MacBook Air 15", "Más pantalla sin perder portabilidad.", 1299m, 10, "Marca=Apple;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=15.6\""),
+                    P("Apple MacBook Pro 14", "Para profesionales: pantalla de alto brillo y gran rendimiento.", 1599m, 8, "Marca=Apple;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=14\""),
+                    P("Samsung Galaxy Book3", "Conecta fácil con tu teléfono Galaxy y es muy liviana.", 899m, 9, "Marca=Samsung;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=15.6\""),
+                    P("Huawei MateBook 16", "Pantalla amplia con acabado metálico.", 849m, 8, "Marca=Huawei;Memoria RAM=16 GB;Almacenamiento=512 GB SSD;Pantalla=16\""),
+                    P("Huawei MateBook 13", "Pequeña y elegante, ideal para viajar.", 699m, 6, "Marca=Huawei;Memoria RAM=8 GB;Almacenamiento=512 GB SSD;Pantalla=13.3\""),
                 }),
             new SubcategoriaEj("AUD", "Audio", "Audífonos y bocinas",
                 new[] { F("Tipo", "Audífonos inalámbricos", "Audífonos con cable", "Bocina portátil"), F("Marca", "Nova", "Zenith", "SoundWave"),

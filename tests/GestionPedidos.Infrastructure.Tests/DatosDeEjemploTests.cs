@@ -42,7 +42,8 @@ public class DatosDeEjemploTests
         foreach (var sub in activas.SelectMany(c => c.Subcategorias))
         {
             var productos = await db.Productos.CountAsync(p => p.SubcategoriaId == sub.Id);
-            Assert.InRange(productos, 1, 3);
+            // Laptops (35) y Celulares (25) llevan marcas reales y mucho volumen a propósito; el resto, de 1 a 3 productos
+            Assert.InRange(productos, 1, sub.Nombre == "Laptops" ? 35 : sub.Nombre == "Celulares" ? 25 : 3);
             Assert.True(await db.Filtros.AnyAsync(f => f.SubcategoriaId == sub.Id), $"{sub.Nombre} sin filtros");
         }
         // Todos los filtros tienen opciones y todo producto activo está descrito con una opción por filtro de su subcategoría
@@ -87,11 +88,25 @@ public class DatosDeEjemploTests
         Assert.False(await db.Productos.AnyAsync(p => p.Codigo.StartsWith("PRD-")));
         Assert.Contains(await db.Productos.Select(p => p.Codigo).ToListAsync(), c => c == "ROP-CAM-001");
         var conImagen = await db.Productos.Where(p => p.ImagenClave != null).ToListAsync();
-        Assert.True(conImagen.Count >= 50);
+        Assert.True(conImagen.Count >= 100);
         Assert.All(conImagen, p => Assert.Equal($"productos/{p.Codigo}.jpg", p.ImagenClave));
         Assert.All(await db.Categorias.Where(c => c.ImagenClave != null).ToListAsync(), c => Assert.Equal($"categorias/{c.Codigo}.jpg", c.ImagenClave));
         Assert.True(await db.Categorias.CountAsync(c => c.ImagenClave != null) >= 6);
         Assert.Equal(conImagen.Count + await db.Categorias.CountAsync(c => c.ImagenClave != null), _almacen.Cantidad);   // nada de objetos sueltos
+
+        // Pedido del usuario: 35 laptops y 25 celulares, cada uno con su marca real y su foto
+        var laptops = await db.Productos.Where(p => p.Subcategoria!.Nombre == "Laptops").Include(p => p.Opciones).ThenInclude(o => o.Opcion).Include(p => p.Opciones).ThenInclude(o => o.Filtro).ToListAsync();
+        var celulares = await db.Productos.Where(p => p.Subcategoria!.Nombre == "Celulares").Include(p => p.Opciones).ThenInclude(o => o.Opcion).Include(p => p.Opciones).ThenInclude(o => o.Filtro).ToListAsync();
+        Assert.Equal(35, laptops.Count);
+        Assert.Equal(25, celulares.Count);
+        Assert.All(laptops.Concat(celulares), p => Assert.NotNull(p.ImagenClave));
+        string Marca(Domain.Productos.Producto p) => p.Opciones.Single(o => o.Filtro!.Nombre == "Marca").Opcion!.Valor;
+        Assert.All(new[] { "HP", "ASUS", "Lenovo", "Dell", "Acer", "MSI", "Apple" }, m => Assert.Contains(m, laptops.Select(Marca)));
+        Assert.Contains("HP", laptops.Select(Marca)); Assert.Contains("ASUS", laptops.Select(Marca));
+        Assert.Contains("Samsung", celulares.Select(Marca)); Assert.Contains("Motorola", celulares.Select(Marca));
+        Assert.True(laptops.Select(Marca).Distinct().Count() >= 8);
+        Assert.True(celulares.Select(Marca).Distinct().Count() >= 10);
+        Assert.Equal(60, laptops.Concat(celulares).Select(p => p.ImagenClave).Distinct().Count());   // cada producto tiene SU imagen
 
         // Los que no tienen foto quedan sin clave (la tienda muestra su ícono), no con una clave rota
         Assert.True(await db.Productos.AnyAsync(p => p.ImagenClave == null));
