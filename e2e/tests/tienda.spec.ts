@@ -7,12 +7,21 @@ test('portada de la tienda: promoción, categorías y recién llegados', async (
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Encuentra lo que buscas');
   await expect(page.getByRole('link', { name: /Tecnología/ }).first()).toBeVisible();
   await expect(page.locator('.tarjeta-producto').first()).toBeVisible();
+  // Las fotos vienen del almacén de imágenes (Garage) a través del sitio y se cargan de verdad
+  const foto = page.locator('.tarjeta-producto img').first();
+  await expect(foto).toBeVisible();
+  await expect.poll(() => foto.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0 && getComputedStyle(i).opacity === '1')).toBe(true);   // cargada y ya sin el desvanecido
+  await expect(page.locator('.categoria-imagen img').first()).toBeVisible();
+  // Sin emojis: los íconos son SVG
+  expect(await page.locator('body').innerText()).not.toMatch(/\p{Extended_Pictographic}/u);
+  await expect(page.locator('svg.icono').first()).toBeVisible();
   await captura(page, '20-tienda-portada');
 });
 
 test('catálogo: filtros por categoría, subcategoría, opciones, precio y orden; los filtros viven en la dirección', async ({ page }) => {
   await page.goto('/tienda');
   await expect(page.locator('.tarjeta-producto').first()).toBeVisible();
+  await page.waitForTimeout(700);   // deja terminar el desvanecido de las fotos para la captura
   await captura(page, '21-tienda-catalogo');
 
   // Categoría → subcategoría → opciones (Y entre filtros, O dentro de un filtro)
@@ -144,5 +153,6 @@ test('modo oscuro y color de acento también cambian la tienda', async ({ page }
   await page.goto('/tienda?categoria=1');   // la preferencia se recuerda al cambiar de página
   await expect(page.locator('.tarjeta-producto').first()).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('data-acento', 'rosa');
+  await page.waitForTimeout(700);
   await captura(page, '27-tienda-oscuro-catalogo');
 });
