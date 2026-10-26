@@ -40,7 +40,7 @@ public class AdministracionApiTests
     {
         var admin = await _api.AdminAsync();
         var permisos = (await admin.GetFromJsonAsync<List<PermisoDto>>("/api/v1/permisos"))!;
-        Assert.Equal(28, permisos.Count);
+        Assert.Equal(33, permisos.Count);
         Assert.Contains(permisos, p => p.Codigo == "roles.editar");
         Assert.Equal(HttpStatusCode.Forbidden, (await (await OperadorAsync()).GetAsync("/api/v1/permisos")).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await _api.CreateClient().GetAsync("/api/v1/permisos")).StatusCode);

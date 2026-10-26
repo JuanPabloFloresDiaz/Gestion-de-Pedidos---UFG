@@ -21,9 +21,9 @@ public class EsquemaTests
     {
         await using var db = _bd.Contexto();
         Assert.Equal(new[] { "Administrador", "Cliente", "Operador" }, (await db.Roles.Select(r => r.Nombre).OrderBy(n => n).ToListAsync()));
-        Assert.Equal(28, await db.Permisos.CountAsync());
-        Assert.Equal(24, await db.RolesPermisos.CountAsync(rp => rp.RolId == 1));
-        Assert.Equal(11, await db.RolesPermisos.CountAsync(rp => rp.RolId == 2));
+        Assert.Equal(33, await db.Permisos.CountAsync());
+        Assert.Equal(29, await db.RolesPermisos.CountAsync(rp => rp.RolId == 1));
+        Assert.Equal(12, await db.RolesPermisos.CountAsync(rp => rp.RolId == 2));
         Assert.Equal(5, await db.RolesPermisos.CountAsync(rp => rp.RolId == 3));
     }
 

@@ -18,7 +18,7 @@ public class UsuariosApiTests
         var admin = await _api.AdminAsync();
         var roles = (await admin.GetFromJsonAsync<List<RolDto>>("/api/v1/roles"))!;
         Assert.Equal(new[] { "Administrador", "Operador", "Cliente" }, roles.Select(r => r.Nombre));
-        Assert.Equal(24, roles[0].Permisos.Count);
+        Assert.Equal(29, roles[0].Permisos.Count);
     }
 
     [Fact]

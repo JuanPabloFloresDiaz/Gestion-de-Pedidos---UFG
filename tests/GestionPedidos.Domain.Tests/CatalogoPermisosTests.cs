@@ -12,7 +12,8 @@ public class CatalogoPermisosTests
     public void Administrador_TieneTodoMenosLoDelCliente()
     {
         var admin = CatalogoPermisos.DeRol(NombresRol.Administrador);
-        Assert.Equal(24, admin.Count);
+        Assert.Equal(29, admin.Count);
+        Assert.Contains(CatalogoPermisos.CategoriasEliminar, admin);
         Assert.Contains(CatalogoPermisos.RolesEditar, admin);
         Assert.Contains(CatalogoPermisos.UsuariosEliminar, admin);
         Assert.Contains(CatalogoPermisos.CatalogosVer, admin);
@@ -56,7 +57,9 @@ public class CatalogoPermisosTests
         // Los Id de la semilla son la posición en la lista: los 25 originales no pueden moverse.
         Assert.Equal(CatalogoPermisos.AdminAcceso, CatalogoPermisos.Todos[0].Codigo);
         Assert.Equal(CatalogoPermisos.PerfilEditar, CatalogoPermisos.Todos[24].Codigo);
-        Assert.Equal(28, CatalogoPermisos.Todos.Count);
+        Assert.Equal(33, CatalogoPermisos.Todos.Count);
+        Assert.Equal(CatalogoPermisos.UsuariosEliminar, CatalogoPermisos.Todos[27].Codigo);
+        Assert.Equal(CatalogoPermisos.CategoriasVer, CatalogoPermisos.Todos[28].Codigo);
     }
 
     [Fact]
