@@ -4,6 +4,7 @@ using GestionPedidos.Api.Modulos.Auth;
 using GestionPedidos.Api.Modulos.Catalogos;
 using GestionPedidos.Api.Modulos.Clasificacion;
 using GestionPedidos.Api.Modulos.Historial;
+using GestionPedidos.Api.Modulos.Imagenes;
 using GestionPedidos.Api.Modulos.Roles;
 using GestionPedidos.Api.Modulos.Tienda;
 using GestionPedidos.Api.Modulos.Usuarios;
@@ -12,6 +13,7 @@ using GestionPedidos.Application.Common;
 using GestionPedidos.Application.Historial;
 using GestionPedidos.Application.Seguridad;
 using GestionPedidos.Infrastructure;
+using GestionPedidos.Infrastructure.Almacen;
 using GestionPedidos.Infrastructure.Persistence;
 using GestionPedidos.Infrastructure.Persistence.Seed;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -29,6 +31,7 @@ var config = builder.Configuration;
 var conexion = config.GetConnectionString("Default")
     ?? throw new InvalidOperationException("Falta ConnectionStrings:Default.");
 builder.Services.AddGestionPedidos(conexion);
+builder.Services.Configure<OpcionesAlmacen>(config.GetSection(OpcionesAlmacen.Seccion));   // Garage (S3) para las imágenes
 
 builder.Services.Configure<OpcionesJwt>(config.GetSection(OpcionesJwt.Seccion));
 var jwt = config.GetSection(OpcionesJwt.Seccion).Get<OpcionesJwt>() ?? new OpcionesJwt();
@@ -156,6 +159,7 @@ app.MapHistorial();
 app.MapClasificacion();
 app.MapTienda();
 app.MapMisPedidos();
+app.MapImagenes();
 
 // --- Arranque de la base de datos (migraciones con el usuario dueño + semillas) -------------------
 if (config.GetValue("Database:MigrarAlIniciar", false))
@@ -173,6 +177,17 @@ if (config.GetValue("Database:MigrarAlIniciar", false))
     // Datos de ejemplo (catálogo, clientes, pedidos…) solo si se pide; en desarrollo el compose lo activa.
     if (config.GetValue("Database:SembrarDatosDeEjemplo", false))
         await scope.ServiceProvider.GetRequiredService<DatosDeEjemplo>().SembrarAsync(CancellationToken.None);
+
+    // Recuperación: tras restaurar la base, vuelve a ligar las imágenes del almacén con sus productos y categorías por código.
+    if (config.GetValue("Almacen:ReenlazarAlIniciar", false))
+    {
+        try
+        {
+            var r = await scope.ServiceProvider.GetRequiredService<GestionPedidos.Application.Imagenes.GestionarImagenes>().ReenlazarAsync(null, CancellationToken.None);
+            app.Logger.LogInformation("Imágenes reenlazadas por código: {Enlazadas} nuevas, {Ya} ya estaban, {Sin} sin destino.", r.Enlazadas, r.YaEnlazadas, r.SinDestino);
+        }
+        catch (Exception ex) { app.Logger.LogWarning(ex, "No se pudieron reenlazar las imágenes (¿el almacén está encendido?)."); }
+    }
 }
 
 // El historial es un suscriptor: se instancia aquí para que escuche desde el primer evento.
