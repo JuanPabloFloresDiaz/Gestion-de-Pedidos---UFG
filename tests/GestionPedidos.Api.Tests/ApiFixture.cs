@@ -1,8 +1,12 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using GestionPedidos.Contracts;
+using GestionPedidos.Application.Imagenes;
+using GestionPedidos.Infrastructure.Almacen;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Testcontainers.MsSql;
 
 namespace GestionPedidos.Api.Tests;
@@ -17,6 +21,9 @@ public sealed class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
         .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
         .WithPassword("Pruebas_Password_123!")
         .Build();
+
+    /// <summary>Almacén de imágenes en memoria que reemplaza a Garage en estas pruebas (Garage real se prueba en Infrastructure.Tests).</summary>
+    public AlmacenImagenesEnMemoria Almacen { get; } = new();
 
     public string ConexionBd => $"{_bd.GetConnectionString()};Database=GestionPedidosApi";
 
@@ -39,6 +46,7 @@ public sealed class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
             ["RateLimiting:TiendaPorMinuto"] = "100000",
         };
         foreach (var (clave, valor) in ajustes) builder.UseSetting(clave, valor);
+        builder.ConfigureServices(s => s.Replace(ServiceDescriptor.Singleton<IAlmacenImagenes>(Almacen)));
     }
 
     /// <summary>Inicia sesión y devuelve la sesión (lanza si falla).</summary>

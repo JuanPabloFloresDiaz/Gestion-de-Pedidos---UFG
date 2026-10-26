@@ -1,5 +1,6 @@
 using GestionPedidos.Domain.Pedidos;
 using GestionPedidos.Domain.Seguridad;
+using GestionPedidos.Infrastructure.Almacen;
 using GestionPedidos.Infrastructure.Persistence.Seed;
 using GestionPedidos.Infrastructure.Seguridad;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,8 @@ public class DatosDeEjemploTests
     private readonly BaseDeDatosFixture _bd;
     public DatosDeEjemploTests(BaseDeDatosFixture bd) => _bd = bd;
 
+    private readonly AlmacenImagenesEnMemoria _almacen = new();
+
     private async Task<string> BaseSembradaAsync(string nombre)
     {
         await using (var db = _bd.Contexto(nombre))
@@ -23,7 +26,7 @@ public class DatosDeEjemploTests
             await db.SaveChangesAsync();
         }
         await using (var db = _bd.Contexto(nombre))
-            await new DatosDeEjemplo(db, new HasherClave(), TimeProvider.System, NullLogger<DatosDeEjemplo>.Instance).SembrarAsync(default);
+            await new DatosDeEjemplo(db, new HasherClave(), TimeProvider.System, NullLogger<DatosDeEjemplo>.Instance, _almacen).SembrarAsync(default);
         return nombre;
     }
 
@@ -76,13 +79,48 @@ public class DatosDeEjemploTests
     }
 
     [Fact]
+    public async Task Imagenes_SeSubenConElCodigoComoNombre_YQuedanLigadasAlProductoYALaCategoria()
+    {
+        await using var db = _bd.Contexto(await BaseSembradaAsync("EjemploImagenes"));
+
+        // Todos los productos y categorías tienen un código humano y estable; las imágenes se llaman como él
+        Assert.False(await db.Productos.AnyAsync(p => p.Codigo.StartsWith("PRD-")));
+        Assert.Contains(await db.Productos.Select(p => p.Codigo).ToListAsync(), c => c == "ROP-CAM-001");
+        var conImagen = await db.Productos.Where(p => p.ImagenClave != null).ToListAsync();
+        Assert.True(conImagen.Count >= 50);
+        Assert.All(conImagen, p => Assert.Equal($"productos/{p.Codigo}.jpg", p.ImagenClave));
+        Assert.All(await db.Categorias.Where(c => c.ImagenClave != null).ToListAsync(), c => Assert.Equal($"categorias/{c.Codigo}.jpg", c.ImagenClave));
+        Assert.True(await db.Categorias.CountAsync(c => c.ImagenClave != null) >= 6);
+        Assert.Equal(conImagen.Count + await db.Categorias.CountAsync(c => c.ImagenClave != null), _almacen.Cantidad);   // nada de objetos sueltos
+
+        // Los que no tienen foto quedan sin clave (la tienda muestra su ícono), no con una clave rota
+        Assert.True(await db.Productos.AnyAsync(p => p.ImagenClave == null));
+    }
+
+    [Fact]
+    public async Task SinAlmacen_SeSiembraTodoMenosLasImagenes()
+    {
+        await using (var db = _bd.Contexto("EjemploSinAlmacen"))
+        {
+            await db.Database.MigrateAsync();
+            db.Usuarios.Add(Usuario.Crear("admin", "Administrador", "admin@gestionpedidos.local", "hash", 1, false));
+            await db.SaveChangesAsync();
+        }
+        await using (var db = _bd.Contexto("EjemploSinAlmacen"))
+            await new DatosDeEjemplo(db, new HasherClave(), TimeProvider.System, NullLogger<DatosDeEjemplo>.Instance).SembrarAsync(default);
+        await using var comprobar = _bd.Contexto("EjemploSinAlmacen");
+        Assert.True(await comprobar.Productos.CountAsync() >= 60);
+        Assert.False(await comprobar.Productos.AnyAsync(p => p.ImagenClave != null));
+    }
+
+    [Fact]
     public async Task Sembrar_UnaSegundaVez_NoDuplicaNada()
     {
         var nombre = await BaseSembradaAsync("EjemploIdempotente");
         await using var db = _bd.Contexto(nombre);
         var (categorias, productos, pedidos) = (await db.Categorias.CountAsync(), await db.Productos.CountAsync(), await db.Pedidos.CountAsync());
 
-        await new DatosDeEjemplo(db, new HasherClave(), TimeProvider.System, NullLogger<DatosDeEjemplo>.Instance).SembrarAsync(default);
+        await new DatosDeEjemplo(db, new HasherClave(), TimeProvider.System, NullLogger<DatosDeEjemplo>.Instance, _almacen).SembrarAsync(default);
 
         Assert.Equal(categorias, await db.Categorias.CountAsync());
         Assert.Equal(productos, await db.Productos.CountAsync());
