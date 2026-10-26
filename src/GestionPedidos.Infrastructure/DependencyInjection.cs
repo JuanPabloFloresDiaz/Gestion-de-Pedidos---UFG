@@ -1,4 +1,5 @@
 using GestionPedidos.Application.Autenticacion;
+using GestionPedidos.Application.Catalogo;
 using GestionPedidos.Application.Catalogos;
 using GestionPedidos.Application.Roles;
 using GestionPedidos.Application.Common;
@@ -34,6 +35,7 @@ public static class DependencyInjection
         servicios.AddScoped<IRegistroClienteRepository, RegistroClienteRepository>();
         servicios.AddScoped<ICatalogoGeoRepository, CatalogoGeoRepository>();
         servicios.AddScoped<IActividadRepository, ActividadRepository>();
+        servicios.AddScoped<IClasificacionRepository, ClasificacionRepository>();
         servicios.AddSingleton<IHasherClave, HasherClave>();
         servicios.AddScoped<AdministradorInicial>();
 
@@ -54,6 +56,12 @@ public static class DependencyInjection
         servicios.AddScoped<ListarDepartamentos>();
         servicios.AddScoped<ListarCiudades>();
         servicios.AddScoped<ListarActividades>();
+        servicios.AddScoped<ObtenerArbolDeCatalogo>();
+        servicios.AddScoped<ObtenerFiltrosDeSubcategoria>();
+        servicios.AddScoped<GestionarCategorias>();
+        servicios.AddScoped<GestionarSubcategorias>();
+        servicios.AddScoped<GestionarFiltros>();
+        servicios.AddScoped<GestionarOpciones>();
 
         // Eventos: una publicadora única y el historial como suscriptor (se registra en un solo lugar)
         servicios.AddSingleton<EventosAplicacion>();

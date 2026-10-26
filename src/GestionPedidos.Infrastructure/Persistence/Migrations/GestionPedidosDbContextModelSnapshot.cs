@@ -22,6 +22,221 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("GestionPedidos.Domain.Catalogo.Categoria", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTimeOffset?>("EliminadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("Categorias", (string)null);
+                });
+
+            modelBuilder.Entity("GestionPedidos.Domain.Catalogo.Filtro", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
+                    b.Property<DateTimeOffset?>("EliminadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<int>("SubcategoriaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubcategoriaId", "Nombre")
+                        .IsUnique();
+
+                    b.ToTable("Filtros", (string)null);
+                });
+
+            modelBuilder.Entity("GestionPedidos.Domain.Catalogo.OpcionFiltro", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
+                    b.Property<DateTimeOffset?>("EliminadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
+                    b.Property<int>("FiltroId")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Valor")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FiltroId", "Valor")
+                        .IsUnique();
+
+                    b.ToTable("OpcionesFiltro", (string)null);
+                });
+
+            modelBuilder.Entity("GestionPedidos.Domain.Catalogo.ProductoOpcion", b =>
+                {
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FiltroId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OpcionFiltroId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProductoId", "FiltroId");
+
+                    b.HasIndex("FiltroId");
+
+                    b.HasIndex("OpcionFiltroId");
+
+                    b.HasIndex("OpcionFiltroId", "FiltroId");
+
+                    b.ToTable("ProductosOpciones", (string)null);
+                });
+
+            modelBuilder.Entity("GestionPedidos.Domain.Catalogo.Subcategoria", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
+                    b.Property<int>("CategoriaId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTimeOffset?>("EliminadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoriaId", "Nombre")
+                        .IsUnique();
+
+                    b.ToTable("Subcategorias", (string)null);
+                });
+
             modelBuilder.Entity("GestionPedidos.Domain.Clientes.Cliente", b =>
                 {
                     b.Property<int>("Id")
@@ -2300,6 +2515,9 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
+                    b.Property<int?>("SubcategoriaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Activo");
@@ -2307,6 +2525,8 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                     b.HasIndex("Nombre");
 
                     b.HasIndex("PrecioVenta");
+
+                    b.HasIndex("SubcategoriaId");
 
                     b.ToTable("Productos", null, t =>
                         {
@@ -2509,6 +2729,36 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                             Id = 28,
                             Codigo = "usuarios.eliminar",
                             Descripcion = "Eliminar definitivamente usuarios dados de baja"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            Codigo = "categorias.ver",
+                            Descripcion = "Ver categorías, subcategorías, filtros y opciones"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Codigo = "categorias.crear",
+                            Descripcion = "Crear categorías, subcategorías, filtros y opciones"
+                        },
+                        new
+                        {
+                            Id = 31,
+                            Codigo = "categorias.editar",
+                            Descripcion = "Editar categorías, subcategorías, filtros y opciones"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            Codigo = "categorias.desactivar",
+                            Descripcion = "Dar de baja o reactivar categorías, subcategorías, filtros y opciones"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            Codigo = "categorias.eliminar",
+                            Descripcion = "Eliminar definitivamente elementos inactivos y sin uso de la clasificación"
                         });
                 });
 
@@ -2694,6 +2944,31 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
+                            RolId = 1,
+                            PermisoId = 29
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 30
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 31
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 32
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 33
+                        },
+                        new
+                        {
                             RolId = 2,
                             PermisoId = 1
                         },
@@ -2746,6 +3021,11 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                         {
                             RolId = 2,
                             PermisoId = 27
+                        },
+                        new
+                        {
+                            RolId = 2,
+                            PermisoId = 29
                         },
                         new
                         {
@@ -2859,6 +3139,67 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                     b.ToTable("Usuarios", (string)null);
                 });
 
+            modelBuilder.Entity("GestionPedidos.Domain.Catalogo.Filtro", b =>
+                {
+                    b.HasOne("GestionPedidos.Domain.Catalogo.Subcategoria", "Subcategoria")
+                        .WithMany("Filtros")
+                        .HasForeignKey("SubcategoriaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Subcategoria");
+                });
+
+            modelBuilder.Entity("GestionPedidos.Domain.Catalogo.OpcionFiltro", b =>
+                {
+                    b.HasOne("GestionPedidos.Domain.Catalogo.Filtro", "Filtro")
+                        .WithMany("Opciones")
+                        .HasForeignKey("FiltroId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Filtro");
+                });
+
+            modelBuilder.Entity("GestionPedidos.Domain.Catalogo.ProductoOpcion", b =>
+                {
+                    b.HasOne("GestionPedidos.Domain.Catalogo.Filtro", "Filtro")
+                        .WithMany()
+                        .HasForeignKey("FiltroId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GestionPedidos.Domain.Productos.Producto", "Producto")
+                        .WithMany("Opciones")
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GestionPedidos.Domain.Catalogo.OpcionFiltro", "Opcion")
+                        .WithMany()
+                        .HasForeignKey("OpcionFiltroId", "FiltroId")
+                        .HasPrincipalKey("Id", "FiltroId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Filtro");
+
+                    b.Navigation("Opcion");
+
+                    b.Navigation("Producto");
+                });
+
+            modelBuilder.Entity("GestionPedidos.Domain.Catalogo.Subcategoria", b =>
+                {
+                    b.HasOne("GestionPedidos.Domain.Catalogo.Categoria", "Categoria")
+                        .WithMany("Subcategorias")
+                        .HasForeignKey("CategoriaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Categoria");
+                });
+
             modelBuilder.Entity("GestionPedidos.Domain.Clientes.Cliente", b =>
                 {
                     b.HasOne("GestionPedidos.Domain.Geografia.Ciudad", "Ciudad")
@@ -2936,6 +3277,16 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                     b.Navigation("Usuario");
                 });
 
+            modelBuilder.Entity("GestionPedidos.Domain.Productos.Producto", b =>
+                {
+                    b.HasOne("GestionPedidos.Domain.Catalogo.Subcategoria", "Subcategoria")
+                        .WithMany()
+                        .HasForeignKey("SubcategoriaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Subcategoria");
+                });
+
             modelBuilder.Entity("GestionPedidos.Domain.Seguridad.RolPermiso", b =>
                 {
                     b.HasOne("GestionPedidos.Domain.Seguridad.Permiso", "Permiso")
@@ -2966,9 +3317,29 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                     b.Navigation("Rol");
                 });
 
+            modelBuilder.Entity("GestionPedidos.Domain.Catalogo.Categoria", b =>
+                {
+                    b.Navigation("Subcategorias");
+                });
+
+            modelBuilder.Entity("GestionPedidos.Domain.Catalogo.Filtro", b =>
+                {
+                    b.Navigation("Opciones");
+                });
+
+            modelBuilder.Entity("GestionPedidos.Domain.Catalogo.Subcategoria", b =>
+                {
+                    b.Navigation("Filtros");
+                });
+
             modelBuilder.Entity("GestionPedidos.Domain.Pedidos.Pedido", b =>
                 {
                     b.Navigation("Detalles");
+                });
+
+            modelBuilder.Entity("GestionPedidos.Domain.Productos.Producto", b =>
+                {
+                    b.Navigation("Opciones");
                 });
 
             modelBuilder.Entity("GestionPedidos.Domain.Seguridad.Rol", b =>

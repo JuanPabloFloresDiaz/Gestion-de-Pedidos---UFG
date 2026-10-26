@@ -1,4 +1,5 @@
 using GestionPedidos.Domain;
+using GestionPedidos.Domain.Catalogo;
 using GestionPedidos.Domain.Clientes;
 using GestionPedidos.Domain.Geografia;
 using GestionPedidos.Domain.Historial;
@@ -36,6 +37,16 @@ public class GestionPedidosDbContext : DbContext
     public DbSet<Cliente> Clientes => Set<Cliente>();
     /// <summary>Productos.</summary>
     public DbSet<Producto> Productos => Set<Producto>();
+    /// <summary>Categorías de productos.</summary>
+    public DbSet<Categoria> Categorias => Set<Categoria>();
+    /// <summary>Subcategorías de productos.</summary>
+    public DbSet<Subcategoria> Subcategorias => Set<Subcategoria>();
+    /// <summary>Filtros de las subcategorías.</summary>
+    public DbSet<Filtro> Filtros => Set<Filtro>();
+    /// <summary>Opciones de los filtros.</summary>
+    public DbSet<OpcionFiltro> OpcionesFiltro => Set<OpcionFiltro>();
+    /// <summary>Detalle de los productos (opción elegida por filtro).</summary>
+    public DbSet<ProductoOpcion> ProductosOpciones => Set<ProductoOpcion>();
     /// <summary>Pedidos.</summary>
     public DbSet<Pedido> Pedidos => Set<Pedido>();
     /// <summary>Líneas de pedido.</summary>

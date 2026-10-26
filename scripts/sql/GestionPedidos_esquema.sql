@@ -1115,3 +1115,244 @@ GO
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    ALTER TABLE [Productos] ADD [SubcategoriaId] int NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    CREATE TABLE [Categorias] (
+        [Id] int NOT NULL IDENTITY,
+        [Nombre] nvarchar(100) NOT NULL,
+        [Descripcion] nvarchar(300) NULL,
+        [Activo] bit NOT NULL DEFAULT CAST(1 AS bit),
+        [EliminadoEn] datetimeoffset(0) NULL,
+        [CreadoEn] datetimeoffset(0) NOT NULL,
+        [ActualizadoEn] datetimeoffset(0) NOT NULL,
+        [RowVersion] rowversion NOT NULL,
+        CONSTRAINT [PK_Categorias] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    CREATE TABLE [Subcategorias] (
+        [Id] int NOT NULL IDENTITY,
+        [CategoriaId] int NOT NULL,
+        [Nombre] nvarchar(100) NOT NULL,
+        [Descripcion] nvarchar(300) NULL,
+        [Activo] bit NOT NULL DEFAULT CAST(1 AS bit),
+        [EliminadoEn] datetimeoffset(0) NULL,
+        [CreadoEn] datetimeoffset(0) NOT NULL,
+        [ActualizadoEn] datetimeoffset(0) NOT NULL,
+        [RowVersion] rowversion NOT NULL,
+        CONSTRAINT [PK_Subcategorias] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_Subcategorias_Categorias_CategoriaId] FOREIGN KEY ([CategoriaId]) REFERENCES [Categorias] ([Id]) ON DELETE NO ACTION
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    CREATE TABLE [Filtros] (
+        [Id] int NOT NULL IDENTITY,
+        [SubcategoriaId] int NOT NULL,
+        [Nombre] nvarchar(100) NOT NULL,
+        [Activo] bit NOT NULL DEFAULT CAST(1 AS bit),
+        [EliminadoEn] datetimeoffset(0) NULL,
+        [CreadoEn] datetimeoffset(0) NOT NULL,
+        [ActualizadoEn] datetimeoffset(0) NOT NULL,
+        [RowVersion] rowversion NOT NULL,
+        CONSTRAINT [PK_Filtros] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_Filtros_Subcategorias_SubcategoriaId] FOREIGN KEY ([SubcategoriaId]) REFERENCES [Subcategorias] ([Id]) ON DELETE NO ACTION
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    CREATE TABLE [OpcionesFiltro] (
+        [Id] int NOT NULL IDENTITY,
+        [FiltroId] int NOT NULL,
+        [Valor] nvarchar(100) NOT NULL,
+        [Activo] bit NOT NULL DEFAULT CAST(1 AS bit),
+        [EliminadoEn] datetimeoffset(0) NULL,
+        [CreadoEn] datetimeoffset(0) NOT NULL,
+        [ActualizadoEn] datetimeoffset(0) NOT NULL,
+        [RowVersion] rowversion NOT NULL,
+        CONSTRAINT [PK_OpcionesFiltro] PRIMARY KEY ([Id]),
+        CONSTRAINT [AK_OpcionesFiltro_Id_FiltroId] UNIQUE ([Id], [FiltroId]),
+        CONSTRAINT [FK_OpcionesFiltro_Filtros_FiltroId] FOREIGN KEY ([FiltroId]) REFERENCES [Filtros] ([Id]) ON DELETE NO ACTION
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    CREATE TABLE [ProductosOpciones] (
+        [ProductoId] int NOT NULL,
+        [FiltroId] int NOT NULL,
+        [OpcionFiltroId] int NOT NULL,
+        CONSTRAINT [PK_ProductosOpciones] PRIMARY KEY ([ProductoId], [FiltroId]),
+        CONSTRAINT [FK_ProductosOpciones_Filtros_FiltroId] FOREIGN KEY ([FiltroId]) REFERENCES [Filtros] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_ProductosOpciones_OpcionesFiltro_OpcionFiltroId_FiltroId] FOREIGN KEY ([OpcionFiltroId], [FiltroId]) REFERENCES [OpcionesFiltro] ([Id], [FiltroId]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_ProductosOpciones_Productos_ProductoId] FOREIGN KEY ([ProductoId]) REFERENCES [Productos] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Codigo', N'Descripcion') AND [object_id] = OBJECT_ID(N'[Permisos]'))
+        SET IDENTITY_INSERT [Permisos] ON;
+    EXEC(N'INSERT INTO [Permisos] ([Id], [Codigo], [Descripcion])
+    VALUES (29, N''categorias.ver'', N''Ver categorías, subcategorías, filtros y opciones''),
+    (30, N''categorias.crear'', N''Crear categorías, subcategorías, filtros y opciones''),
+    (31, N''categorias.editar'', N''Editar categorías, subcategorías, filtros y opciones''),
+    (32, N''categorias.desactivar'', N''Dar de baja o reactivar categorías, subcategorías, filtros y opciones''),
+    (33, N''categorias.eliminar'', N''Eliminar definitivamente elementos inactivos y sin uso de la clasificación'')');
+    IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Codigo', N'Descripcion') AND [object_id] = OBJECT_ID(N'[Permisos]'))
+        SET IDENTITY_INSERT [Permisos] OFF;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'PermisoId', N'RolId') AND [object_id] = OBJECT_ID(N'[RolesPermisos]'))
+        SET IDENTITY_INSERT [RolesPermisos] ON;
+    EXEC(N'INSERT INTO [RolesPermisos] ([PermisoId], [RolId])
+    VALUES (29, 1),
+    (30, 1),
+    (31, 1),
+    (32, 1),
+    (33, 1),
+    (29, 2)');
+    IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'PermisoId', N'RolId') AND [object_id] = OBJECT_ID(N'[RolesPermisos]'))
+        SET IDENTITY_INSERT [RolesPermisos] OFF;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    CREATE INDEX [IX_Productos_SubcategoriaId] ON [Productos] ([SubcategoriaId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_Categorias_Nombre] ON [Categorias] ([Nombre]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_Filtros_SubcategoriaId_Nombre] ON [Filtros] ([SubcategoriaId], [Nombre]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_OpcionesFiltro_FiltroId_Valor] ON [OpcionesFiltro] ([FiltroId], [Valor]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    CREATE INDEX [IX_ProductosOpciones_FiltroId] ON [ProductosOpciones] ([FiltroId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    CREATE INDEX [IX_ProductosOpciones_OpcionFiltroId] ON [ProductosOpciones] ([OpcionFiltroId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    CREATE INDEX [IX_ProductosOpciones_OpcionFiltroId_FiltroId] ON [ProductosOpciones] ([OpcionFiltroId], [FiltroId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_Subcategorias_CategoriaId_Nombre] ON [Subcategorias] ([CategoriaId], [Nombre]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    ALTER TABLE [Productos] ADD CONSTRAINT [FK_Productos_Subcategorias_SubcategoriaId] FOREIGN KEY ([SubcategoriaId]) REFERENCES [Subcategorias] ([Id]) ON DELETE NO ACTION;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261026142622_AgregarCatalogoDeProductos', N'8.0.11');
+END;
+GO
+
+COMMIT;
+GO
+

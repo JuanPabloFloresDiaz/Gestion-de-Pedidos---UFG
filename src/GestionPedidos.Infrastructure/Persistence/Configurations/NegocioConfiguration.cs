@@ -53,6 +53,9 @@ public sealed class ProductoConfiguration : IEntityTypeConfiguration<Producto>
         b.HasIndex(x => x.Nombre);
         b.HasIndex(x => x.PrecioVenta);
         b.HasIndex(x => x.Activo);
+        b.HasIndex(x => x.SubcategoriaId);
+        // Clasificación opcional (sin clasificar = NULL); una subcategoría con productos no se puede borrar.
+        b.HasOne(x => x.Subcategoria).WithMany().HasForeignKey(x => x.SubcategoriaId).OnDelete(DeleteBehavior.Restrict);
     }
 }
 
