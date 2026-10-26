@@ -1,0 +1,106 @@
+@* Mis pedidos: lista, estado y cancelación de los pendientes. Lógica en MisPedidosViewModel. *@
+@page "/mis-pedidos"
+@layout TiendaLayout
+@implements IDisposable
+@inject MisPedidosViewModel Vm
+@inject SesionService Sesion
+@inject NavigationManager Nav
+
+<PageTitle>Mis pedidos · Tienda GP</PageTitle>
+<h1>Mis pedidos</h1>
+
+@if (!Sesion.Lista)
+{
+    <p class="cargando">Cargando…</p>
+}
+else if (!Sesion.Autenticada)
+{
+    <div class="vacio">
+        <div class="vacio-icono" aria-hidden="true">🔐</div>
+        <h2>Ingresa para ver tus pedidos</h2>
+        <a class="boton boton-primario" href="/ingresar?retorno=%2Fmis-pedidos">Ingresar</a>
+    </div>
+}
+else if (!Sesion.TienePermiso(Permisos.MisPedidosVer))
+{
+    <div class="alerta alerta-advertencia" role="alert">Esta cuenta es del personal: los pedidos de los clientes se gestionan desde la administración.</div>
+}
+else
+{
+    @if (NuevoId is not null)
+    {
+        <div class="alerta alerta-exito" role="status">¡Listo! Registramos tu pedido #@NuevoId. Te lo entregaremos en la fecha elegida.</div>
+    }
+    @if (!string.IsNullOrEmpty(Vm.Error)) { <div class="alerta alerta-error" role="alert">@Vm.Error</div> }
+
+    @if (Vm.Cargado && Vm.Pagina is { Elementos.Count: 0 })
+    {
+        <div class="vacio">
+            <div class="vacio-icono" aria-hidden="true">📦</div>
+            <h2>Todavía no has hecho pedidos</h2>
+            <a class="boton boton-primario" href="/tienda">Ir a la tienda</a>
+        </div>
+    }
+    else if (Vm.Pagina is not null)
+    {
+        <ul class="pedidos">
+            @foreach (var p in Vm.Pagina.Elementos)
+            {
+                <li class="pedido-tarjeta @(p.Id == NuevoId ? "pedido-nuevo" : "")" @key="p.Id">
+                    <div class="pedido-cabecera">
+                        <div>
+                            <strong>Pedido #@p.Id</strong>
+                            <small class="nota">@p.FechaPedido.ToLocalTime().ToString("dd/MM/yyyy HH:mm") · entrega @p.FechaEntrega.ToString("dd/MM/yyyy")</small>
+                        </div>
+                        <span class="estado-pedido estado-@p.Estado.ToLowerInvariant()">@p.Estado</span>
+                    </div>
+                    <ul class="pedido-lineas">
+                        @foreach (var l in p.Lineas)
+                        {
+                            <li><a href="/producto/@l.ProductoId">@l.Cantidad × @l.Producto</a><span>@TiendaVisual.Dinero(l.Subtotal)</span></li>
+                        }
+                    </ul>
+                    @if (!string.IsNullOrEmpty(p.Comentarios)) { <small class="nota">Comentarios: @p.Comentarios</small> }
+                    <div class="pedido-pie">
+                        <strong>Total @TiendaVisual.Dinero(p.Total)</strong>
+                        @if (p.PuedeCancelar) { <button class="enlace enlace-peligro" @onclick="() => Vm.SolicitarCancelacion(p)">Cancelar pedido</button> }
+                    </div>
+                </li>
+            }
+        </ul>
+        <Paginador Pagina="Vm.Pagina.Pagina" TotalPaginas="Vm.TotalPaginas" Total="Vm.Pagina.Total" PaginaCambiada="Vm.IrAPaginaAsync" />
+    }
+}
+
+<DialogoConfirmacion Visible="Vm.PorCancelar is not null" Titulo="¿Cancelar el pedido?" TextoConfirmar="Sí, cancelar el pedido" Peligro="true"
+                     Cargando="Vm.Cargando" AlConfirmar="Vm.ConfirmarCancelacionAsync" AlCancelar="Vm.DescartarCancelacion">
+    <p>El pedido #@Vm.PorCancelar?.Id se cancelará y los productos volverán al inventario. Esto no se puede deshacer.</p>
+</DialogoConfirmacion>
+
+@code {
+    private int? NuevoId =>
+        int.TryParse(System.Web.HttpUtility.ParseQueryString(new Uri(Nav.Uri).Query)["nuevo"], out var id) ? id : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Vm.Cambiado += Vm_Cambiado;     // suscripción con +=
+        Sesion.Restaurada += Sesion_Restaurada;
+        if (Sesion.Autenticada && Sesion.TienePermiso(Permisos.MisPedidosVer)) await Vm.IniciarAsync();
+    }
+
+    // La sesión guardada solo se restaura después del primer render: recién entonces se pueden pedir los pedidos
+    private async void Sesion_Restaurada(object? sender, EventArgs e)
+    {
+        if (Sesion.Autenticada && Sesion.TienePermiso(Permisos.MisPedidosVer)) await InvokeAsync(Vm.IniciarAsync);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de las suscripciones.</summary>
+    public void Dispose()
+    {
+        Vm.Cambiado -= Vm_Cambiado;
+        Sesion.Restaurada -= Sesion_Restaurada;
+    }
+}

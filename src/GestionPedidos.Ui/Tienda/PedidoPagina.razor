@@ -1,0 +1,103 @@
+@* Hacer el pedido: resumen del carrito, datos de entrega, fecha y comentarios. Lógica en PedidoViewModel. *@
+@page "/pedido"
+@layout TiendaLayout
+@implements IDisposable
+@inject PedidoViewModel Vm
+@inject CarritoService Carrito
+@inject SesionService Sesion
+@inject NavigationManager Nav
+
+<PageTitle>Hacer pedido · Tienda GP</PageTitle>
+<h1>Confirma tu pedido</h1>
+
+@if (!Sesion.Lista)
+{
+    <p class="cargando">Cargando…</p>
+}
+else if (!Sesion.Autenticada)
+{
+    <div class="vacio">
+        <div class="vacio-icono" aria-hidden="true">🔐</div>
+        <h2>Ingresa para hacer tu pedido</h2>
+        <a class="boton boton-primario" href="/ingresar?retorno=%2Fpedido">Ingresar</a>
+        <a class="enlace" href="/registro?retorno=%2Fpedido">Crear una cuenta</a>
+    </div>
+}
+else if (!Sesion.TienePermiso(Permisos.MisPedidosCrear))
+{
+    <div class="alerta alerta-advertencia" role="alert">
+        Esta cuenta es del personal y no puede hacer pedidos como cliente. Cierre la sesión e ingrese con una cuenta de cliente.
+    </div>
+}
+else if (Carrito.Lineas.Count == 0)
+{
+    <div class="vacio">
+        <div class="vacio-icono" aria-hidden="true">🛒</div>
+        <h2>Tu carrito está vacío</h2>
+        <a class="boton boton-primario" href="/tienda">Ir a la tienda</a>
+    </div>
+}
+else
+{
+    <div class="carrito">
+        <div class="pedido-datos">
+            @if (!string.IsNullOrEmpty(Vm.Error)) { <div class="alerta alerta-error" role="alert">@Vm.Error <a href="/carrito">Revisar el carrito</a></div> }
+
+            <section class="tarjeta-formulario">
+                <h2>Entrega</h2>
+                @if (Vm.Entrega is { } e)
+                {
+                    <p class="entrega-datos"><strong>@e.Nombre</strong><br />@e.Direccion<br />@e.Ciudad, @e.Departamento<br />Tel. @e.Telefono</p>
+                    <small class="nota">Se entrega en la dirección de tu cuenta.</small>
+                }
+                <CampoFecha Etiqueta="Fecha de entrega deseada" @bind-Valor="Vm.FechaEntrega" Minimo="Vm.Minima" Maximo="Vm.Maxima" Error="@Vm.ErrorFecha" />
+                <CampoTexto Etiqueta="Comentarios (opcional)" @bind-Valor="Vm.Comentarios" Error="@Vm.ErrorComentarios" Placeholder="Horario, referencias, regalo…" />
+            </section>
+        </div>
+
+        <aside class="carrito-resumen" aria-label="Resumen del pedido">
+            <h2>Tu pedido</h2>
+            <ul class="resumen-lineas">
+                @foreach (var l in Carrito.Lineas)
+                {
+                    <li><span>@l.Cantidad × @l.Nombre</span><strong>@TiendaVisual.Dinero(l.Subtotal)</strong></li>
+                }
+            </ul>
+            <dl><div class="total"><dt>Total</dt><dd>@TiendaVisual.Dinero(Carrito.Total)</dd></div></dl>
+            <small class="nota">Los precios se confirman al registrar el pedido. Pagas al recibirlo.</small>
+            <Boton Variante="Primario" Cargando="Vm.Cargando" AlHacerClic="Confirmar">Confirmar pedido</Boton>
+            <a class="enlace" href="/carrito">Volver al carrito</a>
+        </aside>
+    </div>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        Vm.Cambiado += Vm_Cambiado;     // suscripción con +=
+        Sesion.Restaurada += Sesion_Restaurada;
+        if (Sesion.Autenticada && Sesion.TienePermiso(Permisos.MisPedidosCrear)) await Vm.IniciarAsync();
+    }
+
+    // La sesión guardada solo se restaura después del primer render: recién entonces se saben los datos de entrega
+    private async void Sesion_Restaurada(object? sender, EventArgs e)
+    {
+        if (Sesion.Autenticada && Sesion.TienePermiso(Permisos.MisPedidosCrear)) await InvokeAsync(Vm.IniciarAsync);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Confirmar()
+    {
+        var pedido = await Vm.ConfirmarAsync();
+        if (pedido is not null) Nav.NavigateTo($"/mis-pedidos?nuevo={pedido.Id}");
+    }
+
+    private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de las suscripciones.</summary>
+    public void Dispose()
+    {
+        Vm.Cambiado -= Vm_Cambiado;
+        Sesion.Restaurada -= Sesion_Restaurada;
+    }
+}

@@ -53,6 +53,9 @@ public static class ServiciosUi
         // Tienda pública: servicio de consultas y carrito (por visita) y un ViewModel por página
         servicios.AddScoped<TiendaService>();
         servicios.AddScoped<CarritoService>();
+        servicios.AddScoped<PedidosClienteService>();
+        servicios.AddTransient<PedidoViewModel>();
+        servicios.AddTransient<MisPedidosViewModel>();
         servicios.AddTransient<CatalogoViewModel>();
         servicios.AddTransient<ProductoViewModel>();
         servicios.AddTransient<RegistroViewModel>();

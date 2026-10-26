@@ -184,3 +184,23 @@
   .fila-campos { grid-template-columns: 1fr; }
   .tienda-pie { grid-template-columns: 1fr; }
 }
+
+/* ---- Pedido y mis pedidos ---- */
+.pedido-datos { display: flex; flex-direction: column; gap: 14px; }
+.entrega-datos { line-height: 1.6; margin: 0 0 6px; }
+.resumen-lineas { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.resumen-lineas li { display: flex; justify-content: space-between; gap: 12px; }
+.pedidos { list-style: none; padding: 0; margin: 0 0 16px; display: flex; flex-direction: column; gap: 14px; }
+.pedido-tarjeta { background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 20px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.pedido-nuevo { border-color: var(--color-primario); box-shadow: 0 0 0 3px var(--color-foco); }
+.pedido-cabecera { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.pedido-cabecera div { display: flex; flex-direction: column; }
+.pedido-lineas { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.pedido-lineas li { display: flex; justify-content: space-between; gap: 12px; }
+.pedido-lineas a { color: var(--color-texto); }
+.pedido-pie { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-borde); padding-top: 10px; }
+.estado-pedido { padding: 3px 12px; border-radius: 999px; font-size: .82rem; font-weight: 700; }
+.estado-pendiente { background: color-mix(in srgb, var(--color-advertencia) 20%, transparent); color: var(--color-advertencia); }
+.estado-entregado { background: color-mix(in srgb, var(--color-exito) 20%, transparent); color: var(--color-exito); }
+.estado-cancelado { background: var(--color-superficie-2); color: var(--color-texto-suave); }
+.entrega-datos + small { display: block; margin-bottom: 14px; }

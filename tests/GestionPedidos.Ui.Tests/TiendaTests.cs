@@ -277,3 +277,106 @@ public class TiendaTests
         Assert.Contains("7894-5612", cuerpo);   // el segundo envío lleva el teléfono de confirmación
     }
 }
+
+public class PedidoClienteTests
+{
+    private static readonly DateTimeOffset Ahora = new(2026, 10, 26, 18, 0, 0, TimeSpan.Zero);   // 12:00 en El Salvador
+
+    private static PedidoClienteDto Pedido(int id, string estado = "Pendiente", bool puedeCancelar = true) =>
+        new(id, Ahora, new DateOnly(2026, 10, 30), estado, 49.98m, null, puedeCancelar,
+            new[] { new LineaPedidoClienteDto(1, "Camisa", 2, 24.99m, 49.98m) });
+
+    private static async Task<(Entorno, CarritoService, PedidoViewModel)> CrearPedidoVm(Func<HttpRequestMessage, (HttpStatusCode, object?)> responder)
+    {
+        var e = new Entorno();
+        e.Manejador.Responder = responder;
+        var carrito = new CarritoService(new JsFalso());
+        await carrito.AgregarAsync(new LineaCarrito(1, "Camisa", 24.99m, 2, 10, "👕", 200));
+        return (e, carrito, new PedidoViewModel(new PedidosClienteService(e.Api), carrito, new Microsoft.Extensions.Time.Testing.FakeTimeProvider(Ahora)));
+    }
+
+    [Fact]
+    public async Task Pedido_ValidaLaFechaAntesDeLlamarALaApi()
+    {
+        var (e, _, vm) = await CrearPedidoVm(_ => (HttpStatusCode.OK, Pedido(1)));
+        Assert.Equal(new DateOnly(2026, 10, 29), vm.FechaEntrega);   // por defecto: hoy + 3 días (hora de El Salvador)
+
+        vm.FechaEntrega = null;
+        Assert.Null(await vm.ConfirmarAsync());
+        Assert.Equal("Elija la fecha de entrega.", vm.ErrorFecha);
+
+        vm.FechaEntrega = new DateOnly(2026, 10, 26);   // hoy no vale: debe ser posterior
+        Assert.Null(await vm.ConfirmarAsync());
+        Assert.Contains("posterior a hoy", vm.ErrorFecha);
+
+        vm.FechaEntrega = new DateOnly(2027, 3, 1);
+        Assert.Null(await vm.ConfirmarAsync());
+        Assert.Contains("60 días", vm.ErrorFecha);
+        Assert.Empty(e.Manejador.Peticiones);   // la API no se tocó
+    }
+
+    [Fact]
+    public async Task Pedido_Correcto_EnviaSoloProductosYCantidades_YVaciaElCarrito()
+    {
+        var (e, carrito, vm) = await CrearPedidoVm(_ => (HttpStatusCode.Created, Pedido(7)));
+        vm.Comentarios = "  Por la tarde  ";
+        var pedido = await vm.ConfirmarAsync();
+
+        Assert.Equal(7, pedido!.Id);
+        Assert.Empty(carrito.Lineas);
+        var cuerpo = e.Manejador.Cuerpos.Single();
+        Assert.Contains("\"productoId\":1", cuerpo);
+        Assert.Contains("\"cantidad\":2", cuerpo);
+        Assert.Contains("Por la tarde", cuerpo);
+        Assert.DoesNotContain("precio", cuerpo, StringComparison.OrdinalIgnoreCase);   // el precio nunca viaja: lo pone el servidor
+    }
+
+    [Fact]
+    public async Task Pedido_SinStock_MuestraElMotivo_YConservaElCarrito()
+    {
+        var (_, carrito, vm) = await CrearPedidoVm(_ => (HttpStatusCode.Conflict,
+            new { title = "Camisa: solo quedan 1.", codigo = CodigosError.StockInsuficiente }));
+        Assert.Null(await vm.ConfirmarAsync());
+        Assert.Equal("Camisa: solo quedan 1.", vm.Error);
+        Assert.Single(carrito.Lineas);   // no se pierde lo que había elegido
+    }
+
+    [Fact]
+    public async Task MisPedidos_CargaYCancelaConConfirmacion_YRefrescaElEstado()
+    {
+        var cancelado = false;
+        var e = new Entorno();
+        e.Manejador.Responder = r =>
+        {
+            if (r.Method == HttpMethod.Patch) { cancelado = true; return (HttpStatusCode.OK, Pedido(5, "Cancelado", false)); }
+            return (HttpStatusCode.OK, new PaginaDto<PedidoClienteDto>(new[] { cancelado ? Pedido(5, "Cancelado", false) : Pedido(5) }, 1, 1, 5));
+        };
+        var vm = new MisPedidosViewModel(new PedidosClienteService(e.Api));
+        await vm.IniciarAsync();
+        Assert.True(vm.Pagina!.Elementos.Single().PuedeCancelar);
+
+        vm.SolicitarCancelacion(vm.Pagina.Elementos[0]);
+        vm.DescartarCancelacion();
+        Assert.DoesNotContain(e.Manejador.Peticiones, p => p.Method == HttpMethod.Patch);   // descartar no llama a la API
+
+        vm.SolicitarCancelacion(vm.Pagina.Elementos[0]);
+        await vm.ConfirmarCancelacionAsync();
+        Assert.Null(vm.PorCancelar);
+        Assert.Equal("Cancelado", vm.Pagina!.Elementos.Single().Estado);
+    }
+
+    [Fact]
+    public async Task MisPedidos_SiYaNoEstabaPendiente_ElErrorSeMuestra_YLaListaSeActualiza()
+    {
+        var e = new Entorno();
+        e.Manejador.Responder = r => r.Method == HttpMethod.Patch
+            ? (HttpStatusCode.UnprocessableEntity, new { title = "Solo se pueden cancelar los pedidos pendientes: este está entregado.", codigo = "REGLA_DE_NEGOCIO" })
+            : (HttpStatusCode.OK, new PaginaDto<PedidoClienteDto>(new[] { Pedido(5, "Entregado", false) }, 1, 1, 5));
+        var vm = new MisPedidosViewModel(new PedidosClienteService(e.Api));
+        await vm.IniciarAsync();
+        vm.SolicitarCancelacion(Pedido(5));
+        await vm.ConfirmarCancelacionAsync();
+        Assert.Contains("entregado", vm.Error);
+        Assert.Equal("Entregado", vm.Pagina!.Elementos.Single().Estado);
+    }
+}

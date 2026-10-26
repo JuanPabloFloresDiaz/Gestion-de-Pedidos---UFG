@@ -2,7 +2,7 @@
 @{ var id = _id; }
 <div class="campo @(string.IsNullOrEmpty(Error) ? "" : "campo-error")">
     <label for="@id">@Etiqueta</label>
-    <input id="@id" type="date" value="@(Valor?.ToString("yyyy-MM-dd"))" disabled="@Deshabilitado" @onchange="AlCambiar" />
+    <input id="@id" type="date" min="@Minimo?.ToString("yyyy-MM-dd")" max="@Maximo?.ToString("yyyy-MM-dd")" value="@(Valor?.ToString("yyyy-MM-dd"))" disabled="@Deshabilitado" @onchange="AlCambiar" />
     @if (!string.IsNullOrEmpty(Error)) { <small class="mensaje-error" role="alert">@Error</small> }
 </div>
 
@@ -17,6 +17,10 @@
     [Parameter] public EventCallback<DateOnly?> ValorChanged { get; set; }
     /// <summary>Mensaje de error visible bajo el campo.</summary>
     [Parameter] public string? Error { get; set; }
+    /// <summary>Fecha mínima que acepta el selector (opcional).</summary>
+    [Parameter] public DateOnly? Minimo { get; set; }
+    /// <summary>Fecha máxima que acepta el selector (opcional).</summary>
+    [Parameter] public DateOnly? Maximo { get; set; }
     /// <summary>Bloquea el campo.</summary>
     [Parameter] public bool Deshabilitado { get; set; }
 
