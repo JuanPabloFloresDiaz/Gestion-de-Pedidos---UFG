@@ -16,6 +16,8 @@
 
 > **Lo del sitio público aún está en discusión.** La web no es lo primordial de la materia (el escritorio es lo que el ingeniero evalúa). La idea inicial es que los integrantes tomen esas tres funcionalidades (W-07a, W-07b y W-07c); si se les complica o hay poco tiempo, **las hace Pablo**. Se confirma cuando terminen su primer bloque.
 
+**Los archivos de la interfaz de los tres apartados ya están creados** (solo falta escribir su contenido): `src/GestionPedidos.Ui/Modulos/Clientes/`, `Productos/` y `Pedidos/` traen su `…Pagina.razor` (hoy muestra «Apartado en progreso»), un `…ViewModel.cs` y un `…Service.cs` vacíos con su `TODO`, y ya están **registrados** en `ServiciosUi.cs` y en el menú (`ModulosAdmin.cs`, con su ícono y descripción). Quien arme su apartado reemplaza el contenido de esos archivos; **no hace falta tocar el menú ni el registro**.
+
 **Cómo se coordinan los tres** (sus bloques dependen entre sí: Pedidos usa Clientes y Productos):
 * Al inicio acuerdan en **2 días** los contratos (`ClienteDto`, `ProductoDto`, `PedidoDto`) y los endpoints, para trabajar en paralelo sin esperarse.
 * **Pedidos arranca por el dominio** (D-01), que no depende de nadie, y se conecta con Clientes y Productos cuando sus endpoints estén listos.

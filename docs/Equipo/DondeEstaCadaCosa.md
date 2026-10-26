@@ -66,7 +66,8 @@ Lo que llena la base con datos realistas para desarrollar y demostrar: categorí
 |---|---|
 | `Shell/` | Inicio de sesión, cambio de clave, **la administración** (`AdminPagina.razor`: menú, pestañas «+» y recarga) y la portada de la tienda (`InicioPagina.razor`) |
 | `Modulos/<Módulo>/` | Cada pantalla de administración: `…Pagina.razor` + `…ViewModel.cs` + `…Service.cs` (Usuarios, Roles, Categorias, Catalogos, Historial, Ayuda) |
-| `ModulosAdmin.cs` | **El menú**: cada módulo nuevo añade **una línea** aquí |
+| `ModulosAdmin.cs` | **El menú y las tarjetas de la bienvenida**: cada módulo nuevo añade **una línea** aquí (grupo, título, página, permiso, **ícono Lucide** y **descripción**) |
+| `Modulos/Clientes/`, `Modulos/Productos/`, `Modulos/Pedidos/` | **Esqueletos listos** para los apartados de los integrantes: página provisional «en progreso», `ViewModel` y `Service` vacíos, ya registrados en `ServiciosUi.cs` y en el menú |
 | `Tienda/` | La tienda pública: catálogo, producto, carrito, registro, pedido, mis pedidos, y sus servicios y ViewModels |
 | `Comun/Componentes/` | El **kit de componentes** (botón, campo de texto, tabla, diálogo de confirmación, chip de estado, `Icono`, paginador…). **Úsenlo siempre** en vez de HTML suelto |
 | `Comun/` (resto) | `Api/` (cliente HTTP), `Sesion/`, `Eventos/` (delegados y eventos), `Notificaciones/`, `Documentos/` (pestañas), `Apariencia/` (tema), `ViewModelBase.cs`, `Validacion.cs` |
