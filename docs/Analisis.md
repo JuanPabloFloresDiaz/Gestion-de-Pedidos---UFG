@@ -83,6 +83,7 @@ El enunciado es breve; estas interpretaciones fueron **confirmadas por el equipo
 | I-09 | "Windows Form" y "MDI" | El ingeniero aclaró que la tecnología es libre dentro de .NET: se usa **Blazor** y el MDI se resuelve con **pestañas de documentos** ([InterfazUsuario.md §2](Especificaciones/InterfazUsuario.md)) |
 | I-10 | Estados del pedido | `Pendiente`, `Entregado` y `Cancelado`; el stock se descuenta al crear y se repone al cancelar |
 | I-11 | Sesión | Un solo JWT de **60 minutos**, sin *refresh tokens* ([AutenticacionYPermisos.md](Especificaciones/AutenticacionYPermisos.md)) |
+| I-12 | Clasificación de productos (**extensión**, no pedida por el enunciado) | Categorías, subcategorías, filtros y opciones para describir mejor los productos y filtrar la tienda, en versión básica (sin SKU ni variantes). No altera los campos que pide RF-04: es opcional y aditiva ([CatalogoProductos.md](Especificaciones/CatalogoProductos.md)) |
 
 ## 4. Restricciones Técnicas Decididas
 

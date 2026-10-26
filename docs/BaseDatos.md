@@ -25,6 +25,14 @@ erDiagram
     Clientes ||--o{ Pedidos : "es dueño de"
     Pedidos ||--|{ DetallesPedido : "contiene"
     Productos ||--o{ DetallesPedido : "se vende en"
+    Categorias ||--o{ Subcategorias : "agrupa"
+    Subcategorias ||--o{ Productos : "clasifica"
+    Subcategorias ||--o{ Filtros : "define"
+    Filtros ||--o{ OpcionesFiltro : "ofrece"
+    Productos ||--o{ ProductosOpciones : "se describe con"
+    OpcionesFiltro ||--o{ ProductosOpciones : ""
+    Filtros ||--o{ ProductosOpciones : ""
+
 ```
 
 ## 3. Convenciones de Esquema
@@ -38,7 +46,7 @@ erDiagram
 | Dinero | `DECIMAL(18,2)` explícito (nunca `float`) |
 | Texto | `NVARCHAR(n)` con longitud explícita; sin `NVARCHAR(MAX)` |
 | Fechas/hora | `DATETIMEOFFSET(0)` en **UTC** para marcas de tiempo (`CreadoEn`…); `DATE` para fechas de negocio (`FechaEntrega`, `FechaIngreso`). La conversión a hora local es solo de presentación |
-| Baja lógica | Columna `Activo BIT NOT NULL DEFAULT 1` en `Clientes`, `Productos`, `Pedidos`, `Usuarios` ("eliminar = pasar a inactivo", requisito del enunciado). Además `EliminadoEn DATETIMEOFFSET(0) NULL` (fecha de la baja; se limpia al reactivar). `DELETE` físico solo de **usuarios** ya dados de baja y sin pedidos; clientes, productos y pedidos no se borran |
+| Baja lógica | Columna `Activo BIT NOT NULL DEFAULT 1` en `Clientes`, `Productos`, `Pedidos`, `Usuarios` ("eliminar = pasar a inactivo", requisito del enunciado). Además `EliminadoEn DATETIMEOFFSET(0) NULL` (fecha de la baja; se limpia al reactivar). `DELETE` físico solo de **usuarios** ya dados de baja y sin pedidos, y de elementos inactivos y sin uso del catálogo de clasificación ([§4.7](#47-clasificación-del-catálogo-de-productos-extensión)); clientes, productos y pedidos no se borran |
 | Auditoría ligera | `CreadoEn` y `ActualizadoEn` (UTC) en las tablas principales, mantenidas por el `DbContext` |
 | Concurrencia | `RowVersion ROWVERSION` en `Clientes`, `Productos`, `Pedidos`, `Usuarios` |
 | Enumeraciones | `NVARCHAR` legible con `CHECK` (no enteros "mágicos") |
@@ -131,6 +139,7 @@ Datos iniciales: `Administrador`, `Operador` (escritorio) y `Cliente` (web públ
 | Descripcion | NVARCHAR(500) | NOT NULL |
 | CantidadStock | INT | NOT NULL, `CHECK (CantidadStock >= 0)` |
 | PrecioVenta | DECIMAL(18,2) | NOT NULL, `CHECK (PrecioVenta >= 0)` |
+| SubcategoriaId | INT | NULL, FK → Subcategorias (**clasificación opcional**, [§4.7](#47-clasificación-del-catálogo-de-productos-extensión)); NULL = "Sin clasificar" |
 | MostrarStock | BIT | NOT NULL, DEFAULT 0. Si es 1, la tienda web muestra la cantidad exacta; si es 0, solo "Disponible" o "Agotado" |
 | FechaIngreso | DATE | NOT NULL, DEFAULT fecha actual |
 | Activo | BIT | NOT NULL, DEFAULT 1 |
@@ -139,7 +148,7 @@ Datos iniciales: `Administrador`, `Operador` (escritorio) y `Cliente` (web públ
 
 > **Interpretación**: el campo "Fecha" del producto se toma como **fecha de ingreso al inventario**.
 
-Índices: `Nombre`, `PrecioVenta`, `Activo`.
+Índices: `Nombre`, `PrecioVenta`, `Activo`, `SubcategoriaId`.
 
 ### 4.5 Pedidos
 
@@ -191,8 +200,42 @@ Datos iniciales: `Administrador`, `Operador` (escritorio) y `Cliente` (web públ
 
 Índices: `Fecha`, `UsuarioId`. El usuario de la aplicación solo tiene `INSERT` y `SELECT` sobre esta tabla (registro **inalterable**, §7).
 
+### 4.7 Clasificación del catálogo de productos (extensión)
+
+> Versión **básica** de un motor de catálogo dinámico: sin SKU, variantes, costo ni imágenes ([CatalogoProductos.md §2](Especificaciones/CatalogoProductos.md)). Todas las tablas siguen las convenciones de §3 (`Id INT IDENTITY`, `CreadoEn`/`ActualizadoEn`, `RowVersion`) y la baja suave `Activo` + `EliminadoEn`.
+
+**`Categorias`**
+
+| Columna | Tipo | Restricciones |
+|---|---|---|
+| Id | INT IDENTITY | PK |
+| Nombre | NVARCHAR(100) | NOT NULL, **UNIQUE** (se compara también con las inactivas, para poder reactivar sin duplicados) |
+| Descripcion | NVARCHAR(300) | NULL |
+| Activo / EliminadoEn | BIT / DATETIMEOFFSET(0) | NOT NULL DEFAULT 1 / NULL |
+
+**`Subcategorias`**: `Id`, `CategoriaId` (FK → Categorias, `NO ACTION`), `Nombre` NVARCHAR(100), `Descripcion` NVARCHAR(300) NULL, `Activo`, `EliminadoEn`. **UNIQUE (`CategoriaId`, `Nombre`)**.
+
+**`Filtros`**: `Id`, `SubcategoriaId` (FK → Subcategorias), `Nombre` NVARCHAR(100), `Activo`, `EliminadoEn`. **UNIQUE (`SubcategoriaId`, `Nombre`)**.
+
+**`OpcionesFiltro`**: `Id`, `FiltroId` (FK → Filtros), `Valor` NVARCHAR(100), `Activo`, `EliminadoEn`. **UNIQUE (`FiltroId`, `Valor`)** y **UNIQUE (`Id`, `FiltroId`)** (necesario para la FK compuesta de abajo).
+
+**`ProductosOpciones`** (el *detalle del producto*)
+
+| Columna | Tipo | Restricciones |
+|---|---|---|
+| ProductoId | INT | NOT NULL, FK → Productos |
+| FiltroId | INT | NOT NULL, FK → Filtros |
+| OpcionFiltroId | INT | NOT NULL |
+| — | — | **PK (`ProductoId`, `FiltroId`)**: una sola opción por filtro y producto |
+| — | — | **FK compuesta (`OpcionFiltroId`, `FiltroId`) → `OpcionesFiltro (Id, FiltroId)`**: la opción tiene que ser **del filtro indicado** |
+
+> Que el filtro pertenezca a la **subcategoría del producto** lo valida la aplicación (la base no puede expresarlo sin duplicar datos). Al cambiar la subcategoría de un producto se borran sus filas de `ProductosOpciones`.
+
+Índices: `Subcategorias(CategoriaId)`, `Filtros(SubcategoriaId)`, `OpcionesFiltro(FiltroId)`, `ProductosOpciones(OpcionFiltroId)` (para filtrar la tienda por opción), `Productos(SubcategoriaId)`.
+
 ## 5. Reglas de Integridad que Cruzan Tablas
 
+* Un producto solo puede tener **opciones de los filtros de su subcategoría**, una por filtro ([§4.7](#47-clasificación-del-catálogo-de-productos-extensión)).
 * El **stock nunca es negativo** (`CHECK` + reglas del dominio + concurrencia optimista).
 * Crear un pedido descuenta existencias en la **misma transacción**; cancelar o dar de baja un pedido `Pendiente` las devuelve ([Pedidos.md §3](Especificaciones/Pedidos.md)).
 * No se da de baja un cliente con pedidos `Pendiente`.

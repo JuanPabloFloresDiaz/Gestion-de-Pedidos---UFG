@@ -9,6 +9,7 @@ Specs por módulo bajo **Spec Driven Documentation**: cada módulo se especifica
 | [InterfazUsuario.md](InterfazUsuario.md) | RF-01, RF-07, RF-09 | 0–1 | 🟡 Borrador |
 | [Clientes.md](Clientes.md) | RF-03 | 2 | 🟡 Borrador |
 | [Productos.md](Productos.md) | RF-04 | 2 | 🟡 Borrador |
+| [CatalogoProductos.md](CatalogoProductos.md) | Extensión de RF-04 | 2.5 | 🟡 Borrador |
 | [Pedidos.md](Pedidos.md) | RF-05 | 3 | 🟡 Borrador |
 | [Busquedas.md](Busquedas.md) | RF-06 | 2–4 | 🟡 Borrador |
 | [HistorialActividades.md](HistorialActividades.md) | RF-10 | 4 | 🟡 Borrador |
