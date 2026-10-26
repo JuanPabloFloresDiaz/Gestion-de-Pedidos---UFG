@@ -8,7 +8,7 @@
 |---|---|
 | API, web, base de datos y pruebas | **Docker Desktop** (o Docker Engine con Compose v2). SQL Server pide **≥ 2 GB de RAM** libres para su contenedor |
 | Escritorio (MAUI Blazor Hybrid) | **Windows 10/11**, **SDK de .NET 8**, carga de trabajo `maui` y **WebView2** (viene con Windows 11 y casi siempre con Windows 10 actualizado) |
-| Editar código | **VS Code** con *C# Dev Kit* y *.NET MAUI* (se recomiendan solas al abrir la carpeta: `.vscode/extensions.json`) |
+| Editar código | **Visual Studio 2022** ([§4.1](#41-paso-a-paso-con-visual-studio-2022)) o **VS Code** con *C# Dev Kit* y *.NET MAUI* (se recomiendan solas al abrir la carpeta: `.vscode/extensions.json`) |
 
 No hace falta instalar SQL Server, Node ni navegadores de pruebas: todo eso vive en contenedores.
 
@@ -24,10 +24,26 @@ cd Gestion-de-Pedidos---UFG
 |---|---|
 | **Web** | http://localhost:4392 |
 | **API** (con Swagger) | http://localhost:4390/swagger |
-| **SQL Server** | `localhost,4391` (usuario `sa`, clave en `.env`) para Azure Data Studio o SSMS |
+| **SQL Server** | `localhost`, puerto **4391** (usuario `sa`, clave en `.env`); ver [§2.1](#21-conectarse-a-la-base-de-datos-dbeaver-azure-data-studio-ssms) |
 | **Administrador inicial** | usuario `admin`, contraseña `ADMIN_INITIAL_PASSWORD` de `.env`; el sistema le pedirá cambiarla al primer ingreso |
 
 `./scripts/up.sh --limpio` borra los datos y empieza de cero; `./scripts/down.sh` apaga. Los puertos `4390–4392` están reservados para este proyecto (ya revisados contra los demás proyectos del equipo); se cambian en `.env`.
+
+### 2.1 Conectarse a la base de datos (DBeaver, Azure Data Studio, SSMS)
+
+| Campo | Valor |
+|---|---|
+| Host | `localhost` |
+| Puerto | **`4391`** (no el 1433: el contenedor lo publica en este puerto) |
+| Base de datos | `GestionPedidos` (o `master` para ver todas) |
+| Autenticación | SQL Server Authentication |
+| Usuario / contraseña | `sa` / `MSSQL_SA_PASSWORD` de `.env` (por defecto `Sa_Dev_Password_123!`) |
+| **Trust Server Certificate** | **Marcado** (el contenedor usa un certificado autofirmado; sin esto falla con un error de certificado) |
+
+* **Explorar con `sa`; la aplicación usa `pedidos_app`**, un usuario de mínimo privilegio que no puede modificar ni borrar el historial (`Actividades`). Para ver el sistema como lo ve la API, crear otra conexión con `pedidos_app` / `PEDIDOS_APP_PASSWORD` de `.env`.
+* Verán las 11 tablas en `dbo`, la vista `vw_PedidosResumen` y el procedimiento `usp_Pedidos_Buscar`.
+* El puerto solo escucha en `127.0.0.1`: la base nunca queda expuesta a la red. **No** la modifiquen a mano; los cambios de esquema van por migraciones ([§6](#6-migraciones-de-la-base-de-datos)).
+* *Connection refused* → el contenedor no está corriendo (`docker compose ps`, `sqlserver` debe estar *healthy*). *Login failed for user 'sa'* → la contraseña de su `.env` es otra.
 
 ## 3. Pruebas (no hay CI/CD: se corren a mano antes de subir cambios)
 
@@ -40,7 +56,7 @@ Detalle y reglas en [Testing.md](../Especificaciones/Testing.md).
 
 ## 4. Escritorio en Windows
 
-> ⚠️ **Estado**: el proyecto `src/GestionPedidos.Desktop` está escrito pero **todavía no se ha compilado en Windows** (se creó desde Linux, donde MAUI no compila). Es la primera tarea del equipo en Windows; si aparece algún error, se corrige y se anota aquí.
+> ⚠️ **Estado**: el proyecto `src/GestionPedidos.Desktop` está escrito pero **todavía no se ha validado en Windows** (se creó desde Linux, donde MAUI no compila). Es la primera tarea del equipo en Windows; si aparece algún error, se corrige y se anota aquí. Con **Visual Studio 2022** sigan el [§4.1](#41-paso-a-paso-con-visual-studio-2022).
 
 1. Con el entorno levantado (§2), en **PowerShell** o la terminal de VS Code:
    ```powershell
@@ -52,6 +68,61 @@ Detalle y reglas en [Testing.md](../Especificaciones/Testing.md).
 4. Si Docker corre dentro de **WSL**, los puertos también se ven desde Windows en `localhost`.
 5. Para generar un `.exe` que no necesite instalar nada: `dotnet publish -f net8.0-windows10.0.19041.0 -c Release` (queda autocontenido, con el runtime de Windows App SDK incluido).
 6. Si la ventana sale en blanco: falta **WebView2** (instalar el *Evergreen Runtime* de Microsoft) o la API no está levantada.
+
+### 4.1 Paso a paso con Visual Studio 2022
+
+Sirve para ejecutar y depurar el **escritorio** (y también la API y la web) desde Visual Studio. Se necesita Visual Studio **2022 17.8 o superior** en Windows 10/11.
+
+**A. Preparar una sola vez**
+
+1. **Instalar las cargas de trabajo.** Abrir el *Visual Studio Installer* → **Modificar** → marcar:
+   * **"Desarrollo de la interfaz de usuario de aplicaciones multiplataforma de .NET"** (.NET MAUI);
+   * **"ASP.NET y desarrollo web"**.
+
+   Debe estar el **SDK de .NET 8** (viene en ambas; se comprueba con `dotnet --list-sdks`).
+2. **Instalar Docker Desktop** y dejarlo iniciado (la API y la base corren ahí).
+3. **WebView2**: ya viene con Windows 11 y casi siempre con Windows 10 actualizado. Si la ventana sale en blanco, instalar el *Evergreen Runtime* de Microsoft.
+4. **Clonar el repositorio** (Git → Clonar repositorio, o `git clone`) y abrir **`GestionPedidos.sln`** (la solución completa, con `Desktop`). No abrir el `.slnf`: ese filtro es para Linux y excluye el escritorio.
+
+**B. Levantar la API y la base de datos**
+
+En una terminal de Windows (PowerShell, o *Ver → Terminal* dentro de Visual Studio) en la carpeta del repositorio:
+
+```powershell
+copy .env.example .env            # solo la primera vez
+docker compose up -d --build      # sqlserver + api + web
+```
+
+> Los scripts `./scripts/*.sh` necesitan **Git Bash o WSL**; en PowerShell se usa `docker compose` directamente (como arriba; `docker compose down` para apagar y `docker compose down -v` para borrar también los datos).
+
+Comprobar que responde http://localhost:4390/health (debe decir `vivo`).
+
+**C. Ejecutar el escritorio**
+
+1. En el **Explorador de soluciones**: clic derecho en **`GestionPedidos.Desktop` → Establecer como proyecto de inicio**. (Por defecto Visual Studio puede dejar `GestionPedidos.Domain`, que no es ejecutable.)
+2. En la barra de herramientas, el perfil de ejecución debe decir **"Escritorio (Windows)"** y la configuración **Debug** / **Any CPU** (o x64).
+3. **F5** para depurar o **Ctrl+F5** para ejecutar sin depurar. La primera compilación de MAUI tarda varios minutos.
+4. Se abre la ventana *Gestión de Pedidos — UFG*. Iniciar sesión con `admin` y la contraseña de `ADMIN_INITIAL_PASSWORD` en `.env` (por defecto `Admin_Dev_Password_123!`; pedirá cambiarla). Si la base ya existía de antes, será la contraseña que se fijó entonces.
+
+**D. Ejecutar la web desde Visual Studio (opcional)**
+
+Con la API en Docker ya levantada, para depurar la web: detener el servicio de Docker `web` (`docker compose stop web`), establecer **`GestionPedidos.Web`** como proyecto de inicio y pulsar **F5**. Apunta a `http://localhost:4390` por defecto. Para depurar también la API: `docker compose stop api`, establecer **`GestionPedidos.Api`** como inicio (usa `appsettings.Development.json`, que ya trae la conexión a `localhost:4391`) y **F5**.
+
+**E. Ejecutar las pruebas desde Visual Studio**
+
+*Ver → Explorador de pruebas* → **Ejecutar todas**. Las pruebas de integración (`Infrastructure.Tests` y `Api.Tests`) levantan su propio SQL Server en Docker con Testcontainers, así que **Docker Desktop debe estar iniciado** y la primera vez descarga la imagen. Las demás no necesitan Docker.
+
+**F. Problemas frecuentes**
+
+| Síntoma | Causa y solución |
+|---|---|
+| El proyecto `Desktop` aparece como "no se pudo cargar" o pide una carga de trabajo | Falta la carga de trabajo de MAUI (**A.1**) o `dotnet workload install maui` en una terminal de administrador |
+| Error de compilación de `Desktop` | Copiar el mensaje completo de la ventana **Salida / Lista de errores** y avisar al equipo: este proyecto aún se está validando en Windows |
+| La ventana se abre y queda en blanco | Falta WebView2 (**A.3**) o la API no responde (**B**) |
+| "No se pudo conectar con el servidor" | La API no está levantada o el puerto 4390 lo usa otra aplicación; revisar `docker compose ps` |
+| "Usuario o contraseña incorrectos" con un usuario *Cliente* | Es lo esperado: el escritorio solo permite administradores y operadores |
+| Visual Studio sugiere actualizar paquetes NuGet | No actualizar: las versiones están fijadas a propósito en `Directory.Packages.props` (compatibles con .NET 8) |
+| Pide instalar .NET 9 o 10 | No: el proyecto usa **.NET 8** (`global.json`) |
 
 La interfaz del escritorio es **la misma** que la de la web: casi todo se desarrolla y se prueba en el navegador (http://localhost:4392) y solo se verifica en el escritorio antes de cada entrega.
 

@@ -52,6 +52,6 @@ Reglas para agentes de IA: [AGENTS.md](AGENTS.md).
 | SQL Server | `localhost,4391` |
 | Administrador inicial | `admin` / `ADMIN_INITIAL_PASSWORD` de `.env` (pide cambiarla al ingresar) |
 
-**Escritorio** (Windows, no corre en Docker): `dotnet run -f net8.0-windows10.0.19041.0 --project src/GestionPedidos.Desktop` — ver [PrimerosPasos.md §4](docs/Equipo/PrimerosPasos.md).
+**Escritorio** (Windows, no corre en Docker): con **Visual Studio 2022** sigan el [paso a paso](docs/Equipo/PrimerosPasos.md#41-paso-a-paso-con-visual-studio-2022); desde consola: `dotnet run -f net8.0-windows10.0.19041.0 --project src/GestionPedidos.Desktop`. **Base de datos**: [cómo conectarse](docs/Equipo/PrimerosPasos.md#21-conectarse-a-la-base-de-datos-dbeaver-azure-data-studio-ssms).
 
 **Script SQL con todas las tablas**: [`scripts/sql/GestionPedidos_esquema.sql`](scripts/sql/GestionPedidos_esquema.sql).
