@@ -60,6 +60,10 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
+                    b.Property<DateTimeOffset?>("EliminadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
                     b.Property<string>("Nombres")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -2189,6 +2193,10 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                         .HasPrecision(0)
                         .HasColumnType("datetimeoffset(0)");
 
+                    b.Property<DateTimeOffset?>("EliminadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
                     b.Property<string>("Estado")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -2262,6 +2270,10 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset?>("EliminadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
 
                     b.Property<DateOnly>("FechaIngreso")
                         .ValueGeneratedOnAdd()
@@ -2479,6 +2491,24 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                             Id = 25,
                             Codigo = "perfil.editar",
                             Descripcion = "Editar el perfil propio"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Codigo = "roles.editar",
+                            Descripcion = "Editar los permisos de un rol"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            Codigo = "catalogos.ver",
+                            Descripcion = "Ver los catálogos de departamentos y ciudades"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            Codigo = "usuarios.eliminar",
+                            Descripcion = "Eliminar definitivamente usuarios dados de baja"
                         });
                 });
 
@@ -2649,6 +2679,21 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
+                            RolId = 1,
+                            PermisoId = 26
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 27
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 28
+                        },
+                        new
+                        {
                             RolId = 2,
                             PermisoId = 1
                         },
@@ -2696,6 +2741,11 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                         {
                             RolId = 2,
                             PermisoId = 21
+                        },
+                        new
+                        {
+                            RolId = 2,
+                            PermisoId = 27
                         },
                         new
                         {
@@ -2764,6 +2814,10 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<DateTimeOffset?>("EliminadoEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
                     b.Property<int>("IntentosFallidos")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -2816,7 +2870,7 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                     b.HasOne("GestionPedidos.Domain.Seguridad.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Ciudad");
 
@@ -2839,7 +2893,7 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                     b.HasOne("GestionPedidos.Domain.Seguridad.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Usuario");
                 });

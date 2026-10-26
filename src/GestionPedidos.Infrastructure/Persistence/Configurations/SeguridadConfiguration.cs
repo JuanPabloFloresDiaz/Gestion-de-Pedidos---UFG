@@ -75,6 +75,7 @@ public sealed class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
         b.Property(x => x.Activo).HasDefaultValue(true);
         b.Property(x => x.DebeCambiarClave).HasDefaultValue(false);
         b.Property(x => x.IntentosFallidos).HasDefaultValue(0);
+        b.Property(x => x.EliminadoEn);
         b.Property(x => x.RowVersion).IsRowVersion();
         b.HasIndex(x => x.NombreUsuario).IsUnique();
         b.HasIndex(x => x.Correo).IsUnique();

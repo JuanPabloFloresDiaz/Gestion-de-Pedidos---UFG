@@ -1,4 +1,6 @@
 using GestionPedidos.Application.Autenticacion;
+using GestionPedidos.Application.Catalogos;
+using GestionPedidos.Application.Roles;
 using GestionPedidos.Application.Common;
 using GestionPedidos.Application.Eventos;
 using GestionPedidos.Application.Historial;
@@ -30,6 +32,8 @@ public static class DependencyInjection
         servicios.AddScoped<IUsuarioRepository, UsuarioRepository>();
         servicios.AddScoped<IRolRepository, RolRepository>();
         servicios.AddScoped<IRegistroClienteRepository, RegistroClienteRepository>();
+        servicios.AddScoped<ICatalogoGeoRepository, CatalogoGeoRepository>();
+        servicios.AddScoped<IActividadRepository, ActividadRepository>();
         servicios.AddSingleton<IHasherClave, HasherClave>();
         servicios.AddScoped<AdministradorInicial>();
 
@@ -43,7 +47,13 @@ public static class DependencyInjection
         servicios.AddScoped<CrearUsuario>();
         servicios.AddScoped<ActualizarUsuario>();
         servicios.AddScoped<CambiarEstadoUsuario>();
+        servicios.AddScoped<EliminarUsuario>();
         servicios.AddScoped<ListarRoles>();
+        servicios.AddScoped<ListarPermisos>();
+        servicios.AddScoped<ActualizarPermisosDeRol>();
+        servicios.AddScoped<ListarDepartamentos>();
+        servicios.AddScoped<ListarCiudades>();
+        servicios.AddScoped<ListarActividades>();
 
         // Eventos: una publicadora única y el historial como suscriptor (se registra en un solo lugar)
         servicios.AddSingleton<EventosAplicacion>();

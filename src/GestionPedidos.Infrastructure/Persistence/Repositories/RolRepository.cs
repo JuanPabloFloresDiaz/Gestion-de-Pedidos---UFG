@@ -22,7 +22,11 @@ public sealed class RolRepository : IRolRepository
                 r.Id, r.Nombre, r.Descripcion,
                 Permisos = r.Permisos.Select(p => p.Permiso!.Codigo).OrderBy(c => c).ToList(),
             }).ToListAsync(ct);
-        return roles.Select(r => new RolDto(r.Id, r.Nombre, r.Descripcion, r.Permisos)).ToList();
+        return roles.Select(r =>
+        {
+            var (obligatorios, prohibidos) = PermisosProtegidos.ParaRol(r.Nombre);
+            return new RolDto(r.Id, r.Nombre, r.Descripcion, r.Permisos, obligatorios.OrderBy(c => c).ToList(), prohibidos.OrderBy(c => c).ToList());
+        }).ToList();
     }
 
     /// <inheritdoc/>
@@ -31,6 +35,21 @@ public sealed class RolRepository : IRolRepository
     /// <inheritdoc/>
     public Task<Rol?> ObtenerPorNombreAsync(string nombre, CancellationToken ct) =>
         _db.Roles.FirstOrDefaultAsync(r => r.Nombre == nombre, ct);
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<PermisoDto>> ListarPermisosAsync(CancellationToken ct) =>
+        await _db.Permisos.AsNoTracking().OrderBy(p => p.Id).Select(p => new PermisoDto(p.Id, p.Codigo, p.Descripcion)).ToListAsync(ct);
+
+    /// <inheritdoc/>
+    public Task<Rol?> ObtenerConPermisosAsync(int id, CancellationToken ct) =>
+        _db.Roles.Include(r => r.Permisos).ThenInclude(rp => rp.Permiso).FirstOrDefaultAsync(r => r.Id == id, ct);
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<Permiso>> ObtenerPermisosPorCodigosAsync(IEnumerable<string> codigos, CancellationToken ct)
+    {
+        var lista = codigos.ToList();
+        return await _db.Permisos.Where(p => lista.Contains(p.Codigo)).ToListAsync(ct);
+    }
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<string>> CodigosPermisosAsync(int rolId, CancellationToken ct) =>

@@ -28,7 +28,8 @@ public sealed class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
         b.HasIndex(x => x.Correo).IsUnique().HasFilter("[Correo] IS NOT NULL");
         b.HasIndex(x => x.UsuarioId).IsUnique().HasFilter("[UsuarioId] IS NOT NULL");
         b.HasOne(x => x.Ciudad).WithMany().HasForeignKey(x => x.CiudadId).OnDelete(DeleteBehavior.Restrict);
-        b.HasOne(x => x.Usuario).WithMany().HasForeignKey(x => x.UsuarioId).OnDelete(DeleteBehavior.Restrict);
+        // Si se elimina definitivamente la cuenta, el cliente se conserva (solo pierde su acceso web).
+        b.HasOne(x => x.Usuario).WithMany().HasForeignKey(x => x.UsuarioId).OnDelete(DeleteBehavior.SetNull);
     }
 }
 
@@ -112,6 +113,7 @@ public sealed class ActividadConfiguration : IEntityTypeConfiguration<Actividad>
         b.Property(x => x.Detalle).HasMaxLength(500);
         b.HasIndex(x => x.Fecha);
         b.HasIndex(x => x.UsuarioId);
-        b.HasOne(x => x.Usuario).WithMany().HasForeignKey(x => x.UsuarioId).OnDelete(DeleteBehavior.Restrict);
+        // El historial no se borra: si se elimina al usuario, la fila queda sin usuario (el Detalle conserva su nombre).
+        b.HasOne(x => x.Usuario).WithMany().HasForeignKey(x => x.UsuarioId).OnDelete(DeleteBehavior.SetNull);
     }
 }

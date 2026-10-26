@@ -10,7 +10,7 @@
 -- Requisito: la base de datos GestionPedidos ya existe (ver scripts/sql/init-usuarios.sql).
 -- ============================================================================================
 
-IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+﻿IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
 BEGIN
     CREATE TABLE [__EFMigrationsHistory] (
         [MigrationId] nvarchar(150) NOT NULL,
@@ -988,6 +988,127 @@ IF NOT EXISTS (
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
     VALUES (N'20261025225217_AgregarBusquedaDePedidosYPermisosDeBD', N'8.0.11');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion'
+)
+BEGIN
+    ALTER TABLE [Actividades] DROP CONSTRAINT [FK_Actividades_Usuarios_UsuarioId];
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion'
+)
+BEGIN
+    ALTER TABLE [Clientes] DROP CONSTRAINT [FK_Clientes_Usuarios_UsuarioId];
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion'
+)
+BEGIN
+    ALTER TABLE [Usuarios] ADD [EliminadoEn] datetimeoffset(0) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion'
+)
+BEGIN
+    ALTER TABLE [Productos] ADD [EliminadoEn] datetimeoffset(0) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion'
+)
+BEGIN
+    ALTER TABLE [Pedidos] ADD [EliminadoEn] datetimeoffset(0) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion'
+)
+BEGIN
+    ALTER TABLE [Clientes] ADD [EliminadoEn] datetimeoffset(0) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion'
+)
+BEGIN
+    IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Codigo', N'Descripcion') AND [object_id] = OBJECT_ID(N'[Permisos]'))
+        SET IDENTITY_INSERT [Permisos] ON;
+    EXEC(N'INSERT INTO [Permisos] ([Id], [Codigo], [Descripcion])
+    VALUES (26, N''roles.editar'', N''Editar los permisos de un rol''),
+    (27, N''catalogos.ver'', N''Ver los catálogos de departamentos y ciudades''),
+    (28, N''usuarios.eliminar'', N''Eliminar definitivamente usuarios dados de baja'')');
+    IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Codigo', N'Descripcion') AND [object_id] = OBJECT_ID(N'[Permisos]'))
+        SET IDENTITY_INSERT [Permisos] OFF;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion'
+)
+BEGIN
+    IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'PermisoId', N'RolId') AND [object_id] = OBJECT_ID(N'[RolesPermisos]'))
+        SET IDENTITY_INSERT [RolesPermisos] ON;
+    EXEC(N'INSERT INTO [RolesPermisos] ([PermisoId], [RolId])
+    VALUES (26, 1),
+    (27, 1),
+    (28, 1),
+    (27, 2)');
+    IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'PermisoId', N'RolId') AND [object_id] = OBJECT_ID(N'[RolesPermisos]'))
+        SET IDENTITY_INSERT [RolesPermisos] OFF;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion'
+)
+BEGIN
+    ALTER TABLE [Actividades] ADD CONSTRAINT [FK_Actividades_Usuarios_UsuarioId] FOREIGN KEY ([UsuarioId]) REFERENCES [Usuarios] ([Id]) ON DELETE SET NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion'
+)
+BEGIN
+    ALTER TABLE [Clientes] ADD CONSTRAINT [FK_Clientes_Usuarios_UsuarioId] FOREIGN KEY ([UsuarioId]) REFERENCES [Usuarios] ([Id]) ON DELETE SET NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion', N'8.0.11');
 END;
 GO
 

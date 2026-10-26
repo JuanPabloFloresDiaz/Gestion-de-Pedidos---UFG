@@ -62,4 +62,10 @@ public sealed class UsuarioRepository : IUsuarioRepository
 
     /// <inheritdoc/>
     public void Agregar(Usuario usuario) => _db.Usuarios.Add(usuario);
+
+    /// <inheritdoc/>
+    public void Eliminar(Usuario usuario) => _db.Usuarios.Remove(usuario);
+
+    /// <inheritdoc/>
+    public Task<bool> TienePedidosAsync(int usuarioId, CancellationToken ct) => _db.Pedidos.AnyAsync(p => p.UsuarioId == usuarioId, ct);
 }
