@@ -157,10 +157,14 @@ test('un operador solo ve lo que su rol permite', async ({ page, request }) => {
   await page.getByRole('button', { name: 'Guardar contraseña' }).click();
 
   await expect(page.getByRole('heading', { name: /Bienvenido, Operadora E2E/ })).toBeVisible();
-  // Sin permiso usuarios.ver: en Administración solo ve los catálogos geográficos
+  // Sin permiso usuarios.ver: en Administración solo ve los catálogos geográficos; en Gestión, la clasificación (solo consulta)
   await page.getByRole('button', { name: /Administración/ }).click();
   await expect(page.getByRole('menuitem')).toHaveText(['Ciudades y departamentos']);
   await page.getByRole('button', { name: /Administración/ }).click();
+  await page.getByRole('button', { name: /Gestión/ }).click();
+  await page.getByRole('menuitem', { name: 'Categorías y filtros' }).click();
+  await expect(page.getByRole('button', { name: /^Ropa \d+ sub\./ })).toBeVisible();
+  await expect(page.getByRole('button', { name: '+ Categoría' })).toHaveCount(0);   // sin categorias.crear
   await expect(page.getByRole('button', { name: /Ayuda/ })).toBeVisible();
   await captura(page, '08-operador-menu-reducido');
 });
@@ -213,4 +217,94 @@ test('roles y permisos, historial, catálogos, pestañas nuevas y apariencia', a
   await activa.getByLabel('Buscar').fill('texto temporal');
   await page.getByRole('button', { name: 'Recargar la pestaña' }).click();
   await expect(activa.getByLabel('Buscar')).toHaveValue('');
+});
+
+test('categorías y filtros: árbol de ejemplo, alta de toda la jerarquía, baja suave y eliminación definitiva', async ({ page }) => {
+  await entrar(page, 'admin', CLAVE_ADMIN);
+  await expect(page.getByRole('heading', { name: /Bienvenido/ })).toBeVisible();
+  await page.getByRole('button', { name: /Gestión/ }).click();
+  await page.getByRole('menuitem', { name: 'Categorías y filtros' }).click();
+  await expect(page.getByRole('heading', { name: 'Categorías y filtros' })).toBeVisible();
+
+  // Datos de ejemplo: el árbol trae las categorías y, al elegir una subcategoría, sus filtros con opciones
+  const arbol = page.getByRole('navigation', { name: 'Categorías y subcategorías' });
+  await expect(arbol.getByRole('button', { name: /Tecnología/ })).toBeVisible();
+  await arbol.getByRole('button', { name: /^Camisas/ }).click();
+  await expect(page.getByRole('heading', { name: 'Camisas' })).toBeVisible();
+  await expect(page.locator('.filtro-bloque').filter({ hasText: 'Clima' }).locator('.opcion-chip')).toHaveCount(4);
+  await captura(page, '15-categorias-arbol');
+
+  // Alta de la jerarquía completa
+  const sufijo = Date.now().toString().slice(-6);
+  const cat = `Mascotas ${sufijo}`;
+  await page.getByRole('button', { name: '+ Categoría' }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.getByRole('alertdialog')).toContainText('Nombre es obligatorio.');
+  await page.getByRole('alertdialog').getByLabel('Nombre').fill(cat);
+  await page.getByRole('alertdialog').getByLabel('Descripción (opcional)').fill('Todo para tu mascota');
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('.aviso').last()).toContainText('registrada');
+  await arbol.getByRole('button', { name: new RegExp(cat) }).click();
+
+  await page.getByRole('button', { name: '+ Subcategoría' }).click();
+  await page.getByRole('alertdialog').getByLabel('Nombre').fill('Alimento');
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Guardar' }).click();
+  await page.getByRole('button', { name: /Alimento/ }).first().click();
+  await expect(page.getByRole('heading', { name: 'Alimento' })).toBeVisible();
+
+  await page.getByRole('button', { name: '+ Filtro' }).click();
+  await page.getByRole('alertdialog').getByLabel('Nombre').fill('Tipo de mascota');
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Guardar' }).click();
+  await page.getByRole('button', { name: 'Agregar opción a Tipo de mascota' }).click();
+  await page.getByRole('alertdialog').getByLabel('Valor').fill('Perro');
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('.opcion-chip').filter({ hasText: 'Perro' })).toBeVisible();
+
+  // Repetir la opción: el motivo se muestra dentro del editor, que sigue abierto
+  await page.getByRole('button', { name: 'Agregar opción a Tipo de mascota' }).click();
+  await page.getByRole('alertdialog').getByLabel('Valor').fill('perro');
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.getByRole('alertdialog')).toContainText('ya tiene esa opción');
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Cancelar' }).click();
+  await captura(page, '16-categorias-filtros');
+
+  // Dar de baja una opción (chip ×), verla tachada y reactivarla
+  await page.getByRole('button', { name: 'Dar de baja Perro' }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Dar de baja' }).click();
+  await expect(page.locator('.aviso').last()).toContainText('dada de baja');
+  await page.getByText('Mostrar inactivas').click();
+  await expect(page.locator('.opcion-inactiva').filter({ hasText: 'Perro' })).toBeVisible();
+  await page.getByRole('button', { name: 'Reactivar Perro' }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Reactivar' }).click();
+  await expect(page.locator('.opcion-chip:not(.opcion-inactiva)').filter({ hasText: 'Perro' })).toBeVisible();
+
+  // Una categoría con subcategorías activas no se da de baja: la regla se muestra en pantalla
+  await arbol.getByRole('button', { name: new RegExp(cat) }).click();
+  await page.locator('.detalle-acciones').getByRole('button', { name: /Activo/ }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Dar de baja' }).click();
+  await expect(page.getByRole('alert')).toContainText('subcategorías activas');
+
+  // Se baja de abajo hacia arriba y se elimina definitivamente en ese orden (cada nivel exige estar vacío)
+  const bajaYElimina = async (nombre: RegExp, textoElimina?: string) => {
+    await page.locator('.detalle-acciones').getByRole('button', { name: /Activo/ }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Dar de baja' }).click();
+    await page.locator('.detalle-acciones').getByRole('button', { name: 'Eliminar definitivamente' }).click();
+    const d = page.getByRole('alertdialog');
+    if (textoElimina) await d.getByRole('textbox').fill(textoElimina);
+    await d.getByRole('button', { name: 'Eliminar definitivamente' }).click();
+  };
+  await arbol.getByRole('button', { name: /Alimento/ }).click();
+  await page.getByRole('button', { name: 'Dar de baja Perro' }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Dar de baja' }).click();
+  await page.getByRole('button', { name: 'Eliminar Perro' }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Eliminar definitivamente' }).click();
+  await expect(page.locator('.aviso').last()).toContainText('eliminada definitivamente');
+  await page.locator('.filtro-bloque').filter({ hasText: 'Tipo de mascota' }).getByRole('button', { name: /Activo/ }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Dar de baja' }).click();
+  await page.getByRole('button', { name: 'Eliminar', exact: true }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Eliminar definitivamente' }).click();
+  await expect(page.locator('.aviso').last()).toContainText('eliminado definitivamente');
+  await bajaYElimina(/Alimento/, 'Alimento');
+  await bajaYElimina(new RegExp(cat), cat);
+  await expect(arbol.getByRole('button', { name: new RegExp(cat) })).toHaveCount(0);
 });
