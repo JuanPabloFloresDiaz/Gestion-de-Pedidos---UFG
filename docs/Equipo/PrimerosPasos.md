@@ -22,6 +22,7 @@ cd Gestion-de-Pedidos---UFG
 
 | Qué | Dónde |
 |---|---|
+| **Mapa del repositorio** | [DondeEstaCadaCosa.md](DondeEstaCadaCosa.md): dónde está el sembrador de datos de ejemplo, las imágenes, cada capa, la interfaz, la base y las pruebas |
 | **Web** | http://localhost:4392 |
 | **Garage** (almacén de imágenes, API S3) | `127.0.0.1:4393`; las fotos se ven en la tienda y se administran por la API ([CatalogoProductos.md §9](../Especificaciones/CatalogoProductos.md)) |
 | **API** (con Swagger) | http://localhost:4390/swagger |

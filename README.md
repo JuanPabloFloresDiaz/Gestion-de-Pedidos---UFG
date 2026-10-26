@@ -33,6 +33,7 @@ C# 12 / **.NET 8** · Blazor (Razor Class Library) · .NET MAUI Blazor Hybrid (e
 | [Especificaciones/](docs/Especificaciones/README.md) | Una spec por módulo (clientes, productos, pedidos, portal web…) |
 | [Equipo/PautasCodigoEventos.md](docs/Equipo/PautasCodigoEventos.md) | **Pautas de código para delegados y eventos (leer antes de programar)** |
 | [Equipo/Tareas.md](docs/Equipo/Tareas.md) | Tablero de tareas por módulo |
+| [Equipo/DondeEstaCadaCosa.md](docs/Equipo/DondeEstaCadaCosa.md) | **Mapa: dónde está cada cosa** (el sembrador de datos de ejemplo, imágenes, capas, interfaz, base, Docker, pruebas) |
 | [Equipo/PrimerosPasos.md](docs/Equipo/PrimerosPasos.md) | **Cómo levantar, probar y construir un módulo nuevo** |
 
 Reglas para agentes de IA: [AGENTS.md](AGENTS.md).

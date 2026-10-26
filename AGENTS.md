@@ -3,6 +3,7 @@
 Reglas cortas para cualquier agente de IA que trabaje en este repositorio. La fuente de verdad es `docs/`; este archivo solo la resume.
 
 ## Léelo antes de escribir código
+0. **[`docs/Equipo/DondeEstaCadaCosa.md`](docs/Equipo/DondeEstaCadaCosa.md)**: mapa de dónde está cada cosa (el sembrador de datos de ejemplo, las imágenes, cada capa, la interfaz, la base, Docker y las pruebas).
 1. `docs/Analisis.md` (requerimientos) y la spec del módulo en `docs/Especificaciones/`.
 2. `docs/Equipo/PautasCodigoEventos.md` (cómo escribir delegados, eventos, Página + ViewModel, comentarios). **Si algo de ahí contradice tu costumbre, gana el documento.**
 3. `docs/Arquitectura.md` y `docs/Estructura.md` (capas y dónde va cada archivo).
