@@ -43,6 +43,12 @@ public static class CatalogoPermisos
     public const string RolesVer = "roles.ver";
     /// <summary>Ver el historial de actividades.</summary>
     public const string HistorialVer = "historial.ver";
+    /// <summary>Eliminar definitivamente usuarios que ya están dados de baja.</summary>
+    public const string UsuariosEliminar = "usuarios.eliminar";
+    /// <summary>Editar los permisos de un rol.</summary>
+    public const string RolesEditar = "roles.editar";
+    /// <summary>Ver los catálogos de departamentos y ciudades en la administración.</summary>
+    public const string CatalogosVer = "catalogos.ver";
     /// <summary>Ver el catálogo de la tienda (también es público).</summary>
     public const string CatalogoVer = "catalogo.ver";
     /// <summary>Ver los pedidos propios (cliente de la web).</summary>
@@ -70,6 +76,10 @@ public static class CatalogoPermisos
         (CatalogoVer, "Ver el catálogo de la tienda"),
         (MisPedidosVer, "Ver los pedidos propios"), (MisPedidosCrear, "Crear pedidos propios"),
         (MisPedidosCancelar, "Cancelar pedidos propios"), (PerfilEditar, "Editar el perfil propio"),
+        // Añadidos después de la Fase 1: SIEMPRE al final (los Id de la semilla dependen de la posición)
+        (RolesEditar, "Editar los permisos de un rol"),
+        (CatalogosVer, "Ver los catálogos de departamentos y ciudades"),
+        (UsuariosEliminar, "Eliminar definitivamente usuarios dados de baja"),
     };
 
     /// <summary>Permisos que tiene cada rol (matriz confirmada el 03/10/2026).</summary>
@@ -80,11 +90,54 @@ public static class CatalogoPermisos
         NombresRol.Operador => new[]
         {
             AdminAcceso, ClientesVer, ClientesCrear, ClientesEditar, ProductosVer,
-            PedidosVer, PedidosCrear, PedidosEditar, PedidosCambiarEstado, CatalogoVer,
+            PedidosVer, PedidosCrear, PedidosEditar, PedidosCambiarEstado, CatalogoVer, CatalogosVer,
         },
         NombresRol.Cliente => new[] { CatalogoVer, MisPedidosVer, MisPedidosCrear, MisPedidosCancelar, PerfilEditar },
         _ => Array.Empty<string>(),
     };
+}
+
+/// <summary>Reglas de protección de los permisos de los roles ([AutenticacionYPermisos.md §3.1]).</summary>
+public static class PermisosProtegidos
+{
+    /// <summary>
+    /// Permisos que el rol Administrador nunca puede perder: sin ellos nadie podría volver a administrar
+    /// usuarios y roles (se quedaría el sistema sin quién lo arregle).
+    /// </summary>
+    public static readonly IReadOnlySet<string> DelAdministrador = new HashSet<string>
+    {
+        CatalogoPermisos.AdminAcceso, CatalogoPermisos.UsuariosVer, CatalogoPermisos.UsuariosCrear,
+        CatalogoPermisos.UsuariosEditar, CatalogoPermisos.UsuariosDesactivar, CatalogoPermisos.UsuariosEliminar,
+        CatalogoPermisos.RolesVer, CatalogoPermisos.RolesEditar,
+    };
+
+    /// <summary>
+    /// Permisos que solo tienen sentido para el rol Cliente (la tienda web): no se pueden dar al personal.
+    /// </summary>
+    public static readonly IReadOnlySet<string> SoloCliente = new HashSet<string>
+    {
+        CatalogoPermisos.MisPedidosVer, CatalogoPermisos.MisPedidosCrear, CatalogoPermisos.MisPedidosCancelar,
+        CatalogoPermisos.PerfilEditar,
+    };
+
+    /// <summary>
+    /// Reglas de cada rol: <b>obligatorios</b> (no se le pueden quitar) y <b>prohibidos</b> (no se le pueden dar).
+    /// Una sola fuente de verdad: la usan la validación de la API y la pantalla de roles (que bloquea esas casillas).
+    /// </summary>
+    /// <param name="rol">Nombre del rol.</param>
+    public static (IReadOnlySet<string> Obligatorios, IReadOnlySet<string> Prohibidos) ParaRol(string rol) => rol switch
+    {
+        NombresRol.Administrador => (DelAdministrador, SoloCliente),
+        NombresRol.Operador => (new HashSet<string> { CatalogoPermisos.AdminAcceso }, SoloCliente),
+        NombresRol.Cliente => (new HashSet<string>(),
+            CatalogoPermisos.Todos.Select(p => p.Codigo).Where(AbreLaAdministracion).ToHashSet()),
+        _ => (new HashSet<string>(), new HashSet<string>()),
+    };
+
+    /// <summary>Permisos que el rol Cliente nunca puede tener: abren la administración.</summary>
+    public static bool AbreLaAdministracion(string codigo) =>
+        codigo is not (CatalogoPermisos.CatalogoVer or CatalogoPermisos.MisPedidosVer or CatalogoPermisos.MisPedidosCrear
+            or CatalogoPermisos.MisPedidosCancelar or CatalogoPermisos.PerfilEditar);
 }
 
 /// <summary>Nombres de los roles del sistema.</summary>

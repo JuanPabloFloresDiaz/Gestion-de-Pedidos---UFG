@@ -28,6 +28,8 @@ public class Usuario : IAuditable
     public Rol? Rol { get; private set; }
     /// <summary>Baja lógica: <c>false</c> = inactivo.</summary>
     public bool Activo { get; private set; } = true;
+    /// <summary>Cuándo se dio de baja (eliminado suave, <i>deleted_at</i>); <c>null</c> mientras esté activo.</summary>
+    public DateTimeOffset? EliminadoEn { get; private set; }
     /// <summary>Obliga a cambiar la clave antes de operar.</summary>
     public bool DebeCambiarClave { get; private set; }
     /// <summary>Fallos de acceso consecutivos.</summary>
@@ -100,10 +102,15 @@ public class Usuario : IAuditable
         RolId = rolId;
     }
 
-    /// <summary>Da de baja (<c>false</c>) o reactiva (<c>true</c>) al usuario.</summary>
-    public void CambiarEstado(bool activo)
+    /// <summary>
+    /// Da de baja (<c>false</c>: eliminado suave, guarda la fecha en <see cref="EliminadoEn"/>) o reactiva (<c>true</c>:
+    /// vuelve a estar activo y se borra esa fecha). Si ya estaba de baja, conserva la fecha original.
+    /// </summary>
+    /// <param name="activo">Estado deseado.</param>
+    /// <param name="ahora">Instante del cambio (UTC).</param>
+    public void CambiarEstado(bool activo, DateTimeOffset ahora)
     {
-        Activo = activo;
-        if (activo) { IntentosFallidos = 0; BloqueadoHasta = null; }
+        if (activo) { Activo = true; EliminadoEn = null; IntentosFallidos = 0; BloqueadoHasta = null; }
+        else { if (Activo || EliminadoEn is null) EliminadoEn = ahora; Activo = false; }
     }
 }

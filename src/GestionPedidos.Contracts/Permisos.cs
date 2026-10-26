@@ -46,4 +46,10 @@ public static class Permisos
     public const string RolesVer = "roles.ver";
     /// <summary>Ver el historial de actividades.</summary>
     public const string HistorialVer = "historial.ver";
+    /// <summary>Eliminar definitivamente usuarios dados de baja.</summary>
+    public const string UsuariosEliminar = "usuarios.eliminar";
+    /// <summary>Editar los permisos de un rol.</summary>
+    public const string RolesEditar = "roles.editar";
+    /// <summary>Ver los catálogos de departamentos y ciudades.</summary>
+    public const string CatalogosVer = "catalogos.ver";
 }

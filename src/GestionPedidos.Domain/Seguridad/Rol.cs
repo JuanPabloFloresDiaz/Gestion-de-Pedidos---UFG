@@ -11,6 +11,19 @@ public class Rol
     public string? Descripcion { get; set; }
     /// <summary>Permisos del rol.</summary>
     public List<RolPermiso> Permisos { get; set; } = new();
+
+    /// <summary>
+    /// Deja al rol con exactamente los permisos indicados: quita los que sobran y añade los que faltan,
+    /// sin tocar los que ya tenía (así solo se escriben los cambios).
+    /// </summary>
+    /// <param name="permisoIds">Identificadores de los permisos que debe tener el rol.</param>
+    public void EstablecerPermisos(IReadOnlyCollection<int> permisoIds)
+    {
+        Permisos.RemoveAll(p => !permisoIds.Contains(p.PermisoId));
+        var actuales = Permisos.Select(p => p.PermisoId).ToHashSet();
+        foreach (var id in permisoIds.Where(id => !actuales.Contains(id)))
+            Permisos.Add(new RolPermiso { RolId = Id, PermisoId = id });
+    }
 }
 
 /// <summary>Permiso individual (por ejemplo <c>clientes.crear</c>).</summary>

@@ -22,6 +22,8 @@ public class Producto : IAuditable
     public bool MostrarStock { get; set; }
     /// <summary>Baja lógica: <c>false</c> = inactivo.</summary>
     public bool Activo { get; set; } = true;
+    /// <summary>Cuándo se dio de baja (eliminado suave); <c>null</c> mientras esté activo.</summary>
+    public DateTimeOffset? EliminadoEn { get; set; }
     /// <summary>Creación (UTC).</summary>
     public DateTimeOffset CreadoEn { get; set; }
     /// <summary>Última modificación (UTC).</summary>

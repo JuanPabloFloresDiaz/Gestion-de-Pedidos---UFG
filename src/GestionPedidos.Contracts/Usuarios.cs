@@ -11,8 +11,10 @@ namespace GestionPedidos.Contracts;
 /// <param name="DebeCambiarClave">Si debe cambiar su clave.</param>
 /// <param name="UltimoAcceso">Último acceso correcto.</param>
 /// <param name="RowVersion">Versión (base64) para concurrencia optimista.</param>
+/// <param name="EliminadoEn">Cuándo se dio de baja (eliminado suave); <c>null</c> si está activo.</param>
 public sealed record UsuarioDto(int Id, string NombreUsuario, string NombreCompleto, string Correo, int RolId,
-    string Rol, bool Activo, bool DebeCambiarClave, DateTimeOffset? UltimoAcceso, string RowVersion);
+    string Rol, bool Activo, bool DebeCambiarClave, DateTimeOffset? UltimoAcceso, string RowVersion,
+    DateTimeOffset? EliminadoEn = null);
 
 /// <summary>Alta de un usuario del personal.</summary>
 /// <param name="NombreUsuario">Nombre de usuario único.</param>
@@ -39,4 +41,7 @@ public sealed record CambiarEstadoSolicitud(bool Activo);
 /// <param name="Nombre">Nombre.</param>
 /// <param name="Descripcion">Descripción.</param>
 /// <param name="Permisos">Códigos de permiso.</param>
-public sealed record RolDto(int Id, string Nombre, string? Descripcion, IReadOnlyList<string> Permisos);
+/// <param name="Obligatorios">Permisos que a este rol no se le pueden quitar.</param>
+/// <param name="Prohibidos">Permisos que a este rol no se le pueden dar.</param>
+public sealed record RolDto(int Id, string Nombre, string? Descripcion, IReadOnlyList<string> Permisos,
+    IReadOnlyList<string>? Obligatorios = null, IReadOnlyList<string>? Prohibidos = null);
