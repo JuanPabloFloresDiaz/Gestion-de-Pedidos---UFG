@@ -1,4 +1,5 @@
 using GestionPedidos.Application.Eventos;
+using GestionPedidos.Contracts;
 using GestionPedidos.Domain.Historial;
 
 namespace GestionPedidos.Application.Historial;
@@ -8,6 +9,16 @@ public interface IRegistroActividades
 {
     /// <summary>Encola el registro de una actividad.</summary>
     void Registrar(Actividad actividad);
+}
+
+/// <summary>Consulta del historial de actividades (solo lectura).</summary>
+public interface IActividadRepository
+{
+    /// <summary>Busca actividades, de la más reciente a la más antigua.</summary>
+    Task<(IReadOnlyList<ActividadDto> Elementos, int Total)> BuscarAsync(int? usuarioId, string? q, string? entidad, string? accion,
+        DateTimeOffset? desde, DateTimeOffset? hasta, int pagina, int tamano, CancellationToken ct);
+    /// <summary>Entidades y acciones distintas que existen en el historial (para llenar los filtros).</summary>
+    Task<(IReadOnlyList<string> Entidades, IReadOnlyList<string> Acciones)> ValoresDeFiltroAsync(CancellationToken ct);
 }
 
 /// <summary>

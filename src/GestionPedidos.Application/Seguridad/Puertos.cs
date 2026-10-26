@@ -24,6 +24,10 @@ public interface IUsuarioRepository
     void FijarVersionOriginal(Usuario usuario, byte[] rowVersion);
     /// <summary>Agrega un usuario nuevo.</summary>
     void Agregar(Usuario usuario);
+    /// <summary>Marca al usuario para eliminarlo definitivamente al guardar.</summary>
+    void Eliminar(Usuario usuario);
+    /// <summary>Indica si el usuario tiene pedidos registrados a su nombre (no se puede eliminar).</summary>
+    Task<bool> TienePedidosAsync(int usuarioId, CancellationToken ct);
 }
 
 /// <summary>Repositorio de roles y permisos.</summary>
@@ -37,6 +41,12 @@ public interface IRolRepository
     Task<Rol?> ObtenerPorNombreAsync(string nombre, CancellationToken ct);
     /// <summary>Códigos de permiso de un rol.</summary>
     Task<IReadOnlyList<string>> CodigosPermisosAsync(int rolId, CancellationToken ct);
+    /// <summary>Catálogo completo de permisos.</summary>
+    Task<IReadOnlyList<PermisoDto>> ListarPermisosAsync(CancellationToken ct);
+    /// <summary>Devuelve el rol con sus permisos cargados y con seguimiento de cambios, o <c>null</c>.</summary>
+    Task<Rol?> ObtenerConPermisosAsync(int id, CancellationToken ct);
+    /// <summary>Devuelve los permisos que corresponden a los códigos dados (los que no existan se omiten).</summary>
+    Task<IReadOnlyList<Permiso>> ObtenerPermisosPorCodigosAsync(IEnumerable<string> codigos, CancellationToken ct);
 }
 
 /// <summary>Acceso a clientes y ciudades necesario para el registro web.</summary>

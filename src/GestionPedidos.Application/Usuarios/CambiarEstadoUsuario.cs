@@ -8,7 +8,7 @@ using GestionPedidos.Domain.Seguridad;
 namespace GestionPedidos.Application.Usuarios;
 
 /// <summary>
-/// Caso de uso: baja lógica o reactivación de un usuario. Nadie puede darse de baja a sí mismo y siempre debe
+/// Caso de uso: baja lógica (eliminado suave, con fecha en <c>EliminadoEn</c>) o reactivación de un usuario. Nadie puede darse de baja a sí mismo y siempre debe
 /// quedar al menos un administrador activo.
 /// </summary>
 public sealed class CambiarEstadoUsuario
@@ -16,11 +16,12 @@ public sealed class CambiarEstadoUsuario
     private readonly IUsuarioRepository _usuarios;
     private readonly IUnitOfWork _uow;
     private readonly EventosAplicacion _eventos;
+    private readonly TimeProvider _reloj;
 
     /// <summary>Crea el caso de uso con sus dependencias.</summary>
-    public CambiarEstadoUsuario(IUsuarioRepository usuarios, IUnitOfWork uow, EventosAplicacion eventos)
+    public CambiarEstadoUsuario(IUsuarioRepository usuarios, IUnitOfWork uow, EventosAplicacion eventos, TimeProvider reloj)
     {
-        _usuarios = usuarios; _uow = uow; _eventos = eventos;
+        _usuarios = usuarios; _uow = uow; _eventos = eventos; _reloj = reloj;
     }
 
     /// <summary>Cambia el estado del usuario.</summary>
@@ -45,7 +46,7 @@ public sealed class CambiarEstadoUsuario
 
         if (usuario.Activo != activo)
         {
-            usuario.CambiarEstado(activo);
+            usuario.CambiarEstado(activo, _reloj.GetUtcNow());   // dar de baja = eliminado suave (guarda EliminadoEn)
             await _uow.GuardarAsync(ct);
             _eventos.OnEntidadCambiada(new EntidadCambiadaServidorEventArgs
             {

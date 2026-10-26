@@ -9,6 +9,8 @@ public static class TipoCambioServidor
     public const string Actualizada = "Actualizar";
     /// <summary>Baja lógica o reactivación.</summary>
     public const string EstadoCambiado = "CambiarEstado";
+    /// <summary>Eliminación definitiva (el registro ya estaba dado de baja).</summary>
+    public const string Eliminada = "Eliminar";
     /// <summary>Cambio de contraseña.</summary>
     public const string ClaveCambiada = "CambiarClave";
     /// <summary>Enlace de una cuenta web con un cliente existente.</summary>
