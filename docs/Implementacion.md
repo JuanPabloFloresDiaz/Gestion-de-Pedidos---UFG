@@ -25,7 +25,7 @@
 - [x] `GET /health` y `/health/ready`; errores con Problem Details; *rate limiting* en login y registro.
 - [x] Interfaz (`Ui`): shell con pestañas de documentos, tema, kit de componentes (propio, sin MudBlazor), `ApiClient`, sesión, avisos; hospedajes `Web` y `Desktop` (MAUI) que cargan la misma `Ui`.
 - [x] Harness de pruebas con Testcontainers (SQL Server real) y Playwright para extremo a extremo.
-- [x] **Escritorio compila y abre el login en Windows** (validado el 25/10/2026 en Windows 11 con SDK 8.0.427): exige además `dotnet workload install maui`, ya documentado ([PrimerosPasos.md §4.1](Equipo/PrimerosPasos.md#41-paso-a-paso-con-visual-studio-2022)).
+- [x] **Escritorio compila y abre el login en Windows** (validado el 25/10/2026 en Windows 11 con SDK 8.0.427): exige además `dotnet workload install maui`, ya documentado ([PrimerosPasos.md §4.1](Equipo/PrimerosPasos.md#41-paso-a-paso-con-visual-studio-2022-o-2026)).
 - [ ] **Confirmar a mano el flujo completo del escritorio** (iniciar sesión, abrir Usuarios e Integrantes, cerrar sesión, rechazo de un usuario Cliente) en los equipos de todos los integrantes.
 - [ ] Probar el `.exe` publicado en un equipo del laboratorio (Windows y WebView2).
 
@@ -96,6 +96,7 @@ gantt
 
 * **Ramas**: una por módulo o apartado (`feat/<modulo>-<tema>`, ej. `feat/clientes-pagina`), `fix/…`, `docs/…`; se integran a `main` por Pull Request con **una revisión** de otro integrante. **Sin CI/CD**: antes de abrir el PR quien lo escribe corre `./scripts/test-docker.sh` (y `./scripts/e2e-docker.sh` si tocó la interfaz) y lo anota en el PR.
 * **Commits granulares**: uno por apartado revisable (entidad, configuración EF, caso de uso, endpoint, ViewModel, página…), con título y descripción; cada commit deja el repositorio compilando y con pruebas en verde. Formato: `tipo(modulo): resumen` (`feat(clientes): agregar caso de uso RegistrarCliente`).
+* **Reparto (25/10/2026)**: los 3 integrantes se reparten **Clientes, Productos y Pedidos con su detalle**; Pablo lleva usuarios, roles y permisos, catálogos, historial, entrega y la web (con tres funcionalidades de cliente provisionales para el equipo). Detalle en [Tareas.md](Equipo/Tareas.md#reparto-del-equipo-acordado-el-25102026).
 * **Un módulo = un dueño** de principio a fin (API + escritorio + pruebas + spec). Cada módulo vive en sus propias carpetas ([Estructura.md §2](Estructura.md)) para evitar conflictos.
 * **Archivos compartidos** (modificar con cuidado y en PR pequeños): `DbContext`, `Program.cs`, `MainLayout` (menú), `Contracts`. Cada módulo se registra con un método de extensión propio (`AddClientes()`, `MapClientes()`) para que `Program.cs` solo cambie una línea.
 * **Migraciones**: una a la vez ([BaseDatos.md §8](BaseDatos.md)). Avisar en el chat del equipo antes de generar una; si otra se integra primero, se rehace la propia.

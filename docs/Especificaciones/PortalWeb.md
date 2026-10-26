@@ -2,6 +2,8 @@
 
 > Cubre **RF-11**. Es el **área pública** de la misma interfaz Blazor (`GestionPedidos.Ui`, carpeta `Tienda/`); se ve en el hospedaje web y, si se quiere, también en el de escritorio. A cargo de **Pablo**. **Se presenta el 12/11/2026.** Consume la **misma API** y respeta las mismas reglas de negocio. La administración está en [InterfazUsuario.md](InterfazUsuario.md).
 
+> **Reparto (provisional)**: Pablo lleva la tienda (catálogo, registro e inicio de sesión, carrito y hacer pedido). Tres funcionalidades del cliente —**historial de pedidos**, **perfil** y **cambio de contraseña**— se ofrecen a los integrantes del equipo; si se complican, las hace Pablo ([Tareas.md](../Equipo/Tareas.md#reparto-del-equipo-acordado-el-25102026)).
+
 ## 1. Objetivo y Alcance
 
 Una tienda en línea mínima y funcional: un visitante explora el catálogo, se registra, inicia sesión, hace pedidos y consulta o cancela los suyos.

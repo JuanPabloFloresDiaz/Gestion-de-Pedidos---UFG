@@ -1,30 +1,47 @@
 # ✅ Tareas del Equipo (Fases 2 a 5)
 
-> Este es el **tablero de tareas**; la columna *Responsable* queda vacía para que Pablo asigne. Las Fases 0, 0.5 y 1 y la web (bloque W) las desarrolla Pablo ([Implementacion.md](../Implementacion.md)).
+> Este es el **tablero de tareas**. Las Fases 0, 0.5 y 1 ya están hechas (Pablo). Los bloques **C, P y D** son de los 3 integrantes (Pablo asigna cuál es de quién y anota el nombre en *Responsable*); el resto es de Pablo ([reparto](#reparto-del-equipo-acordado-el-25102026)).
 
 **Tallas**: **S** ≤ medio día · **M** 1–2 días · **L** 3–4 días. **Depende de** indica qué debe estar listo antes de empezar.
 
 **Cómo leer cada tarea**: cada una termina con su **prueba** y su **spec** actualizada. Las pantallas se escriben en la `Ui` con el tema y el kit de componentes ([InterfazUsuario.md §8](../Especificaciones/InterfazUsuario.md)); cada una aparece igual en escritorio y en web.
 
-## Sugerencia de reparto en 4 paquetes (balanceados)
+## Reparto del equipo (acordado el 25/10/2026)
 
-| Paquete | Contenido | Observación |
-|---|---|---|
-| **A — Clientes** | Bloque **C** (incluye catálogos geográficos) | Independiente |
-| **B — Productos y datos de demo** | Bloque **P** + **E1** | Independiente; Productos expone `DescontarStock/ReponerStock` que usa Pedidos |
-| **C — Pedidos** | Bloque **D** | Arranca con el dominio (D1), luego necesita C y P |
-| **D — Transversal y entrega** | Bloques **H** y **E2–E6** | Se apoya en todos; empieza con historial y notificaciones |
+| Quién | Responsabilidad |
+|---|---|
+| **Los 3 integrantes** (un bloque cada uno; Pablo asigna cuál) | Los **apartados administrativos** de **Clientes** (bloque C), **Productos** (bloque P) y **Pedidos con su detalle** (bloque D; el *detalle de pedido* son las líneas del pedido y se trabajan junto con el pedido) |
+| **Pablo** | **Todo lo demás**: Usuarios (ya hecho), **gestión de roles y permisos**, **catálogos** (Departamentos y Ciudades) y demás vistas de consulta, **historial de actividades**, seguridad, la **entrega** (bloque E) y el **sitio público** (web) como responsable principal |
+| **Sitio público** (provisional, ver abajo) | **Pablo**: catálogo, registro e inicio de sesión del cliente, carrito y hacer pedido, diseño. **Los integrantes**: pequeñas funcionalidades del cliente: **historial de pedidos**, **perfil** y **cambio de contraseña** |
 
-> Al inicio de la Fase 2, **A y B acuerdan en 2 días los DTOs** (`ClienteDto`, `ProductoDto`) y los contratos de la API, para que Pedidos pueda avanzar sin esperar.
+> **Lo del sitio público aún está en discusión.** La web no es lo primordial de la materia (el escritorio es lo que el ingeniero evalúa). La idea inicial es que los integrantes tomen esas tres funcionalidades (W-07a, W-07b y W-07c); si se les complica o hay poco tiempo, **las hace Pablo**. Se confirma cuando terminen su primer bloque.
+
+**Cómo se coordinan los tres** (sus bloques dependen entre sí: Pedidos usa Clientes y Productos):
+* Al inicio acuerdan en **2 días** los contratos (`ClienteDto`, `ProductoDto`, `PedidoDto`) y los endpoints, para trabajar en paralelo sin esperarse.
+* **Pedidos arranca por el dominio** (D-01), que no depende de nadie, y se conecta con Clientes y Productos cuando sus endpoints estén listos.
+* Productos expone `DescontarStock`/`ReponerStock`, que usa Pedidos.
+* Los **catálogos de Departamentos y Ciudades** (C-02) los entrega **Pablo primero**, porque el formulario de Clientes los necesita.
+* Cada quien sigue la receta de [PrimerosPasos.md §5](PrimerosPasos.md#5-receta-cómo-se-construye-un-módulo-nuevo) y la estructura del módulo **Usuarios**.
 
 ---
 
-## Bloque C — Clientes y catálogos geográficos (Fase 2) · Spec: [Clientes.md](../Especificaciones/Clientes.md)
+## Bloque A — Administración transversal (a cargo de Pablo) · Specs: [AutenticacionYPermisos.md](../Especificaciones/AutenticacionYPermisos.md), [HistorialActividades.md](../Especificaciones/HistorialActividades.md)
+
+| ID | Tarea | Talla | Depende de | Responsable |
+|---|---|---|---|---|
+| A-01 | **Gestión de roles y permisos**: página con la matriz rol × permiso (consulta y edición de los permisos de un rol), endpoint, evento e historial. Reglas a especificar: el rol Administrador no puede perder `admin.acceso`, `usuarios.*` ni `roles.*`; los cambios surten efecto al iniciar sesión de nuevo (el token lleva los permisos) | M | Fase 1 | Pablo |
+| A-02 | **Catálogos**: vistas de consulta de Departamentos y Ciudades (con búsqueda y paginación) para la administración | S | C-02 | Pablo |
+| A-03 | **Vistas de consulta** de las demás tablas de apoyo que haga falta mostrar (permisos, etc.), solo lectura | S | A-01 | Pablo |
+| A-04 | **Gestión de usuarios**: mejoras que pidan las pruebas del equipo (la base ya está hecha en la Fase 1) | S | Fase 1 | Pablo |
+
+---
+
+## Bloque C — Clientes (Fase 2) · *integrante del equipo* — · Spec: [Clientes.md](../Especificaciones/Clientes.md)
 
 | ID | Tarea | Talla | Depende de | Responsable |
 |---|---|---|---|---|
 | C-01 | Reglas del dominio de `Cliente` (campos obligatorios, formato de teléfono; la entidad y su tabla ya existen) y pruebas unitarias | S | — | |
-| C-02 | Endpoints de lectura de los catálogos: `GET /departamentos` y `/departamentos/{id}/ciudades` (con búsqueda por nombre y caché en memoria). Las entidades y los 14 + 262 registros **ya existen** (Fase 0.5) | S | — | |
+| C-02 | Endpoints de lectura de los catálogos: `GET /departamentos` y `/departamentos/{id}/ciudades` (con búsqueda por nombre y caché en memoria). Las entidades y los 14 + 262 registros **ya existen** (Fase 0.5) | S | — | Pablo (primero) |
 | C-03 | Repositorio de clientes e integración con EF (consultas con filtros) y pruebas de integración | S | C-01 | |
 | C-04 | Casos de uso `RegistrarCliente`, `ActualizarCliente`, `CambiarEstadoCliente` (con la regla de pedidos pendientes) y eventos de aplicación | M | C-01, C-03 | |
 | C-05 | DTOs en `Contracts` y endpoints `/api/v1/clientes` con validación, permisos y pruebas de API | M | C-04 | |
@@ -34,7 +51,7 @@
 | C-09 | Búsqueda de clientes (nombres, apellidos, teléfono, departamento, ciudad, estado) en API y página | M | C-08 | |
 | C-10 | Spec y guion de demostración de Clientes actualizados | S | C-09 | |
 
-## Bloque P — Productos (Fase 2) · Spec: [Productos.md](../Especificaciones/Productos.md)
+## Bloque P — Productos (Fase 2) · *integrante del equipo* — · Spec: [Productos.md](../Especificaciones/Productos.md)
 
 | ID | Tarea | Talla | Depende de | Responsable |
 |---|---|---|---|---|
@@ -48,7 +65,7 @@
 | P-08 | Búsqueda de productos (nombre/descripción, rango de precio, stock, fecha de ingreso, estado) | M | P-07 | |
 | P-09 | Spec y guion de demostración de Productos | S | P-08 | |
 
-## Bloque D — Pedidos (Fase 3) · Spec: [Pedidos.md](../Especificaciones/Pedidos.md)
+## Bloque D — Pedidos y detalle de pedido (Fase 3) · *integrante del equipo* — · Spec: [Pedidos.md](../Especificaciones/Pedidos.md)
 
 | ID | Tarea | Talla | Depende de | Responsable |
 |---|---|---|---|---|
@@ -65,28 +82,28 @@
 | D-11 | Búsquedas de pedidos en la página (cliente, producto, precio, estado, fechas, usuario) | M | D-10 | |
 | D-12 | Spec y guion de demostración de Pedidos | S | D-11 | |
 
-## Bloque H — Transversal (Fases 2–4) · Specs: [HistorialActividades.md](../Especificaciones/HistorialActividades.md), [PatronEventos.md](../Especificaciones/PatronEventos.md)
+## Bloque H — Historial y notificaciones (Fases 2–4, Pablo) · Specs: [HistorialActividades.md](../Especificaciones/HistorialActividades.md), [PatronEventos.md](../Especificaciones/PatronEventos.md)
 
 | ID | Tarea | Talla | Depende de | Responsable |
 |---|---|---|---|---|
 | H-01 | El `HistorialSubscriber` **ya existe** (Fase 1) y escucha `EntidadCambiada`: verificar que cada caso de uso nuevo de Clientes, Productos y Pedidos lo publique y que quede la fila en `Actividades` (prueba de integración por módulo) | S | Fase 1 | |
-| H-02 | Endpoint y `HistorialPagina` (solo administrador) con filtros por usuario, entidad y fechas | M | H-01 | |
-| H-03 | `Notificador` de barra de estado y suscripción de listados abiertos para refrescarse (`EntidadCambiada`) | M | C-06 | |
-| H-04 | Verificar que los menús y botones de cada módulo respetan los permisos; prueba manual por rol | S | C-08, P-07 | |
-| H-05 | Revisión transversal de eventos: baja de suscripciones (`-=`) en el `Dispose` de todas las páginas y ViewModels | S | D-10 | |
+| H-02 | Endpoint y `HistorialPagina` (solo administrador) con filtros por usuario, entidad y fechas | M | H-01 | Pablo |
+| H-03 | `Notificador` de barra de estado y suscripción de listados abiertos para refrescarse (`EntidadCambiada`) | M | C-06 | Pablo |
+| H-04 | Verificar que los menús y botones de cada módulo respetan los permisos; prueba manual por rol | S | C-08, P-07 | Pablo |
+| H-05 | Revisión transversal de eventos: baja de suscripciones (`-=`) en el `Dispose` de todas las páginas y ViewModels | S | D-10 | Pablo |
 
-## Bloque E — Entrega (Fase 5) · Spec: [RespaldoYEntrega.md](../Especificaciones/RespaldoYEntrega.md)
+## Bloque E — Entrega (Fase 5, Pablo con apoyo de todos) · Spec: [RespaldoYEntrega.md](../Especificaciones/RespaldoYEntrega.md)
 
 | ID | Tarea | Talla | Depende de | Responsable |
 |---|---|---|---|---|
-| E-01 | Seeder de **datos de demostración** (clientes, productos y pedidos ficticios y coherentes) | M | C, P, D | |
-| E-02 | Respaldo FULL final, script `.sql` idempotente y **prueba de restauración** documentada | M | E-01 | |
-| E-03 | Publicación del `.exe` y ensayo completo de la defensa local ([Infraestructura.md §5](../Infraestructura.md)) | M | todo | |
-| E-04 | PDF de entrega con nombres y carnets, carpeta comprimida y verificación del contenido | S | E-02 | |
-| E-05 | Guion de defensa, reparto de turnos y banco de preguntas probables; ensayo completo | M | todo | |
-| E-06 | Revisión de comentarios XML (RE-01) y de la rúbrica ([Analisis.md §2.4](../Analisis.md)) | S | todo | |
+| E-01 | Seeder de **datos de demostración** (clientes, productos y pedidos ficticios y coherentes) | M | C, P, D | Pablo |
+| E-02 | Respaldo FULL final, script `.sql` idempotente y **prueba de restauración** documentada | M | E-01 | Pablo |
+| E-03 | Publicación del `.exe` y ensayo completo de la defensa local ([Infraestructura.md §5](../Infraestructura.md)) | M | todo | Pablo |
+| E-04 | PDF de entrega con nombres y carnets, carpeta comprimida y verificación del contenido | S | E-02 | Pablo |
+| E-05 | Guion de defensa, reparto de turnos y banco de preguntas probables; ensayo completo | M | todo | Todo el equipo |
+| E-06 | Revisión de comentarios XML (RE-01) y de la rúbrica ([Analisis.md §2.4](../Analisis.md)) | S | todo | Pablo |
 
-## Bloque W — Portal web público (Fase Web, a cargo de Pablo) · Spec: [PortalWeb.md](../Especificaciones/PortalWeb.md)
+## Bloque W — Sitio público (Fase Web: Pablo, con tres funcionalidades provisionales para el equipo) · Spec: [PortalWeb.md](../Especificaciones/PortalWeb.md)
 
 | ID | Tarea | Talla | Depende de | Responsable |
 |---|---|---|---|---|
@@ -96,5 +113,7 @@
 | W-04 | Catálogo: listado paginado con búsqueda y detalle de producto | M | W-01, W-03 | Pablo |
 | W-05 | Registro e inicio de sesión de clientes (departamento → ciudad) | M | W-01, W-03 | Pablo |
 | W-06 | Carrito y "Hacer pedido" | L | W-04, W-05 | Pablo |
-| W-07 | Mis pedidos (lista, detalle, cancelar) y perfil | M | W-06 | Pablo |
-| W-08 | `Dockerfile` y servicio `web` en los compose; prueba Playwright del recorrido y recorrido manual | M | W-07 | Pablo |
+| W-07a | **Historial de pedidos del cliente**: lista y detalle de sus pedidos y cancelar si está `Pendiente` (`mis-pedidos`) | M | W-06 | Integrante (provisional; si no, Pablo) |
+| W-07b | **Perfil del cliente**: ver y editar sus datos (`mi-perfil`) | S | W-05 | Integrante (provisional; si no, Pablo) |
+| W-07c | **Cambio de contraseña del cliente** en la tienda (la lógica y la página base ya existen desde la Fase 1: reutilizarlas con el diseño de la tienda) | S | W-05 | Integrante (provisional; si no, Pablo) |
+| W-08 | Prueba Playwright del recorrido de la tienda y recorrido manual (el `Dockerfile` y el servicio `web` ya existen) | M | W-07a | Pablo |
