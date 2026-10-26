@@ -38,7 +38,7 @@ erDiagram
 | Dinero | `DECIMAL(18,2)` explícito (nunca `float`) |
 | Texto | `NVARCHAR(n)` con longitud explícita; sin `NVARCHAR(MAX)` |
 | Fechas/hora | `DATETIMEOFFSET(0)` en **UTC** para marcas de tiempo (`CreadoEn`…); `DATE` para fechas de negocio (`FechaEntrega`, `FechaIngreso`). La conversión a hora local es solo de presentación |
-| Baja lógica | Columna `Activo BIT NOT NULL DEFAULT 1` en `Clientes`, `Productos`, `Pedidos`, `Usuarios` ("eliminar = pasar a inactivo", requisito del enunciado). No se hace `DELETE` físico de estas entidades |
+| Baja lógica | Columna `Activo BIT NOT NULL DEFAULT 1` en `Clientes`, `Productos`, `Pedidos`, `Usuarios` ("eliminar = pasar a inactivo", requisito del enunciado). Además `EliminadoEn DATETIMEOFFSET(0) NULL` (fecha de la baja; se limpia al reactivar). `DELETE` físico solo de **usuarios** ya dados de baja y sin pedidos; clientes, productos y pedidos no se borran |
 | Auditoría ligera | `CreadoEn` y `ActualizadoEn` (UTC) en las tablas principales, mantenidas por el `DbContext` |
 | Concurrencia | `RowVersion ROWVERSION` en `Clientes`, `Productos`, `Pedidos`, `Usuarios` |
 | Enumeraciones | `NVARCHAR` legible con `CHECK` (no enteros "mágicos") |

@@ -14,7 +14,7 @@ Reglas cortas para cualquier agente de IA que trabaje en este repositorio. La fu
 - **Comentarios XML en español** en todo tipo o miembro público; comentarios de "cómo/por qué" en lo no obvio (requisito de la materia).
 - La interfaz **solo habla con la API**: nunca cadena de conexión, SQL ni secretos fuera de la API.
 - Consultas **siempre parametrizadas** (EF Core o el procedimiento con parámetros). Sin SQL concatenado.
-- Baja **lógica** (`Activo`), nunca `DELETE` de clientes, productos, pedidos o usuarios.
+- Baja **lógica** (`Activo` + `EliminadoEn`, siempre reversible) para clientes, productos, pedidos y usuarios. El único `DELETE` físico es el de **usuarios ya dados de baja** (`usuarios.eliminar`); no añadas otros.
 - Pruebas primero; cada módulo con pruebas de dominio, caso de uso, API, ViewModel y eventos (`docs/Especificaciones/Testing.md`).
 - Idioma: dominio, interfaz y comentarios en español; términos técnicos estándar en inglés.
 - No inventes requerimientos: las interpretaciones del enunciado están en `docs/Analisis.md §3`; si falta información, **pregunta**.

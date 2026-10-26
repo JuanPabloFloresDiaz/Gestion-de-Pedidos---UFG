@@ -46,7 +46,7 @@
 * **Seguridad**: cada endpoint protegido probado sin sesión (401), sin permiso (403) y con permiso; intentos de inyección SQL en filtros de texto.
 * **Autenticación**: bloqueo al 5.º fallo, usuario inactivo (la petición siguiente falla), expiración del JWT a los 60 min, registro web transaccional.
 * **Datos ajenos**: un cliente de la web no puede ver, cancelar ni crear pedidos de otro cliente (prueba por cada endpoint `mis-pedidos`/`mi-perfil`).
-* **Baja lógica**: no hay `DELETE` físico de clientes, productos, pedidos ni usuarios.
+* **Baja lógica y eliminación definitiva**: dar de baja solo marca `Activo = 0` y `EliminadoEn` (reversible); el `DELETE` físico existe solo para usuarios ya dados de baja, sin pedidos, y con permiso `usuarios.eliminar`. Clientes, productos y pedidos no se borran.
 * **Respaldo**: la restauración reproduce los conteos de filas ([RespaldoYEntrega.md](RespaldoYEntrega.md)).
 
 ## 6. Cómo se Ejecutan (sin CI/CD)

@@ -29,9 +29,9 @@
 
 | ID | Tarea | Talla | Depende de | Responsable |
 |---|---|---|---|---|
-| A-01 | **Gestión de roles y permisos**: página con la matriz rol × permiso (consulta y edición de los permisos de un rol), endpoint, evento e historial. Reglas a especificar: el rol Administrador no puede perder `admin.acceso`, `usuarios.*` ni `roles.*`; los cambios surten efecto al iniciar sesión de nuevo (el token lleva los permisos) | M | Fase 1 | Pablo |
-| A-02 | **Catálogos**: vistas de consulta de Departamentos y Ciudades (con búsqueda y paginación) para la administración | S | C-02 | Pablo |
-| A-03 | **Vistas de consulta** de las demás tablas de apoyo que haga falta mostrar (permisos, etc.), solo lectura | S | A-01 | Pablo |
+| A-01 ✅ | **Gestión de roles y permisos**: página con la matriz rol × permiso (consulta y edición de los permisos de un rol), endpoint, evento e historial. Reglas a especificar: el rol Administrador no puede perder `admin.acceso`, `usuarios.*` ni `roles.*`; los cambios surten efecto al iniciar sesión de nuevo (el token lleva los permisos) | M | Fase 1 | Pablo |
+| A-02 ✅ | **Catálogos**: vistas de consulta de Departamentos y Ciudades (con búsqueda y paginación) para la administración | S | C-02 | Pablo |
+| A-03 ✅ | **Vistas de consulta** de las demás tablas de apoyo que haga falta mostrar (permisos, etc.), solo lectura | S | A-01 | Pablo |
 | A-04 | **Gestión de usuarios**: mejoras que pidan las pruebas del equipo (la base ya está hecha en la Fase 1) | S | Fase 1 | Pablo |
 
 ---

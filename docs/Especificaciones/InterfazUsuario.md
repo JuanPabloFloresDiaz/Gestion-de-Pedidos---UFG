@@ -41,7 +41,7 @@ La rúbrica puntúa una "interfaz de múltiples documentos". En Blazor se logra 
 | Menú | Opciones | Visible para |
 |---|---|---|
 | **Gestión** | Clientes · Productos · Pedidos | Quien tenga `*.ver` del módulo |
-| **Administración** | Usuarios · Historial de actividades | `usuarios.ver` / `historial.ver` (administrador) |
+| **Administración** | Usuarios · Roles y permisos · Historial de actividades · Ciudades y departamentos | `usuarios.ver` / `roles.ver` / `historial.ver` / `catalogos.ver` |
 | **Ayuda** | **Integrantes del equipo** · Acerca de | Todos |
 | **Usuario** | Cambiar contraseña · Cerrar sesión | Todos |
 
@@ -51,6 +51,12 @@ El menú se arma al recibir `SesionIniciada`. Los botones de cada módulo (Nuevo
 
 * **Desktop**: abre en el login y luego en **Administración** (`admin.acceso`); un usuario `Cliente` es rechazado.
 * **Web**: abre en la **tienda pública**; el personal puede iniciar sesión y usar también Administración, y el cliente solo ve la tienda ([PortalWeb.md](PortalWeb.md)).
+
+### 2.3 Pestañas, apariencia y chips de estado
+
+* **Pestañas tipo navegador**: botón **"+"** (`Alt+N`) abre un lanzador; al elegir un módulo la pestaña se convierte en una instancia **nueva** de él (varias del mismo módulo con filtros distintos, "Usuarios (2)"). Botón **↻** (`Alt+R`) recarga la pestaña activa (la vuelve a crear y consulta de nuevo los datos).
+* **Apariencia** (botón en la barra superior, también en el ingreso): modo claro / oscuro / sistema y 7 colores de acento, en tarjetas. Se aplica con variables CSS (`data-modo`, `data-acento` en `<html>`), funciona igual en web y escritorio y se recuerda en el almacenamiento local del navegador/WebView (solo preferencias, nunca tokens).
+* **Estado como chip**: en las tablas el estado es un chip de color; con el permiso, al hacer clic abre una confirmación para dar de baja o reactivar (hace lo mismo que el botón de la fila). La eliminación definitiva solo aparece en inactivos y pide escribir el nombre.
 
 ## 3. Disposición de una Página de Módulo
 

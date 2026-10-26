@@ -71,13 +71,16 @@ sequenceDiagram
 | `pedidos.ver` / `.crear` / `.editar` / `.cambiar_estado` | ✅ | ✅ | ❌ |
 | `pedidos.desactivar` | ✅ | ❌ | ❌ |
 | `usuarios.ver` / `.crear` / `.editar` / `.desactivar` | ✅ | ❌ | ❌ |
-| `roles.ver` | ✅ | ❌ | ❌ |
+| `usuarios.eliminar` (eliminación definitiva) | ✅ | ❌ | ❌ |
+| `roles.ver` / `roles.editar` (gestionar los permisos de cada rol) | ✅ | ❌ | ❌ |
+| `catalogos.ver` (ciudades y departamentos) | ✅ | ✅ | ❌ |
 | `historial.ver` | ✅ | ❌ | ❌ |
 | `catalogo.ver` (además es **público**, sin sesión) | ✅ | ✅ | ✅ |
 | `mispedidos.ver` / `.crear` / `.cancelar` (solo los propios) | ❌ | ❌ | ✅ |
 | `perfil.editar` (solo el propio) | ❌ | ❌ | ✅ |
 
 * Historial y gestión de usuarios: solo el administrador.
+* **Los permisos de cada rol se pueden cambiar desde la pantalla "Roles y permisos"** (`PUT /api/v1/roles/{id}/permisos`, lista completa). Hay reglas que protegen al sistema y que la API aplica siempre (`PermisosProtegidos.ParaRol`): el Administrador no puede perder `admin.acceso`, `usuarios.*`, `roles.ver/editar` (se quedaría sin poder administrar); el Cliente no puede recibir permisos de administración; Operador y Cliente no reciben permisos reservados a otro rol. Los permisos nuevos se añaden **al final** del catálogo (el id de la semilla es la posición). Los cambios rigen cuando cada persona vuelve a iniciar sesión (los permisos viajan en el token).
 * En la administración, lo que cambia entre administrador y operador son las **acciones** disponibles (botones y menús) según el permiso: "vistas diferenciadas por rol" (RF-07).
 * Un cliente **nunca** puede ver ni tocar datos de otro cliente: los endpoints `mispedidos` y `perfil` filtran por el `Cliente` enlazado al usuario del token, no por un identificador enviado por quien llama.
 
@@ -90,7 +93,8 @@ sequenceDiagram
 ## 5. Reglas de Usuarios
 
 * Alta de usuarios del personal por un administrador (clave inicial temporal con `DebeCambiarClave = 1`).
-* Baja lógica (`Activo = 0`).
+* **Dar de baja es un eliminado suave y siempre reversible**: `Activo = 0` y `EliminadoEn` con la fecha de baja; reactivar limpia `EliminadoEn`, el contador de intentos fallidos y el bloqueo. La misma regla (`EliminadoEn`) existe en `Clientes`, `Productos` y `Pedidos`.
+* **Eliminación definitiva** (`DELETE /api/v1/usuarios/{id}`, permiso `usuarios.eliminar`): solo de usuarios **ya dados de baja**, nunca de uno mismo ni del último administrador, y se rechaza si el usuario tiene pedidos (`409`). En la interfaz exige escribir el nombre de usuario. Al borrar, el historial y el cliente enlazado conservan sus datos (`UsuarioId` pasa a nulo).
 * **Siempre debe existir al menos un administrador activo**: se impide desactivar o degradar al último.
 * Un usuario no puede cambiar su propio rol ni desactivarse a sí mismo.
 * Nombre de usuario y correo únicos; el registro web usa el correo como nombre de usuario.
