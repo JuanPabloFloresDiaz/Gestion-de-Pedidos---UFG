@@ -38,6 +38,7 @@ public static class DependencyInjection
         servicios.AddScoped<IClasificacionRepository, ClasificacionRepository>();
         servicios.AddSingleton<IHasherClave, HasherClave>();
         servicios.AddScoped<AdministradorInicial>();
+        servicios.AddScoped<DatosDeEjemplo>();
 
         // Casos de uso (uno por clase)
         servicios.AddScoped<AutenticarUsuario>();

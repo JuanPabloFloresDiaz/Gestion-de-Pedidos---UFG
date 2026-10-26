@@ -162,6 +162,10 @@ if (config.GetValue("Database:MigrarAlIniciar", false))
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<AdministradorInicial>()
         .SembrarAsync(config["Admin:ClaveInicial"], CancellationToken.None);
+
+    // Datos de ejemplo (catálogo, clientes, pedidos…) solo si se pide; en desarrollo el compose lo activa.
+    if (config.GetValue("Database:SembrarDatosDeEjemplo", false))
+        await scope.ServiceProvider.GetRequiredService<DatosDeEjemplo>().SembrarAsync(CancellationToken.None);
 }
 
 // El historial es un suscriptor: se instancia aquí para que escuche desde el primer evento.

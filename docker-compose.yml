@@ -54,6 +54,7 @@ services:
       Jwt__SigningKey: ${JWT_SIGNING_KEY}
       Admin__ClaveInicial: ${ADMIN_INITIAL_PASSWORD}
       Database__MigrarAlIniciar: "true"
+      Database__SembrarDatosDeEjemplo: ${SEMBRAR_DATOS_EJEMPLO:-true}   # catálogo, clientes y pedidos de ejemplo (idempotente); false = base vacía
       Swagger__Habilitado: ${SWAGGER_HABILITADO:-true}
     ports:
       - "${API_PORT:-4390}:8080"
