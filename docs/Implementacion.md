@@ -11,6 +11,7 @@
 | **Fase 0** — Esqueleto, Docker, interfaz y pruebas | ✅ Hecha (excepto validar el escritorio MAUI en Windows) |
 | **Fase 0.5** — Persistencia: 11 tablas, migraciones, semillas, script SQL, respaldo | ✅ Hecha |
 | **Fase 1** — Autenticación, usuarios, roles y permisos (API + Ui) | ✅ Hecha |
+| **Fase Web** — Tienda pública (portada, catálogo con filtros, producto, carrito, registro, pedido y mis pedidos) | ✅ Primera versión hecha el 26/10/2026 ([PortalWeb.md](Especificaciones/PortalWeb.md)); faltan perfil y cambio de contraseña (W-07b/c), recorrido manual y pulido |
 | **Fase 2.5** — Catálogo de productos (categorías, subcategorías, filtros, opciones) y datos de ejemplo | ✅ Backend, pantalla "Categorías y filtros" y sembrador hechos ([CatalogoProductos.md](Especificaciones/CatalogoProductos.md)); falta integrarlo con Productos (K-07) y la tienda (K-08) |
 | Fases 2 a 5 (Clientes, Productos, Pedidos, búsquedas, historial, entrega) | 🕓 Pendientes: ver [Tareas.md](Equipo/Tareas.md) |
 

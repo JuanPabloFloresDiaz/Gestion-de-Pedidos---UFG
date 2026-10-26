@@ -115,7 +115,7 @@ Una sola pantalla, **`CategoriasPagina`** ("Categorías y filtros", menú **Gest
 * Árbol a la izquierda (categorías → subcategorías); a la derecha, los **filtros de la subcategoría elegida** y sus opciones como *chips* editables (clic en el chip = cambiar estado con confirmación; "+" = agregar).
 * Estado como **chip** con confirmación, **baja suave** y **eliminar definitivamente** con las mismas reglas visuales de Usuarios; botones según permiso.
 * En **Productos** ([Productos.md](Productos.md)): el formulario suma un selector de **Subcategoría** y, debajo, un selector por cada filtro (una opción cada uno); cambiar la subcategoría avisa que se reiniciarán los detalles. El listado muestra categoría/subcategoría y se puede filtrar por ellas.
-* Tienda web: navegación por categorías y filtros laterales ([PortalWeb.md](PortalWeb.md)).
+* Tienda web: navegación por categorías y filtros laterales, ya implementada ([PortalWeb.md](PortalWeb.md)).
 
 ## 8. Plan de pruebas
 

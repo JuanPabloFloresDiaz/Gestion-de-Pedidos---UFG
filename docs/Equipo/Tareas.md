@@ -49,7 +49,7 @@
 | K-05 ✅ | `CatalogoService` (publica `EntidadCambiada`) y `CategoriasViewModel`; pruebas | M | K-04 | Pablo |
 | K-06 ✅ | `CategoriasPagina`: árbol, filtros con *chips* de opciones, estado, baja suave y eliminar definitivamente; E2E | L | K-05 | Pablo |
 | K-07 | Integración con Productos: `ProductoDto`/solicitudes con subcategoría y detalles, validación de opciones y `GET /productos` con `categoriaId`/`subcategoriaId`/`opcionIds` (**se coordina con P-04**: una migración a la vez) | M | K-04, P-04 | Pablo + integrante de Productos |
-| K-08 | Endpoints anónimos de la tienda (`/tienda/categorias`, `/catalogo` con filtros Y/O) y su uso en el catálogo público | M | K-04, W-04 | Pablo |
+| K-08 ✅ | Endpoints anónimos de la tienda (`/tienda/categorias`, `/catalogo` con filtros Y/O) y su uso en el catálogo público | M | K-04, W-04 | Pablo |
 | K-09 | Datos de ejemplo realistas ✅ (sembrador `DatosDeEjemplo`, [§10 de la spec](../Especificaciones/CatalogoProductos.md)); falta el guion de demostración | S | K-06 | Pablo |
 
 ---
@@ -73,7 +73,7 @@
 
 | ID | Tarea | Talla | Depende de | Responsable |
 |---|---|---|---|---|
-| P-01 | Entidad `Producto` con `DescontarStock/ReponerStock` (rechazan negativos) y pruebas unitarias | S | Fase 0.5 | |
+| P-01 ✅ | Entidad `Producto` con `DescontarStock/ReponerStock` (rechazan negativos) y pruebas unitarias — **ya hecho** al construir la tienda (`Producto.cs`, `StockTests`); solo faltan las reglas de los campos si se quieren | S | Fase 0.5 | |
 | P-02 | Repositorio y configuración EF; pruebas de integración (`CHECK` de stock y precio) | S | P-01 | |
 | P-03 | Casos de uso `RegistrarProducto`, `ActualizarProducto`, `CambiarEstadoProducto` y eventos de aplicación | M | P-01, P-02 | |
 | P-04 | DTOs y endpoints `/api/v1/productos` con validación, permisos y pruebas | M | P-03 | |
@@ -89,7 +89,7 @@
 
 | ID | Tarea | Talla | Depende de | Responsable |
 |---|---|---|---|---|
-| D-01 | Dominio `Pedido` y `DetallePedido`: líneas, total, transiciones de estado válidas, reglas de [Pedidos.md §3](../Especificaciones/Pedidos.md); pruebas unitarias exhaustivas | L | Fase 0.5 | |
+| D-01 | **Nota:** la tienda ya crea y cancela pedidos de cliente con reglas propias en `RealizarPedidoDeCliente` y `CancelarPedidoDeCliente` (`Application/Tienda/PedidosDeCliente.cs`); al hacer este dominio, **mueve esas reglas a `Pedido`** y deja que la tienda las use. Dominio `Pedido` y `DetallePedido`: líneas, total, transiciones de estado válidas, reglas de [Pedidos.md §3](../Especificaciones/Pedidos.md); pruebas unitarias exhaustivas | L | Fase 0.5 | |
 | D-02 | Repositorio y carga de agregado con líneas; pruebas de integración | S | D-01 | |
 | D-03 | Caso de uso `RegistrarPedido` (valida cliente y productos activos, copia precios, descuenta stock en una transacción) y evento `StockInsuficiente` | L | D-01, D-02, P-01, C-01 | |
 | D-04 | Casos de uso `ActualizarPedido`, `CambiarEstadoPedido` (Entregado/Cancelado con reposición) y `DesactivarPedido` | L | D-03 | |
@@ -127,13 +127,13 @@
 
 | ID | Tarea | Talla | Depende de | Responsable |
 |---|---|---|---|---|
-| W-01 | Endpoints públicos y de cliente en la API: `catalogo`, `auth/registro`, `mis-pedidos`, `mi-perfil`, con *rate limiting* y pruebas (incluye acceso a datos ajenos denegado) | L | Fase 1, C-05, P-04, D-07 | Pablo |
-| W-02 | Área `Tienda/` en la `Ui` (la sesión de la web con `ProtectedSessionStorage` y el `ApiClient` **ya existen**) | S | — | Pablo |
-| W-03 | Diseño base: layout, navegación, tema | M | W-02 | Pablo |
-| W-04 | Catálogo: listado paginado con búsqueda y detalle de producto | M | W-01, W-03 | Pablo |
-| W-05 | Registro e inicio de sesión de clientes (departamento → ciudad) | M | W-01, W-03 | Pablo |
-| W-06 | Carrito y "Hacer pedido" | L | W-04, W-05 | Pablo |
-| W-07a | **Historial de pedidos del cliente**: lista y detalle de sus pedidos y cancelar si está `Pendiente` (`mis-pedidos`) | M | W-06 | Integrante (provisional; si no, Pablo) |
+| W-01 (parcial ✅: faltan `mi-perfil` y el límite de peticiones al crear pedidos) | Endpoints públicos y de cliente en la API: `catalogo`, `auth/registro`, `mis-pedidos`, `mi-perfil`, con *rate limiting* y pruebas (incluye acceso a datos ajenos denegado) | L | Fase 1, C-05, P-04, D-07 | Pablo |
+| W-02 ✅ | Área `Tienda/` en la `Ui` (la sesión de la web con `ProtectedSessionStorage` y el `ApiClient` **ya existen**) | S | — | Pablo |
+| W-03 ✅ | Diseño base: layout, navegación, tema | M | W-02 | Pablo |
+| W-04 ✅ | Catálogo: listado paginado con búsqueda y detalle de producto | M | W-01, W-03 | Pablo |
+| W-05 ✅ | Registro e inicio de sesión de clientes (departamento → ciudad) | M | W-01, W-03 | Pablo |
+| W-06 ✅ | Carrito y "Hacer pedido" | L | W-04, W-05 | Pablo |
+| W-07a ✅ | **Ya hecho por Pablo** (no hace falta asignarlo; `MisPedidosPagina`). Historial de pedidos del cliente: lista y detalle de sus pedidos y cancelar si está `Pendiente` (`mis-pedidos`) | M | W-06 | Integrante (provisional; si no, Pablo) |
 | W-07b | **Perfil del cliente**: ver y editar sus datos (`mi-perfil`) | S | W-05 | Integrante (provisional; si no, Pablo) |
 | W-07c | **Cambio de contraseña del cliente** en la tienda (la lógica y la página base ya existen desde la Fase 1: reutilizarlas con el diseño de la tienda) | S | W-05 | Integrante (provisional; si no, Pablo) |
-| W-08 | Prueba Playwright del recorrido de la tienda y recorrido manual (el `Dockerfile` y el servicio `web` ya existen) | M | W-07a | Pablo |
+| W-08 (Playwright ✅; falta el recorrido manual) | Prueba Playwright del recorrido de la tienda y recorrido manual (el `Dockerfile` y el servicio `web` ya existen) | M | W-07a | Pablo |
