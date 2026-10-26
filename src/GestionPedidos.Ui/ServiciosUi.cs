@@ -5,6 +5,7 @@ using GestionPedidos.Ui.Comun.Eventos;
 using GestionPedidos.Ui.Comun.Notificaciones;
 using GestionPedidos.Ui.Comun.Sesion;
 using GestionPedidos.Ui.Modulos.Catalogos;
+using GestionPedidos.Ui.Modulos.Categorias;
 using GestionPedidos.Ui.Modulos.Historial;
 using GestionPedidos.Ui.Modulos.Roles;
 using GestionPedidos.Ui.Modulos.Usuarios;
@@ -41,6 +42,9 @@ public static class ServiciosUi
         servicios.AddScoped<RolesService>();
         servicios.AddScoped<IPublicadorDeCambios>(sp => sp.GetRequiredService<RolesService>());
         servicios.AddTransient<RolesViewModel>();
+        servicios.AddScoped<CategoriasService>();
+        servicios.AddScoped<IPublicadorDeCambios>(sp => sp.GetRequiredService<CategoriasService>());
+        servicios.AddTransient<CategoriasViewModel>();
         servicios.AddScoped<CatalogosService>();
         servicios.AddTransient<CatalogosViewModel>();
         servicios.AddScoped<HistorialService>();

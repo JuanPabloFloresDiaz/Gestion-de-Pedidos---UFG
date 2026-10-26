@@ -13,6 +13,14 @@ public enum TipoEntidad
     Usuario,
     /// <summary>Rol (sus permisos).</summary>
     Rol,
+    /// <summary>Categoría de productos.</summary>
+    Categoria,
+    /// <summary>Subcategoría de productos.</summary>
+    Subcategoria,
+    /// <summary>Filtro de una subcategoría.</summary>
+    Filtro,
+    /// <summary>Opción de un filtro.</summary>
+    OpcionFiltro,
 }
 
 /// <summary>Qué le ocurrió a la entidad.</summary>

@@ -68,15 +68,18 @@ public static class Mensajes
         if (e.Entidad == TipoEntidad.Rol) return $"Permisos del rol {e.Descripcion} actualizados. Se aplican cuando cada persona vuelva a iniciar sesión.";
         var entidad = e.Entidad switch
         {
-            TipoEntidad.Cliente => "Cliente", TipoEntidad.Producto => "Producto",
-            TipoEntidad.Pedido => "Pedido", _ => "Usuario",
+            TipoEntidad.Cliente => "Cliente", TipoEntidad.Producto => "Producto", TipoEntidad.Pedido => "Pedido",
+            TipoEntidad.Categoria => "Categoría", TipoEntidad.Subcategoria => "Subcategoría",
+            TipoEntidad.Filtro => "Filtro", TipoEntidad.OpcionFiltro => "Opción", _ => "Usuario",
         };
+        // Concordancia de género: categoría, subcategoría y opción son femeninas.
+        var f = e.Entidad is TipoEntidad.Categoria or TipoEntidad.Subcategoria or TipoEntidad.OpcionFiltro;
         var accion = e.Tipo switch
         {
-            TipoCambio.Registrada => "registrado",
-            TipoCambio.Actualizada => "actualizado",
-            TipoCambio.Eliminada => "eliminado definitivamente",
-            _ => e.Activo ? "reactivado" : "dado de baja",
+            TipoCambio.Registrada => f ? "registrada" : "registrado",
+            TipoCambio.Actualizada => f ? "actualizada" : "actualizado",
+            TipoCambio.Eliminada => f ? "eliminada definitivamente" : "eliminado definitivamente",
+            _ => e.Activo ? (f ? "reactivada" : "reactivado") : (f ? "dada de baja" : "dado de baja"),
         };
         return $"{entidad} {e.Descripcion} {accion}.";
     }

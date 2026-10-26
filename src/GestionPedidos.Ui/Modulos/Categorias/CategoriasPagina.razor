@@ -1,0 +1,214 @@
+@* Categorías y filtros del catálogo de productos: árbol a la izquierda y, a la derecha, el detalle de la selección
+   (categoría, o subcategoría con sus filtros y opciones). Solo marcado y enlace de eventos: la lógica está en
+   CategoriasViewModel. *@
+@implements IDisposable
+@inject CategoriasViewModel Vm
+@inject SesionService Sesion
+
+<section class="modulo">
+    <header class="modulo-cabecera">
+        <h1>Categorías y filtros</h1>
+        <div class="modulo-acciones">
+            <Casilla Etiqueta="Mostrar inactivas" Valor="Vm.IncluirInactivas" ValorChanged="v => Vm.AlternarInactivasAsync(v)" />
+            @if (Puede(Permisos.CategoriasCrear))
+            {
+                <Boton Variante="Primario" AlHacerClic="Vm.NuevaCategoria">+ Categoría</Boton>
+            }
+        </div>
+    </header>
+    @if (!string.IsNullOrEmpty(Vm.Error))
+    {
+        <div class="alerta alerta-error" role="alert">@Vm.Error</div>
+    }
+
+    <div class="clasif-vista">
+        <nav class="arbol" aria-label="Categorías y subcategorías">
+            @if (Vm.Arbol.Count == 0 && !Vm.Cargando)
+            {
+                <p class="nota">Todavía no hay categorías.</p>
+            }
+            @foreach (var c in Vm.Arbol)
+            {
+                <div class="arbol-categoria @(c.Activo ? "" : "arbol-inactivo")">
+                    <button class="arbol-nodo @(Vm.CategoriaSel?.Id == c.Id && Vm.SubcategoriaSel is null ? "arbol-activo" : "")"
+                            @onclick="() => Vm.SeleccionarCategoria(c)">
+                        <strong>@c.Nombre</strong>
+                        <small>@c.Subcategorias.Count sub.</small>
+                    </button>
+                    @foreach (var s in c.Subcategorias)
+                    {
+                        <button class="arbol-nodo arbol-sub @(Vm.SubcategoriaSel?.Id == s.Id ? "arbol-activo" : "") @(s.Activo ? "" : "arbol-inactivo")"
+                                @onclick="() => Vm.SeleccionarSubcategoriaAsync(c, s)">
+                            @s.Nombre
+                            <small>@s.TotalProductos prod.</small>
+                        </button>
+                    }
+                </div>
+            }
+        </nav>
+
+        <div class="clasif-detalle">
+            @if (Vm.SubcategoriaSel is { } sub && Vm.CategoriaSel is { } catDeSub)
+            {
+                <div class="detalle-cabecera">
+                    <div>
+                        <small class="nota">@catDeSub.Nombre ›</small>
+                        <h2>@sub.Nombre</h2>
+                        @if (!string.IsNullOrEmpty(sub.Descripcion)) { <p class="nota">@sub.Descripcion</p> }
+                    </div>
+                    <div class="detalle-acciones">
+                        <ChipEstado Activo="sub.Activo" Habilitado="Puede(Permisos.CategoriasDesactivar)"
+                                    AlHacerClic="() => Vm.SolicitarCambioEstado(Dto(sub))" />
+                        @if (Puede(Permisos.CategoriasEditar) && sub.Activo) { <button class="enlace" @onclick="() => Vm.Editar(sub)">Editar</button> }
+                        @if (!sub.Activo && Puede(Permisos.CategoriasEliminar))
+                        {
+                            <button class="enlace enlace-peligro" @onclick="() => Vm.SolicitarEliminacion(Dto(sub))">Eliminar definitivamente</button>
+                        }
+                    </div>
+                </div>
+                <p class="nota">@sub.TotalProductos producto(s) activo(s) en esta subcategoría.</p>
+
+                <div class="filtros-encabezado">
+                    <h3>Filtros</h3>
+                    @if (Puede(Permisos.CategoriasCrear) && sub.Activo) { <Boton AlHacerClic="Vm.NuevoFiltro">+ Filtro</Boton> }
+                </div>
+                @if (Vm.Filtros.Count == 0 && !Vm.Cargando)
+                {
+                    <p class="nota">Esta subcategoría todavía no tiene filtros. Los filtros (Color, Talla, Marca…) describen a sus productos.</p>
+                }
+                @foreach (var f in Vm.Filtros)
+                {
+                    <div class="filtro-bloque @(f.Activo ? "" : "arbol-inactivo")">
+                        <div class="filtro-cabecera">
+                            <strong>@f.Nombre</strong>
+                            <ChipEstado Activo="f.Activo" Habilitado="Puede(Permisos.CategoriasDesactivar)"
+                                        AlHacerClic="() => Vm.SolicitarCambioEstado(Dto(f))" />
+                            @if (Puede(Permisos.CategoriasEditar) && f.Activo) { <button class="enlace" @onclick="() => Vm.Editar(f)">Renombrar</button> }
+                            @if (!f.Activo && Puede(Permisos.CategoriasEliminar))
+                            {
+                                <button class="enlace enlace-peligro" @onclick="() => Vm.SolicitarEliminacion(Dto(f))">Eliminar</button>
+                            }
+                        </div>
+                        <div class="opciones">
+                            @foreach (var o in f.Opciones)
+                            {
+                                <span class="opcion-chip @(o.Activo ? "" : "opcion-inactiva")">
+                                    @o.Valor
+                                    @if (o.Activo)
+                                    {
+                                        @if (Puede(Permisos.CategoriasEditar)) { <button aria-label="Editar @o.Valor" title="Editar" @onclick="() => Vm.Editar(o)">✎</button> }
+                                        @if (Puede(Permisos.CategoriasDesactivar)) { <button aria-label="Dar de baja @o.Valor" title="Dar de baja" @onclick="() => Vm.SolicitarCambioEstado(Dto(o))">×</button> }
+                                    }
+                                    else
+                                    {
+                                        @if (Puede(Permisos.CategoriasDesactivar)) { <button aria-label="Reactivar @o.Valor" title="Reactivar" @onclick="() => Vm.SolicitarCambioEstado(Dto(o))">↺</button> }
+                                        @if (Puede(Permisos.CategoriasEliminar)) { <button aria-label="Eliminar @o.Valor" title="Eliminar definitivamente" @onclick="() => Vm.SolicitarEliminacion(Dto(o))">🗑</button> }
+                                    }
+                                </span>
+                            }
+                            @if (f.Activo && Puede(Permisos.CategoriasCrear))
+                            {
+                                <button class="opcion-agregar" aria-label="Agregar opción a @f.Nombre" @onclick="() => Vm.NuevaOpcion(f)">+ Opción</button>
+                            }
+                            @if (f.Opciones.Count == 0) { <small class="nota">Sin opciones.</small> }
+                        </div>
+                    </div>
+                }
+            }
+            else if (Vm.CategoriaSel is { } cat)
+            {
+                <div class="detalle-cabecera">
+                    <div>
+                        <h2>@cat.Nombre</h2>
+                        @if (!string.IsNullOrEmpty(cat.Descripcion)) { <p class="nota">@cat.Descripcion</p> }
+                    </div>
+                    <div class="detalle-acciones">
+                        <ChipEstado Activo="cat.Activo" Habilitado="Puede(Permisos.CategoriasDesactivar)"
+                                    AlHacerClic="() => Vm.SolicitarCambioEstado(Dto(cat))" />
+                        @if (Puede(Permisos.CategoriasEditar) && cat.Activo) { <button class="enlace" @onclick="() => Vm.Editar(cat)">Editar</button> }
+                        @if (!cat.Activo && Puede(Permisos.CategoriasEliminar))
+                        {
+                            <button class="enlace enlace-peligro" @onclick="() => Vm.SolicitarEliminacion(Dto(cat))">Eliminar definitivamente</button>
+                        }
+                    </div>
+                </div>
+                <div class="filtros-encabezado">
+                    <h3>Subcategorías (@cat.Subcategorias.Count)</h3>
+                    @if (Puede(Permisos.CategoriasCrear) && cat.Activo) { <Boton AlHacerClic="Vm.NuevaSubcategoria">+ Subcategoría</Boton> }
+                </div>
+                @if (cat.Subcategorias.Count == 0) { <p class="nota">Esta categoría todavía no tiene subcategorías.</p> }
+                <div class="lanzador-lista">
+                    @foreach (var s in cat.Subcategorias)
+                    {
+                        <button class="atajo @(s.Activo ? "" : "arbol-inactivo")" @onclick="() => Vm.SeleccionarSubcategoriaAsync(cat, s)">
+                            @s.Nombre
+                            <small>@s.TotalFiltros filtro(s) · @s.TotalProductos producto(s)</small>
+                        </button>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="nota">Elija una categoría del árbol.</p>
+            }
+        </div>
+    </div>
+</section>
+
+@* Editor de cualquier nivel (alta y edición) *@
+<DialogoConfirmacion Visible="Vm.EditorAbierto" Titulo="@Vm.TituloEditor" TextoConfirmar="Guardar" Cargando="Vm.Cargando"
+                     AlConfirmar="Vm.GuardarEditorAsync" AlCancelar="Vm.CancelarEditor">
+    <form @onsubmit="Vm.GuardarEditorAsync" @onsubmit:preventDefault>
+        <CampoTexto Etiqueta="@Vm.EtiquetaNombre" @bind-Valor="Vm.Nombre" AlPresionarEnter="Vm.GuardarEditorAsync" />
+        @if (Vm.EditorTieneDescripcion)
+        {
+            <CampoTexto Etiqueta="Descripción (opcional)" @bind-Valor="Vm.Descripcion" />
+        }
+        @if (!string.IsNullOrEmpty(Vm.ErrorEditor))
+        {
+            <div class="alerta alerta-error" role="alert">@Vm.ErrorEditor</div>
+        }
+    </form>
+</DialogoConfirmacion>
+
+@* Confirmación de baja, reactivación y eliminación definitiva *@
+<DialogoConfirmacion Visible="Vm.HayConfirmacion" Titulo="@Vm.TituloConfirmacion" TextoConfirmar="@Vm.TextoConfirmar"
+                     Peligro="Vm.EsPeligro" Cargando="Vm.Cargando" TextoAConfirmar="@Vm.TextoAConfirmar"
+                     AlConfirmar="Vm.ConfirmarAsync" AlCancelar="Vm.CancelarSolicitud">
+    @if (Vm.Pendiente is { } o)
+    {
+        @switch (Vm.Accion)
+        {
+            case AccionClasificacion.DarDeBaja:
+                <p><strong>@o.Nombre</strong> dejará de ofrecerse para clasificar productos. Es un eliminado suave: se conserva y se puede reactivar cuando quieras.</p>
+                break;
+            case AccionClasificacion.Reactivar:
+                <p><strong>@o.Nombre</strong> volverá a estar disponible.</p>
+                break;
+            case AccionClasificacion.Eliminar:
+                <p>Se borrará <strong>@o.Nombre</strong> de la base de datos. <strong>No se puede deshacer.</strong> Si todavía tiene hijos o productos, se rechazará.</p>
+                break;
+        }
+    }
+</DialogoConfirmacion>
+
+@code {
+    private bool Puede(string permiso) => Sesion.TienePermiso(permiso);
+
+    private static Objetivo Dto(CategoriaDto c) => new(ElementoClasificacion.Categoria, c.Id, c.Nombre, c.Activo);
+    private static Objetivo Dto(SubcategoriaDto s) => new(ElementoClasificacion.Subcategoria, s.Id, s.Nombre, s.Activo);
+    private static Objetivo Dto(FiltroDto f) => new(ElementoClasificacion.Filtro, f.Id, f.Nombre, f.Activo);
+    private static Objetivo Dto(OpcionFiltroDto o) => new(ElementoClasificacion.Opcion, o.Id, o.Valor, o.Activo);
+
+    protected override async Task OnInitializedAsync()
+    {
+        Vm.Cambiado += Vm_Cambiado;     // suscripción con +=
+        await Vm.IniciarAsync();
+    }
+
+    // El evento puede llegar fuera del ciclo de render: se repinta con InvokeAsync.
+    private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de la suscripción al cerrar la pestaña.</summary>
+    public void Dispose() => Vm.Cambiado -= Vm_Cambiado;
+}

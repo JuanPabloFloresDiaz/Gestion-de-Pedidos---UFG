@@ -2,6 +2,7 @@ using GestionPedidos.Contracts;
 using GestionPedidos.Ui.Comun.Documentos;
 using GestionPedidos.Ui.Modulos.Ayuda;
 using GestionPedidos.Ui.Modulos.Catalogos;
+using GestionPedidos.Ui.Modulos.Categorias;
 using GestionPedidos.Ui.Modulos.Historial;
 using GestionPedidos.Ui.Modulos.Roles;
 using GestionPedidos.Ui.Modulos.Usuarios;
@@ -24,6 +25,7 @@ public static class ModulosAdmin
     public static readonly IReadOnlyList<ModuloAdmin> Todos = new[]
     {
         // Fase 2: Clientes y Productos · Fase 3: Pedidos (añadir aquí sus líneas, grupo "Gestión").
+        new ModuloAdmin("Gestión", new Documento("categorias", "Categorías y filtros", typeof(CategoriasPagina)), Permisos.CategoriasVer),
         new ModuloAdmin("Administración", new Documento("usuarios", "Usuarios", typeof(UsuariosPagina)), Permisos.UsuariosVer),
         new ModuloAdmin("Administración", new Documento("roles", "Roles y permisos", typeof(RolesPagina)), Permisos.RolesVer),
         new ModuloAdmin("Administración", new Documento("historial", "Historial de actividades", typeof(HistorialPagina)), Permisos.HistorialVer),
