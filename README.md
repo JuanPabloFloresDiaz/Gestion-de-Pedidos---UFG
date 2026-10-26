@@ -2,7 +2,7 @@
 
 Sistema de gestión de pedidos para la materia **Programación Orientada a Eventos** (Facultad de Ingeniería y Sistemas, UFG, ciclo 02-2026). Una **única interfaz Blazor** hospedada en un **escritorio .NET MAUI Blazor Hybrid** y en una **web Blazor Web App**, sobre una misma **API ASP.NET Core** y una base de datos **SQL Server**. Usa **delegados y eventos** de C# como mecanismo de notificación.
 
-> **Estado:** Fases 0, 0.5 y 1 terminadas (esqueleto, 11 tablas con migraciones, autenticación, usuarios, roles y permisos). Siguen Clientes, Productos y Pedidos ([plan](docs/Implementacion.md), [tareas](docs/Equipo/Tareas.md)).
+> **Estado:** Fases 0, 0.5 y 1 terminadas (esqueleto, 16 tablas con migraciones, autenticación, usuarios, roles y permisos). Siguen Clientes, Productos y Pedidos ([plan](docs/Implementacion.md), [tareas](docs/Equipo/Tareas.md)).
 
 ## Equipo
 

@@ -41,7 +41,7 @@ cd Gestion-de-Pedidos---UFG
 | **Trust Server Certificate** | **Marcado** (el contenedor usa un certificado autofirmado; sin esto falla con un error de certificado) |
 
 * **Explorar con `sa`; la aplicación usa `pedidos_app`**, un usuario de mínimo privilegio que no puede modificar ni borrar el historial (`Actividades`). Para ver el sistema como lo ve la API, crear otra conexión con `pedidos_app` / `PEDIDOS_APP_PASSWORD` de `.env`.
-* Verán las 11 tablas en `dbo`, la vista `vw_PedidosResumen` y el procedimiento `usp_Pedidos_Buscar`.
+* Verán las 16 tablas en `dbo` (con **datos de ejemplo** ya cargados: catálogo, productos, clientes, pedidos e historial; ver [CatalogoProductos.md §10](../Especificaciones/CatalogoProductos.md)), la vista `vw_PedidosResumen` y el procedimiento `usp_Pedidos_Buscar`.
 * El puerto solo escucha en `127.0.0.1`: la base nunca queda expuesta a la red. **No** la modifiquen a mano; los cambios de esquema van por migraciones ([§6](#6-migraciones-de-la-base-de-datos)).
 * *Connection refused* → el contenedor no está corriendo (`docker compose ps`, `sqlserver` debe estar *healthy*). *Login failed for user 'sa'* → la contraseña de su `.env` es otra.
 

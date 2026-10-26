@@ -130,8 +130,24 @@ Una sola pantalla, **`CategoriasPagina`** ("Categorías y filtros", menú **Gest
 
 El bloque **K** ([Tareas.md](../Equipo/Tareas.md)) lo lleva **Pablo** (administración transversal). Los integrantes que hacen **Productos (bloque P)** no se bloquean: `SubcategoriaId` es opcional y su trabajo sigue igual; cuando K-04 (API) esté listo, suman las tareas P-10/P-11 (selector de clasificación y búsqueda). Se **coordina el cambio de `ProductoDto`/endpoints** entre K-07 y P-04 para no pisarse en la migración (una migración a la vez).
 
-## 10. Decisiones abiertas
+## 10. Datos de ejemplo (sembrador de desarrollo)
 
-* **Datos de ejemplo**: ¿cargar categorías demo (Calzado, Ropa, Tecnología…) solo en desarrollo para las demostraciones? Propuesta: sí, mediante un script opcional que **no** forma parte de la migración.
+Para que la administración y la futura tienda "se sientan vivas" y los integrantes vean sus pantallas con datos desde el primer día, la API puede **sembrar datos realistas** al arrancar (`DatosDeEjemplo`; ver [Estructura.md](../Estructura.md)):
+
+| Qué | Cantidad y detalle |
+|---|---|
+| **Catálogo** | 6 categorías (Ropa, Tecnología, Hogar y cocina, Deportes, Belleza y cuidado personal, Papelería y escolar) con **23 subcategorías** (3 a 5 en Ropa y Tecnología; 3 o 4 en el resto), cada una con sus **filtros y opciones** (Clima, Color, Material, Marca, Talla, Almacenamiento…) y **64 productos** (de 2 a 3 por subcategoría) descritos con una opción por filtro, precios en dólares y stock variado (uno **agotado** y varios con **stock bajo**; una cuarta parte muestra la cantidad exacta en la tienda) |
+| **Estados para probar la interfaz** | Una categoría **inactiva y vacía** ("Temporada pasada", se puede eliminar definitivamente), una opción dada de baja ("Fucsia"), 2 productos dados de baja, 2 clientes dados de baja y un operador dado de baja |
+| **Personal** | `gerencia` (Administrador), `mramirez`, `jcastillo` y `lmartinez` (Operadores) y `rcruz` (Operador dado de baja). Contraseña de todos: `Demo_Sembrado_2026` (solo desarrollo) |
+| **Clientes** | 48 clientes con nombres, teléfonos, direcciones y ciudades reales de El Salvador (65 % en San Salvador, La Libertad, Santa Ana y San Miguel); **6 con cuenta web** (rol Cliente; inician sesión con su correo y la misma contraseña) para probar la tienda |
+| **Pedidos** | 90 pedidos con 1 a 4 líneas, repartidos en los últimos 75 días con estados coherentes con su antigüedad (`Pendiente`, `Entregado`, `Cancelado`), total correcto y stock descontado (el cancelado no descuenta) |
+| **Historial** | Unas 400 actividades (altas, cambios de estado de pedidos, inicios de sesión) para probar filtros y paginación |
+
+* **Determinista** (misma semilla = mismos datos) e **idempotente**: si la base ya tiene categorías, productos o clientes **no hace nada**. Para volver a sembrar desde cero: `./scripts/up.sh --limpio` (borra la base).
+* **Se activa solo en desarrollo**: `SEMBRAR_DATOS_EJEMPLO=true` en `.env` (valor por defecto del compose y del `.env.example`); con `false` la base queda vacía (solo el administrador `admin`). **En la entrega a la universidad se decide** si se deja activado para la demostración.
+* No forma parte de las migraciones: es código de la API (`Persistence/Seed/DatosDeEjemplo.cs` y `CatalogoDeEjemplo.cs`) con pruebas contra SQL Server real.
+
+## 11. Decisiones abiertas
+
 * **Orden de las opciones**: hoy alfabético; si hiciera falta un orden manual (tallas 38 < 40 < 42) se añade una columna `Orden`. Propuesta: no hasta que se necesite.
 * **Filtros obligatorios por subcategoría** (que un producto deba elegir todos): hoy son opcionales.

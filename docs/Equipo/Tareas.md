@@ -42,15 +42,15 @@
 
 | ID | Tarea | Talla | Depende de | Responsable |
 |---|---|---|---|---|
-| K-01 | Dominio: `Categoria`, `Subcategoria`, `Filtro`, `OpcionFiltro` (baja suave, reglas de nombres y de baja) y `Producto.EstablecerClasificacion(subcategoriaId, opciones)`; pruebas unitarias | M | Fase 0.5 | Pablo |
-| K-02 | Configuración EF de las 5 tablas (únicos, FK compuesta, índices), permisos 29–33 al final del catálogo y **una** migración `AgregarCatalogoDeProductos`; regenerar el script SQL; pruebas de integración | M | K-01 | Pablo |
-| K-03 | Casos de uso (árbol, altas, ediciones, bajas, reactivación, eliminación definitiva) con eventos de aplicación e historial; pruebas | M | K-02 | Pablo |
-| K-04 | DTOs y endpoints `/categorias`, `/subcategorias`, `/filtros`, `/opciones` con validación, permisos y pruebas de API | M | K-03 | Pablo |
-| K-05 | `CatalogoService` (publica `EntidadCambiada`) y `CategoriasViewModel`; pruebas | M | K-04 | Pablo |
-| K-06 | `CategoriasPagina`: árbol, filtros con *chips* de opciones, estado, baja suave y eliminar definitivamente; E2E | L | K-05 | Pablo |
+| K-01 ✅ | Dominio: `Categoria`, `Subcategoria`, `Filtro`, `OpcionFiltro` (baja suave, reglas de nombres y de baja) y `Producto.EstablecerClasificacion(subcategoriaId, opciones)`; pruebas unitarias | M | Fase 0.5 | Pablo |
+| K-02 ✅ | Configuración EF de las 5 tablas (únicos, FK compuesta, índices), permisos 29–33 al final del catálogo y **una** migración `AgregarCatalogoDeProductos`; regenerar el script SQL; pruebas de integración | M | K-01 | Pablo |
+| K-03 ✅ | Casos de uso (árbol, altas, ediciones, bajas, reactivación, eliminación definitiva) con eventos de aplicación e historial; pruebas | M | K-02 | Pablo |
+| K-04 ✅ | DTOs y endpoints `/categorias`, `/subcategorias`, `/filtros`, `/opciones` con validación, permisos y pruebas de API | M | K-03 | Pablo |
+| K-05 ✅ | `CatalogoService` (publica `EntidadCambiada`) y `CategoriasViewModel`; pruebas | M | K-04 | Pablo |
+| K-06 ✅ | `CategoriasPagina`: árbol, filtros con *chips* de opciones, estado, baja suave y eliminar definitivamente; E2E | L | K-05 | Pablo |
 | K-07 | Integración con Productos: `ProductoDto`/solicitudes con subcategoría y detalles, validación de opciones y `GET /productos` con `categoriaId`/`subcategoriaId`/`opcionIds` (**se coordina con P-04**: una migración a la vez) | M | K-04, P-04 | Pablo + integrante de Productos |
 | K-08 | Endpoints anónimos de la tienda (`/tienda/categorias`, `/catalogo` con filtros Y/O) y su uso en el catálogo público | M | K-04, W-04 | Pablo |
-| K-09 | Datos de ejemplo opcionales para demostraciones (script aparte), spec y guion de demostración | S | K-06 | Pablo |
+| K-09 | Datos de ejemplo realistas ✅ (sembrador `DatosDeEjemplo`, [§10 de la spec](../Especificaciones/CatalogoProductos.md)); falta el guion de demostración | S | K-06 | Pablo |
 
 ---
 

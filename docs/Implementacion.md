@@ -11,7 +11,7 @@
 | **Fase 0** — Esqueleto, Docker, interfaz y pruebas | ✅ Hecha (excepto validar el escritorio MAUI en Windows) |
 | **Fase 0.5** — Persistencia: 11 tablas, migraciones, semillas, script SQL, respaldo | ✅ Hecha |
 | **Fase 1** — Autenticación, usuarios, roles y permisos (API + Ui) | ✅ Hecha |
-| **Fase 2.5** — Catálogo de productos (categorías, subcategorías, filtros, opciones) | 📝 Especificada ([CatalogoProductos.md](Especificaciones/CatalogoProductos.md)); por implementar |
+| **Fase 2.5** — Catálogo de productos (categorías, subcategorías, filtros, opciones) y datos de ejemplo | ✅ Backend, pantalla "Categorías y filtros" y sembrador hechos ([CatalogoProductos.md](Especificaciones/CatalogoProductos.md)); falta integrarlo con Productos (K-07) y la tienda (K-08) |
 | Fases 2 a 5 (Clientes, Productos, Pedidos, búsquedas, historial, entrega) | 🕓 Pendientes: ver [Tareas.md](Equipo/Tareas.md) |
 
 **Calidad actual**: 109 pruebas automáticas (unitarias, integración con SQL Server real en Docker, arquitectura) + 3 pruebas de extremo a extremo con Playwright. No hay CI/CD: se corre `./scripts/test-docker.sh` antes de subir cambios ([Testing.md §6](Especificaciones/Testing.md)).

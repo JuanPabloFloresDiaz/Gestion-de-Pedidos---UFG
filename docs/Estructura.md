@@ -71,7 +71,7 @@ GestionPedidos.Infrastructure/
 │   ├── Configurations/                # una IEntityTypeConfiguration<T> por entidad
 │   ├── Migrations/                    # generadas (no editar)
 │   ├── Repositories/                  # un repositorio por agregado
-│   └── Seed/                          # semillas obligatorias y de demostración
+│   └── Seed/                          # semillas obligatorias (geografía, administrador) y DatosDeEjemplo (opcional, solo desarrollo)
 └── DependencyInjection.cs
 ```
 
