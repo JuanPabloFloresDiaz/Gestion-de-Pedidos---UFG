@@ -38,6 +38,7 @@ public static class DependencyInjection
         servicios.AddScoped<IActividadRepository, ActividadRepository>();
         servicios.AddScoped<IClasificacionRepository, ClasificacionRepository>();
         servicios.AddScoped<ICatalogoPublicoRepository, CatalogoPublicoRepository>();
+        servicios.AddScoped<IPedidosClienteRepository, PedidosClienteRepository>();
         servicios.AddSingleton<IHasherClave, HasherClave>();
         servicios.AddScoped<AdministradorInicial>();
         servicios.AddScoped<DatosDeEjemplo>();
@@ -60,6 +61,10 @@ public static class DependencyInjection
         servicios.AddScoped<ListarCiudades>();
         servicios.AddScoped<ListarActividades>();
         servicios.AddScoped<ConsultarCatalogoPublico>();
+        servicios.AddScoped<PrepararPedidoDeCliente>();
+        servicios.AddScoped<RealizarPedidoDeCliente>();
+        servicios.AddScoped<ListarPedidosDeCliente>();
+        servicios.AddScoped<CancelarPedidoDeCliente>();
         servicios.AddScoped<ObtenerArbolDeCatalogo>();
         servicios.AddScoped<ObtenerFiltrosDeSubcategoria>();
         servicios.AddScoped<GestionarCategorias>();

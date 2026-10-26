@@ -60,3 +60,37 @@ public class ClasificacionTests
         Assert.Null(p.SubcategoriaId);
     }
 }
+
+public class StockTests
+{
+    [Fact]
+    public void DescontarStock_RestaLoVendido_YNoDejaElStockNegativo()
+    {
+        var p = new Producto { Nombre = "Camisa", CantidadStock = 5 };
+        p.DescontarStock(3);
+        Assert.Equal(2, p.CantidadStock);
+        var ex = Assert.Throws<InvalidOperationException>(() => p.DescontarStock(3));
+        Assert.Contains("Solo quedan 2", ex.Message);
+        Assert.Equal(2, p.CantidadStock);   // el intento fallido no cambió nada
+        p.DescontarStock(2);                // vender todo lo que queda sí se puede
+        Assert.Equal(0, p.CantidadStock);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Descontar_YReponer_RechazanCantidadesNoPositivas(int cantidad)
+    {
+        var p = new Producto { CantidadStock = 5 };
+        Assert.Throws<ArgumentOutOfRangeException>(() => p.DescontarStock(cantidad));
+        Assert.Throws<ArgumentOutOfRangeException>(() => p.ReponerStock(cantidad));
+    }
+
+    [Fact]
+    public void ReponerStock_SumaLasUnidadesDevueltas()
+    {
+        var p = new Producto { CantidadStock = 1 };
+        p.ReponerStock(4);
+        Assert.Equal(5, p.CantidadStock);
+    }
+}

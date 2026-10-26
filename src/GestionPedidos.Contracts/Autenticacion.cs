@@ -60,6 +60,8 @@ public static class CodigosError
     public const string Conflicto = "CONFLICTO";
     /// <summary>Se violó una regla de negocio.</summary>
     public const string Regla = "REGLA_DE_NEGOCIO";
+    /// <summary>No alcanza el stock de uno o más productos del pedido.</summary>
+    public const string StockInsuficiente = "STOCK_INSUFICIENTE";
     /// <summary>Debe cambiar la contraseña antes de continuar.</summary>
     public const string DebeCambiarClave = "DEBE_CAMBIAR_CLAVE";
 }

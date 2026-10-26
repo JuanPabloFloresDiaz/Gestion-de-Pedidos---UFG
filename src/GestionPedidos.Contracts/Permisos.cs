@@ -62,4 +62,10 @@ public static class Permisos
     public const string CategoriasDesactivar = "categorias.desactivar";
     /// <summary>Eliminar definitivamente elementos de la clasificación.</summary>
     public const string CategoriasEliminar = "categorias.eliminar";
+    /// <summary>Ver los pedidos propios (cliente de la tienda).</summary>
+    public const string MisPedidosVer = "mispedidos.ver";
+    /// <summary>Hacer pedidos propios (cliente de la tienda).</summary>
+    public const string MisPedidosCrear = "mispedidos.crear";
+    /// <summary>Cancelar pedidos propios (cliente de la tienda).</summary>
+    public const string MisPedidosCancelar = "mispedidos.cancelar";
 }

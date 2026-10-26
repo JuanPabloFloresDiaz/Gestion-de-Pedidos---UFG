@@ -32,6 +32,26 @@ public class Producto : IAuditable
     public bool Activo { get; set; } = true;
     /// <summary>Cuándo se dio de baja (eliminado suave); <c>null</c> mientras esté activo.</summary>
     public DateTimeOffset? EliminadoEn { get; set; }
+    /// <summary>Descuenta existencias al vender. Rechaza cantidades no positivas y que el stock quede negativo.</summary>
+    /// <param name="cantidad">Unidades vendidas (mayor que cero).</param>
+    /// <exception cref="ArgumentOutOfRangeException">La cantidad no es positiva.</exception>
+    /// <exception cref="InvalidOperationException">No hay suficientes existencias.</exception>
+    public void DescontarStock(int cantidad)
+    {
+        if (cantidad <= 0) throw new ArgumentOutOfRangeException(nameof(cantidad), "La cantidad debe ser mayor que cero.");
+        if (cantidad > CantidadStock) throw new InvalidOperationException($"Solo quedan {CantidadStock} unidades de {Nombre}.");
+        CantidadStock -= cantidad;
+    }
+
+    /// <summary>Repone existencias (por ejemplo, al cancelar un pedido).</summary>
+    /// <param name="cantidad">Unidades devueltas (mayor que cero).</param>
+    /// <exception cref="ArgumentOutOfRangeException">La cantidad no es positiva.</exception>
+    public void ReponerStock(int cantidad)
+    {
+        if (cantidad <= 0) throw new ArgumentOutOfRangeException(nameof(cantidad), "La cantidad debe ser mayor que cero.");
+        CantidadStock += cantidad;
+    }
+
     /// <summary>
     /// Clasifica el producto y reemplaza su detalle. Cambiar la subcategoría descarta el detalle anterior porque los
     /// filtros son otros; la validación de que cada opción pertenezca a un filtro de la subcategoría está en el caso de uso.

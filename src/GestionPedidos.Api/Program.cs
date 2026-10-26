@@ -155,6 +155,7 @@ app.MapCatalogos();
 app.MapHistorial();
 app.MapClasificacion();
 app.MapTienda();
+app.MapMisPedidos();
 
 // --- Arranque de la base de datos (migraciones con el usuario dueño + semillas) -------------------
 if (config.GetValue("Database:MigrarAlIniciar", false))
