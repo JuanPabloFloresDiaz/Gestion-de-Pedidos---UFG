@@ -1,3 +1,5 @@
+using GestionPedidos.Domain.Catalogo;
+
 namespace GestionPedidos.Domain.Productos;
 
 /// <summary>
@@ -18,12 +20,39 @@ public class Producto : IAuditable
     public decimal PrecioVenta { get; set; }
     /// <summary>Fecha de ingreso al inventario.</summary>
     public DateOnly FechaIngreso { get; set; }
+    /// <summary>Subcategoría que lo clasifica; <c>null</c> = sin clasificar ([CatalogoProductos.md]).</summary>
+    public int? SubcategoriaId { get; set; }
+    /// <summary>Navegación a la subcategoría.</summary>
+    public Subcategoria? Subcategoria { get; set; }
+    /// <summary>Detalle del producto: una opción por filtro.</summary>
+    public List<ProductoOpcion> Opciones { get; set; } = new();
     /// <summary>Si la tienda web muestra la cantidad exacta o solo Disponible/Agotado.</summary>
     public bool MostrarStock { get; set; }
     /// <summary>Baja lógica: <c>false</c> = inactivo.</summary>
     public bool Activo { get; set; } = true;
     /// <summary>Cuándo se dio de baja (eliminado suave); <c>null</c> mientras esté activo.</summary>
     public DateTimeOffset? EliminadoEn { get; set; }
+    /// <summary>
+    /// Clasifica el producto y reemplaza su detalle. Cambiar la subcategoría descarta el detalle anterior porque los
+    /// filtros son otros; la validación de que cada opción pertenezca a un filtro de la subcategoría está en el caso de uso.
+    /// </summary>
+    /// <param name="subcategoriaId">Subcategoría, o <c>null</c> para dejarlo sin clasificar.</param>
+    /// <param name="detalle">Pares (filtro, opción); a lo sumo uno por filtro.</param>
+    /// <exception cref="ArgumentException">Hay dos opciones del mismo filtro o hay detalle sin subcategoría.</exception>
+    public void EstablecerClasificacion(int? subcategoriaId, IEnumerable<(int FiltroId, int OpcionId)> detalle)
+    {
+        var lista = detalle.ToList();
+        if (lista.Select(d => d.FiltroId).Distinct().Count() != lista.Count)
+            throw new ArgumentException("Un producto solo puede tener una opción por filtro.", nameof(detalle));
+        if (subcategoriaId is null && lista.Count > 0)
+            throw new ArgumentException("No se puede describir un producto sin subcategoría.", nameof(detalle));
+
+        SubcategoriaId = subcategoriaId;
+        Opciones.Clear();
+        foreach (var (filtroId, opcionId) in lista)
+            Opciones.Add(new ProductoOpcion { FiltroId = filtroId, OpcionFiltroId = opcionId });
+    }
+
     /// <summary>Creación (UTC).</summary>
     public DateTimeOffset CreadoEn { get; set; }
     /// <summary>Última modificación (UTC).</summary>

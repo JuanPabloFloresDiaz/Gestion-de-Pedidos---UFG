@@ -49,6 +49,16 @@ public static class CatalogoPermisos
     public const string RolesEditar = "roles.editar";
     /// <summary>Ver los catálogos de departamentos y ciudades en la administración.</summary>
     public const string CatalogosVer = "catalogos.ver";
+    /// <summary>Ver categorías, subcategorías, filtros y opciones.</summary>
+    public const string CategoriasVer = "categorias.ver";
+    /// <summary>Crear categorías, subcategorías, filtros y opciones.</summary>
+    public const string CategoriasCrear = "categorias.crear";
+    /// <summary>Editar categorías, subcategorías, filtros y opciones.</summary>
+    public const string CategoriasEditar = "categorias.editar";
+    /// <summary>Dar de baja o reactivar elementos de la clasificación.</summary>
+    public const string CategoriasDesactivar = "categorias.desactivar";
+    /// <summary>Eliminar definitivamente elementos de la clasificación (inactivos y sin uso).</summary>
+    public const string CategoriasEliminar = "categorias.eliminar";
     /// <summary>Ver el catálogo de la tienda (también es público).</summary>
     public const string CatalogoVer = "catalogo.ver";
     /// <summary>Ver los pedidos propios (cliente de la web).</summary>
@@ -80,6 +90,11 @@ public static class CatalogoPermisos
         (RolesEditar, "Editar los permisos de un rol"),
         (CatalogosVer, "Ver los catálogos de departamentos y ciudades"),
         (UsuariosEliminar, "Eliminar definitivamente usuarios dados de baja"),
+        (CategoriasVer, "Ver categorías, subcategorías, filtros y opciones"),
+        (CategoriasCrear, "Crear categorías, subcategorías, filtros y opciones"),
+        (CategoriasEditar, "Editar categorías, subcategorías, filtros y opciones"),
+        (CategoriasDesactivar, "Dar de baja o reactivar categorías, subcategorías, filtros y opciones"),
+        (CategoriasEliminar, "Eliminar definitivamente elementos inactivos y sin uso de la clasificación"),
     };
 
     /// <summary>Permisos que tiene cada rol (matriz confirmada el 03/10/2026).</summary>
@@ -90,7 +105,7 @@ public static class CatalogoPermisos
         NombresRol.Operador => new[]
         {
             AdminAcceso, ClientesVer, ClientesCrear, ClientesEditar, ProductosVer,
-            PedidosVer, PedidosCrear, PedidosEditar, PedidosCambiarEstado, CatalogoVer, CatalogosVer,
+            PedidosVer, PedidosCrear, PedidosEditar, PedidosCambiarEstado, CatalogoVer, CatalogosVer, CategoriasVer,
         },
         NombresRol.Cliente => new[] { CatalogoVer, MisPedidosVer, MisPedidosCrear, MisPedidosCancelar, PerfilEditar },
         _ => Array.Empty<string>(),

@@ -52,4 +52,14 @@ public static class Permisos
     public const string RolesEditar = "roles.editar";
     /// <summary>Ver los catálogos de departamentos y ciudades.</summary>
     public const string CatalogosVer = "catalogos.ver";
+    /// <summary>Ver categorías, subcategorías, filtros y opciones.</summary>
+    public const string CategoriasVer = "categorias.ver";
+    /// <summary>Crear categorías, subcategorías, filtros y opciones.</summary>
+    public const string CategoriasCrear = "categorias.crear";
+    /// <summary>Editar categorías, subcategorías, filtros y opciones.</summary>
+    public const string CategoriasEditar = "categorias.editar";
+    /// <summary>Dar de baja o reactivar elementos de la clasificación.</summary>
+    public const string CategoriasDesactivar = "categorias.desactivar";
+    /// <summary>Eliminar definitivamente elementos de la clasificación.</summary>
+    public const string CategoriasEliminar = "categorias.eliminar";
 }
