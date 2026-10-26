@@ -2,6 +2,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using GestionPedidos.Api.Modulos.Auth;
 using GestionPedidos.Api.Modulos.Catalogos;
+using GestionPedidos.Api.Modulos.Clasificacion;
 using GestionPedidos.Api.Modulos.Historial;
 using GestionPedidos.Api.Modulos.Roles;
 using GestionPedidos.Api.Modulos.Usuarios;
@@ -147,6 +148,7 @@ app.MapUsuarios();
 app.MapRoles();
 app.MapCatalogos();
 app.MapHistorial();
+app.MapClasificacion();
 
 // --- Arranque de la base de datos (migraciones con el usuario dueño + semillas) -------------------
 if (config.GetValue("Database:MigrarAlIniciar", false))
