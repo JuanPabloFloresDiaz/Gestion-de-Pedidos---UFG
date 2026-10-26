@@ -56,7 +56,7 @@ Detalle y reglas en [Testing.md](../Especificaciones/Testing.md).
 
 ## 4. Escritorio en Windows
 
-> ⚠️ **Estado**: el proyecto `src/GestionPedidos.Desktop` está escrito pero **todavía no se ha validado en Windows** (se creó desde Linux, donde MAUI no compila). Es la primera tarea del equipo en Windows; si aparece algún error, se corrige y se anota aquí. Con **Visual Studio 2022** sigan el [§4.1](#41-paso-a-paso-con-visual-studio-2022).
+> ✅ **Estado (25/10/2026)**: `src/GestionPedidos.Desktop` **compila sin advertencias y abre el login** en Windows 11 (SDK 8.0.427, Visual Studio 18). Falta confirmar a mano el flujo completo (iniciar sesión, pestañas, cerrar sesión) en los equipos de todos los integrantes; si aparece algún error, se anota aquí. Con **Visual Studio** sigan el [§4.1](#41-paso-a-paso-con-visual-studio-2022).
 
 1. Con el entorno levantado (§2), en **PowerShell** o la terminal de VS Code:
    ```powershell
@@ -71,7 +71,7 @@ Detalle y reglas en [Testing.md](../Especificaciones/Testing.md).
 
 ### 4.1 Paso a paso con Visual Studio 2022
 
-Sirve para ejecutar y depurar el **escritorio** (y también la API y la web) desde Visual Studio. Se necesita Visual Studio **2022 17.8 o superior** en Windows 10/11.
+Sirve para ejecutar y depurar el **escritorio** (y también la API y la web) desde Visual Studio. Se necesita Visual Studio **2022 (17.8 o superior)** o **Visual Studio 2026** en Windows 10/11.
 
 **A. Preparar una sola vez**
 
@@ -80,9 +80,19 @@ Sirve para ejecutar y depurar el **escritorio** (y también la API y la web) des
    * **"ASP.NET y desarrollo web"**.
 
    Debe estar el **SDK de .NET 8** (viene en ambas; se comprueba con `dotnet --list-sdks`).
-2. **Instalar Docker Desktop** y dejarlo iniciado (la API y la base corren ahí).
-3. **WebView2**: ya viene con Windows 11 y casi siempre con Windows 10 actualizado. Si la ventana sale en blanco, instalar el *Evergreen Runtime* de Microsoft.
-4. **Clonar el repositorio** (Git → Clonar repositorio, o `git clone`) y abrir **`GestionPedidos.sln`** (la solución completa, con `Desktop`). No abrir el `.slnf`: ese filtro es para Linux y excluye el escritorio.
+2. **Instalar la carga de trabajo de MAUI también por consola — es obligatorio aunque ya la haya marcado Visual Studio.** El instalador de Visual Studio solo trae `maui-windows`, y sin el resto la compilación falla. En una terminal (si pide permisos, como administrador):
+   ```powershell
+   dotnet workload install maui
+   dotnet workload list          # debe listar maui, maui-windows, android, ios y maccatalyst
+   ```
+   Descarga muchos paquetes (también de Android e iOS, aunque aquí solo se usa Windows) y **tarda varios minutos**. Se hace **una sola vez por equipo**.
+
+   > Si se omite, `dotnet build` o Visual Studio muestran: `error NETSDK1147: para compilar este proyecto, deben estar instaladas las siguientes cargas de trabajo: maui-tizen`. Aunque nombra `maui-tizen` (que ni siquiera aparece en la lista), **la solución es la misma: `dotnet workload install maui`**.
+   >
+   > Si hay **varios SDK** instalados a la vez (por ejemplo 8.0.x y 10.0.x), no es problema: `global.json` fuerza el 8 (`rollForward: latestFeature`) y se usa el SDK 8 más reciente.
+3. **Instalar Docker Desktop** y dejarlo iniciado (la API y la base corren ahí).
+4. **WebView2**: ya viene con Windows 11 y casi siempre con Windows 10 actualizado. Si la ventana sale en blanco, instalar el *Evergreen Runtime* de Microsoft.
+5. **Clonar el repositorio** (Git → Clonar repositorio, o `git clone`) y abrir **`GestionPedidos.sln`** (la solución completa, con `Desktop`). No abrir el `.slnf`: ese filtro es para Linux y excluye el escritorio.
 
 **B. Levantar la API y la base de datos**
 
@@ -102,11 +112,11 @@ Comprobar que responde http://localhost:4390/health (debe decir `vivo`).
 1. En el **Explorador de soluciones**: clic derecho en **`GestionPedidos.Desktop` → Establecer como proyecto de inicio**. (Por defecto Visual Studio puede dejar `GestionPedidos.Domain`, que no es ejecutable.)
 2. En la barra de herramientas, el perfil de ejecución debe decir **"Escritorio (Windows)"** y la configuración **Debug** / **Any CPU** (o x64).
 3. **F5** para depurar o **Ctrl+F5** para ejecutar sin depurar. La primera compilación de MAUI tarda varios minutos.
-4. Se abre la ventana *Gestión de Pedidos — UFG*. Iniciar sesión con `admin` y la contraseña de `ADMIN_INITIAL_PASSWORD` en `.env` (por defecto `Admin_Dev_Password_123!`; pedirá cambiarla). Si la base ya existía de antes, será la contraseña que se fijó entonces.
+4. Se abre la ventana *Gestión de Pedidos — UFG* con el login. Iniciar sesión con `admin` y la contraseña de `ADMIN_INITIAL_PASSWORD` en `.env` (por defecto `Admin_Dev_Password_123!`; pedirá cambiarla). Si la base ya existía de antes, será la contraseña que se fijó entonces.
 
 **D. Ejecutar la web desde Visual Studio (opcional)**
 
-Con la API en Docker ya levantada, para depurar la web: detener el servicio de Docker `web` (`docker compose stop web`), establecer **`GestionPedidos.Web`** como proyecto de inicio y pulsar **F5**. Apunta a `http://localhost:4390` por defecto. Para depurar también la API: `docker compose stop api`, establecer **`GestionPedidos.Api`** como inicio (usa `appsettings.Development.json`, que ya trae la conexión a `localhost:4391`) y **F5**.
+Con la API en Docker ya levantada, para depurar la web: detener el servicio de Docker `web` (`docker compose stop web`), establecer **`GestionPedidos.Web`** como proyecto de inicio y pulsar **F5** (perfil *Web (puerto 4392)*; apunta a la API en `http://localhost:4390`). Para depurar también la API: `docker compose stop api`, establecer **`GestionPedidos.Api`** como inicio (perfil *Api (puerto 4390)*, abre Swagger; usa `appsettings.Development.json`, que ya trae la conexión a `localhost:4391`) y **F5**. Los dos perfiles usan los mismos puertos que Docker, por eso hay que detener antes el servicio equivalente.
 
 **E. Ejecutar las pruebas desde Visual Studio**
 
@@ -116,9 +126,10 @@ Con la API en Docker ya levantada, para depurar la web: detener el servicio de D
 
 | Síntoma | Causa y solución |
 |---|---|
-| El proyecto `Desktop` aparece como "no se pudo cargar" o pide una carga de trabajo | Falta la carga de trabajo de MAUI (**A.1**) o `dotnet workload install maui` en una terminal de administrador |
+| `NETSDK1147 … maui-tizen`, o el proyecto `Desktop` "no se pudo cargar" | Falta `dotnet workload install maui` (**A.2**): la carga de trabajo del instalador de Visual Studio no basta |
 | Error de compilación de `Desktop` | Copiar el mensaje completo de la ventana **Salida / Lista de errores** y avisar al equipo: este proyecto aún se está validando en Windows |
-| La ventana se abre y queda en blanco | Falta WebView2 (**A.3**) o la API no responde (**B**) |
+| La ventana se abre y queda en blanco | Falta WebView2 (**A.4**) o la API no responde (**B**) |
+| La aplicación se cierra sola (error de Windows `0xc0000374`, corrupción de memoria) | Se observó en una compilación de Windows de **vista previa** (Insider) al lanzar el `.exe` **con la salida redirigida o sin ventana**. Lancen siempre la aplicación **normalmente** (F5, Ctrl+F5, o `dotnet run` desde una terminal normal), sin redirigir su salida ni ocultarla. Si les ocurre en un Windows normal, avisen con el detalle del evento |
 | "No se pudo conectar con el servidor" | La API no está levantada o el puerto 4390 lo usa otra aplicación; revisar `docker compose ps` |
 | "Usuario o contraseña incorrectos" con un usuario *Cliente* | Es lo esperado: el escritorio solo permite administradores y operadores |
 | Visual Studio sugiere actualizar paquetes NuGet | No actualizar: las versiones están fijadas a propósito en `Directory.Packages.props` (compatibles con .NET 8) |

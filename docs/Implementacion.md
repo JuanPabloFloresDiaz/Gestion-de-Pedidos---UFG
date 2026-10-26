@@ -25,7 +25,8 @@
 - [x] `GET /health` y `/health/ready`; errores con Problem Details; *rate limiting* en login y registro.
 - [x] Interfaz (`Ui`): shell con pestañas de documentos, tema, kit de componentes (propio, sin MudBlazor), `ApiClient`, sesión, avisos; hospedajes `Web` y `Desktop` (MAUI) que cargan la misma `Ui`.
 - [x] Harness de pruebas con Testcontainers (SQL Server real) y Playwright para extremo a extremo.
-- [ ] **Validar el escritorio en Windows**: el proyecto `Desktop` está escrito y configurado, pero **no se pudo compilar desde el entorno donde se creó** (Linux); falta ejecutar `dotnet workload install maui` y `dotnet run -f net8.0-windows10.0.19041.0` en Windows con VS Code ([PrimerosPasos.md §4](Equipo/PrimerosPasos.md)) y corregir lo que aparezca.
+- [x] **Escritorio compila y abre el login en Windows** (validado el 25/10/2026 en Windows 11 con SDK 8.0.427): exige además `dotnet workload install maui`, ya documentado ([PrimerosPasos.md §4.1](Equipo/PrimerosPasos.md#41-paso-a-paso-con-visual-studio-2022)).
+- [ ] **Confirmar a mano el flujo completo del escritorio** (iniciar sesión, abrir Usuarios e Integrantes, cerrar sesión, rechazo de un usuario Cliente) en los equipos de todos los integrantes.
 - [ ] Probar el `.exe` publicado en un equipo del laboratorio (Windows y WebView2).
 
 ### Fase 0.5 — Persistencia base ✅
