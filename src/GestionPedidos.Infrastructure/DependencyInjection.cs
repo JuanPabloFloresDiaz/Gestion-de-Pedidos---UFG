@@ -2,6 +2,7 @@ using GestionPedidos.Application.Autenticacion;
 using GestionPedidos.Application.Catalogo;
 using GestionPedidos.Application.Catalogos;
 using GestionPedidos.Application.Roles;
+using GestionPedidos.Application.Tienda;
 using GestionPedidos.Application.Common;
 using GestionPedidos.Application.Eventos;
 using GestionPedidos.Application.Historial;
@@ -36,6 +37,7 @@ public static class DependencyInjection
         servicios.AddScoped<ICatalogoGeoRepository, CatalogoGeoRepository>();
         servicios.AddScoped<IActividadRepository, ActividadRepository>();
         servicios.AddScoped<IClasificacionRepository, ClasificacionRepository>();
+        servicios.AddScoped<ICatalogoPublicoRepository, CatalogoPublicoRepository>();
         servicios.AddSingleton<IHasherClave, HasherClave>();
         servicios.AddScoped<AdministradorInicial>();
         servicios.AddScoped<DatosDeEjemplo>();
@@ -57,6 +59,7 @@ public static class DependencyInjection
         servicios.AddScoped<ListarDepartamentos>();
         servicios.AddScoped<ListarCiudades>();
         servicios.AddScoped<ListarActividades>();
+        servicios.AddScoped<ConsultarCatalogoPublico>();
         servicios.AddScoped<ObtenerArbolDeCatalogo>();
         servicios.AddScoped<ObtenerFiltrosDeSubcategoria>();
         servicios.AddScoped<GestionarCategorias>();

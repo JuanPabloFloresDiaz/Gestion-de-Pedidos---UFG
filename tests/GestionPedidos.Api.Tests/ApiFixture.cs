@@ -36,6 +36,7 @@ public sealed class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
             ["Database:MigrarAlIniciar"] = "true",
             ["RateLimiting:LoginPorMinuto"] = "100000",
             ["RateLimiting:RegistroPorHora"] = "100000",
+            ["RateLimiting:TiendaPorMinuto"] = "100000",
         };
         foreach (var (clave, valor) in ajustes) builder.UseSetting(clave, valor);
     }

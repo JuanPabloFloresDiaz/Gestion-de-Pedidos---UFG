@@ -5,6 +5,7 @@ using GestionPedidos.Api.Modulos.Catalogos;
 using GestionPedidos.Api.Modulos.Clasificacion;
 using GestionPedidos.Api.Modulos.Historial;
 using GestionPedidos.Api.Modulos.Roles;
+using GestionPedidos.Api.Modulos.Tienda;
 using GestionPedidos.Api.Modulos.Usuarios;
 using GestionPedidos.Api.Seguridad;
 using GestionPedidos.Application.Common;
@@ -73,6 +74,10 @@ builder.Services.AddRateLimiter(o =>
     o.AddPolicy("login", http => RateLimitPartition.GetFixedWindowLimiter(
         http.Connection.RemoteIpAddress?.ToString() ?? "?",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = login, Window = TimeSpan.FromMinutes(1) }));
+    var tienda = config.GetValue("RateLimiting:TiendaPorMinuto", 240);
+    o.AddPolicy("tienda", http => RateLimitPartition.GetFixedWindowLimiter(
+        http.Connection.RemoteIpAddress?.ToString() ?? "?",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = tienda, Window = TimeSpan.FromMinutes(1) }));
     o.AddPolicy("registro", http => RateLimitPartition.GetFixedWindowLimiter(
         http.Connection.RemoteIpAddress?.ToString() ?? "?",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = registro, Window = TimeSpan.FromHours(1) }));
@@ -149,6 +154,7 @@ app.MapRoles();
 app.MapCatalogos();
 app.MapHistorial();
 app.MapClasificacion();
+app.MapTienda();
 
 // --- Arranque de la base de datos (migraciones con el usuario dueño + semillas) -------------------
 if (config.GetValue("Database:MigrarAlIniciar", false))
