@@ -173,6 +173,16 @@ test('roles y permisos, historial, catálogos, pestañas nuevas y apariencia', a
   await entrar(page, 'admin', CLAVE_ADMIN);
   await expect(page.getByRole('heading', { name: /Bienvenido/ })).toBeVisible();
 
+  // Los atajos de la bienvenida toman el color de acento (no son grises fijos): cambian al elegir otro color
+  const atajo = page.locator('.atajo').first();
+  const fondoAzul = await atajo.evaluate((e) => getComputedStyle(e).backgroundColor);
+  await page.getByRole('button', { name: /Apariencia/ }).click();
+  await page.getByRole('radio', { name: /Verde/ }).click();
+  await expect.poll(() => atajo.evaluate((e) => getComputedStyle(e).backgroundColor)).not.toBe(fondoAzul);
+  await captura(page, '31-atajos-verde');
+  await page.getByRole('radio', { name: /Azul/ }).click();
+  await page.keyboard.press('Escape');
+
   // Apariencia: modo oscuro y color, y se recuerda al recargar
   await page.getByRole('button', { name: /Apariencia/ }).click();
   await page.getByRole('radio', { name: /Oscuro/ }).click();

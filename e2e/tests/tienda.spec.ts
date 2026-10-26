@@ -163,7 +163,7 @@ test('laptops y celulares con marcas reales: volumen, paginación y filtro por m
   await lateral.getByRole('link', { name: /^Tecnología/ }).click();
   await lateral.getByRole('link', { name: /^Laptops/ }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Laptops');
-  await expect(page.getByText('35 productos')).toBeVisible();
+  await expect(page.getByText(/^35 productos$/)).toBeVisible();
   await expect(page.locator('.tarjeta-producto')).toHaveCount(12);   // 35 productos = 3 páginas
   await page.getByRole('button', { name: 'Página siguiente' }).click();
   await expect(page).toHaveURL(/pag=2/);
@@ -173,12 +173,12 @@ test('laptops y celulares con marcas reales: volumen, paginación y filtro por m
   // Marca: HP (6) y luego HP O ASUS (12); con el filtro de pantalla 16" se cruzan (Y)
   const marca = lateral.locator('details', { hasText: 'Marca' });
   await marca.getByText('HP', { exact: true }).click();
-  await expect(page.getByText('6 productos')).toBeVisible();
+  await expect(page.getByText(/^6 productos$/)).toBeVisible();
   await expect(page.locator('.tarjeta-producto h3').first()).toContainText('HP');
   await marca.getByText('ASUS', { exact: true }).click();
-  await expect(page.getByText('12 productos')).toBeVisible();
+  await expect(page.getByText(/^12 productos$/)).toBeVisible();
   await lateral.locator('details', { hasText: 'Pantalla' }).getByText('16"', { exact: true }).click();
-  await expect(page.getByText('2 productos')).toBeVisible();   // HP Victus 16 y ASUS ROG Strix G16
+  await expect(page.getByText(/^2 productos$/)).toBeVisible();   // HP Victus 16 y ASUS ROG Strix G16
   expect((await page.locator('.tarjeta-producto h3').allInnerTexts()).sort()).toEqual(['ASUS ROG Strix G16', 'HP Victus 16']);   // sin depender del orden
   const foto = page.locator('.tarjeta-producto img').first();
   await expect.poll(() => foto.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);   // cada uno con su foto del almacén
@@ -188,7 +188,7 @@ test('laptops y celulares con marcas reales: volumen, paginación y filtro por m
   await page.goto('/tienda');
   await lateral.getByRole('link', { name: /^Tecnología/ }).click();
   await lateral.getByRole('link', { name: /^Celulares/ }).click();
-  await expect(page.getByText('25 productos')).toBeVisible();
+  await expect(page.getByText(/^25 productos$/)).toBeVisible();
   const marcaTel = lateral.locator('details', { hasText: 'Marca' });
   for (const m of ['Samsung', 'Motorola', 'Xiaomi', 'Apple']) await expect(marcaTel.getByText(m, { exact: true })).toBeVisible();
 });
