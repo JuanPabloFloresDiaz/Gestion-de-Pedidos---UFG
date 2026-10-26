@@ -13,7 +13,11 @@
             <div class="lanzador-lista">
                 @foreach (var modulo in grupo)
                 {
-                    <button class="atajo" @onclick="() => Elegir(modulo)">@modulo.Documento.Titulo</button>
+                    <button class="atajo" @onclick="() => Elegir(modulo)">
+                            <span class="atajo-icono"><Icono Svg="modulo.Icono" Clase="icono-grande" /></span>
+                            <span class="atajo-nombre">@modulo.Documento.Titulo</span>
+                            <span class="atajo-desc">@modulo.Descripcion</span>
+                        </button>
                 }
             </div>
         </div>

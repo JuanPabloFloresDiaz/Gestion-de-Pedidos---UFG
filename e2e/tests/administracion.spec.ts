@@ -183,6 +183,16 @@ test('roles y permisos, historial, catálogos, pestañas nuevas y apariencia', a
   await page.getByRole('radio', { name: /Azul/ }).click();
   await page.keyboard.press('Escape');
 
+  // Tarjetas con ícono, nombre y descripción; los apartados que arman los integrantes están "en progreso"
+  await expect(page.locator('.atajo .atajo-icono svg').first()).toBeVisible();
+  await expect(page.locator('.atajo-desc').first()).not.toBeEmpty();
+  await captura(page, '33-bienvenida-tarjetas');
+  await page.locator('.atajo', { hasText: 'Clientes' }).click();
+  await expect(page.getByText('Apartado en progreso')).toBeVisible();
+  await captura(page, '32-apartado-en-progreso');
+  await page.getByRole('button', { name: 'Cerrar Clientes' }).click();
+  await expect(page.getByRole('tab')).toHaveCount(0);
+
   // Apariencia: modo oscuro y color, y se recuerda al recargar
   await page.getByRole('button', { name: /Apariencia/ }).click();
   await page.getByRole('radio', { name: /Oscuro/ }).click();

@@ -6,6 +6,9 @@ using GestionPedidos.Ui.Comun.Notificaciones;
 using GestionPedidos.Ui.Comun.Sesion;
 using GestionPedidos.Ui.Modulos.Catalogos;
 using GestionPedidos.Ui.Modulos.Categorias;
+using GestionPedidos.Ui.Modulos.Clientes;
+using GestionPedidos.Ui.Modulos.Pedidos;
+using GestionPedidos.Ui.Modulos.Productos;
 using GestionPedidos.Ui.Modulos.Historial;
 using GestionPedidos.Ui.Modulos.Roles;
 using GestionPedidos.Ui.Modulos.Usuarios;
@@ -43,6 +46,16 @@ public static class ServiciosUi
         servicios.AddScoped<RolesService>();
         servicios.AddScoped<IPublicadorDeCambios>(sp => sp.GetRequiredService<RolesService>());
         servicios.AddTransient<RolesViewModel>();
+        // Esqueletos de los apartados que arman los integrantes (Clientes, Productos y Pedidos): ya registrados, solo falta escribirlos
+        servicios.AddScoped<ClientesService>();
+        servicios.AddScoped<IPublicadorDeCambios>(sp => sp.GetRequiredService<ClientesService>());
+        servicios.AddTransient<ClientesViewModel>();
+        servicios.AddScoped<ProductosService>();
+        servicios.AddScoped<IPublicadorDeCambios>(sp => sp.GetRequiredService<ProductosService>());
+        servicios.AddTransient<ProductosViewModel>();
+        servicios.AddScoped<PedidosService>();
+        servicios.AddScoped<IPublicadorDeCambios>(sp => sp.GetRequiredService<PedidosService>());
+        servicios.AddTransient<PedidosViewModel>();
         servicios.AddScoped<CategoriasService>();
         servicios.AddScoped<IPublicadorDeCambios>(sp => sp.GetRequiredService<CategoriasService>());
         servicios.AddTransient<CategoriasViewModel>();

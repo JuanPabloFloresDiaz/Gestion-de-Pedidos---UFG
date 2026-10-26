@@ -23,7 +23,7 @@
                             <div class="menu-lista" role="menu">
                                 @foreach (var modulo in grupo)
                                 {
-                                    <button role="menuitem" @onclick="() => Abrir(modulo.Documento)">@modulo.Documento.Titulo</button>
+                                    <button role="menuitem" @onclick="() => Abrir(modulo.Documento)"><Icono Svg="modulo.Icono" /> @modulo.Documento.Titulo</button>
                                 }
                             </div>
                         }
@@ -69,7 +69,11 @@
                     <div class="atajos">
                         @foreach (var modulo in ModulosAdmin.Todos.Where(Permitido))
                         {
-                            <button class="atajo" @onclick="() => Abrir(modulo.Documento)">@modulo.Documento.Titulo</button>
+                            <button class="atajo" @onclick="() => Abrir(modulo.Documento)">
+                            <span class="atajo-icono"><Icono Svg="modulo.Icono" Clase="icono-grande" /></span>
+                            <span class="atajo-nombre">@modulo.Documento.Titulo</span>
+                            <span class="atajo-desc">@modulo.Descripcion</span>
+                        </button>
                         }
                     </div>
                 </div>

@@ -1,0 +1,17 @@
+@* PROVISIONAL: apartado de Pedidos en progreso (bloque D de Tareas.md). Reemplazar el contenido por la pantalla real (Página + ViewModel):
+   ver Modulos/Usuarios/UsuariosPagina.razor como modelo y docs/Equipo/PrimerosPasos.md §5. *@
+@implements IDisposable
+@inject PedidosViewModel Vm
+
+<ModuloEnProgreso Modulo="Pedidos" Titulo="Pedidos" Icono="Lucide.ClipboardList" Bloque="D" Spec="docs/Especificaciones/Pedidos.md"
+                  Descripcion="Pedidos con sus líneas, estados y búsquedas. Alta, cambio de estado y baja suave." />
+
+@code {
+    // Cuando armen la pantalla real: suscribirse al evento del ViewModel con += y darse de baja con -= en Dispose, y repintar con InvokeAsync(StateHasChanged).
+    protected override void OnInitialized() => Vm.Cambiado += Vm_Cambiado;
+
+    private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Baja de la suscripción (par obligatorio del +=).</summary>
+    public void Dispose() => Vm.Cambiado -= Vm_Cambiado;
+}

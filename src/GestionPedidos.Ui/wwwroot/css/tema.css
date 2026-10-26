@@ -356,3 +356,21 @@ svg.icono-grande { width: 1.45em; height: 1.45em; }
 .pestana.activa .pestana-titulo { color: var(--color-primario); }
 .pestanas { background: color-mix(in srgb, var(--color-primario) 6%, var(--color-superficie-2)); }
 .barra-estado { background: color-mix(in srgb, var(--color-primario) 5%, var(--color-superficie-2)); }
+
+/* ---- Tarjetas de módulos (bienvenida y "nueva pestaña"): ícono, nombre y descripción ---- */
+.atajos, .lanzador-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; max-width: 1020px; margin: 24px auto 0; text-align: left; }
+.atajo { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 14px; row-gap: 2px; align-items: center; text-align: left; padding: 16px 18px; border-radius: 16px; }
+.atajo-icono { grid-row: 1 / span 2; width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--color-primario); color: var(--color-primario-texto);
+  transition: transform .15s ease; }
+.atajo:hover .atajo-icono { transform: scale(1.08) rotate(-4deg); }
+.atajo-nombre { font-weight: 700; align-self: end; }
+.atajo-desc { font-weight: 400; font-size: .84rem; color: var(--color-texto-suave); align-self: start; line-height: 1.3; }
+.atajo:hover .atajo-desc { color: var(--color-texto); }
+.menu-lista button svg.icono { margin-right: 8px; color: var(--color-primario); }
+/* Apartado en progreso */
+.en-progreso { max-width: 640px; margin: 40px auto; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.en-progreso-icono { display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%; background: color-mix(in srgb, var(--color-primario) 12%, transparent); color: var(--color-primario); }
+.en-progreso-estado { display: inline-flex; align-items: center; gap: 6px; margin: 0; padding: 4px 14px; border-radius: 999px; font-weight: 600; color: var(--color-advertencia);
+  background: color-mix(in srgb, var(--color-advertencia) 14%, transparent); }
+.en-progreso-ayuda { margin-top: 18px; text-align: left; border: 1px dashed var(--color-borde); border-radius: 12px; padding: 12px 18px; font-size: .9rem; color: var(--color-texto-suave); }
+.en-progreso-ayuda ul { margin: 6px 0 0; padding-left: 18px; } .en-progreso-ayuda code { font-size: .85em; background: var(--color-superficie-2); padding: 1px 5px; border-radius: 5px; }

@@ -1,0 +1,33 @@
+@* Pantalla provisional de un apartado que el equipo todavía está armando. Quien lo desarrolle borra este componente de su página y
+   pone la pantalla real (receta en docs/Equipo/PrimerosPasos.md §5, modelo a copiar: Modulos/Usuarios). *@
+<section class="modulo en-progreso">
+    <div class="en-progreso-icono"><Icono Svg="Icono" Clase="icono-vacio" /></div>
+    <h1>@Titulo</h1>
+    <p class="en-progreso-estado"><Icono Svg="Lucide.Construction" /> Apartado en progreso</p>
+    <p class="nota">@Descripcion</p>
+    <div class="en-progreso-ayuda">
+        <strong>Para quien lo desarrolla</strong>
+        <ul>
+            <li>Tareas: bloque <b>@Bloque</b> de <code>docs/Equipo/Tareas.md</code> · Spec: <code>@Spec</code></li>
+            <li>Ya están creados: <code>@Carpeta/@(Modulo)Pagina.razor</code>, <code>@(Modulo)ViewModel.cs</code> y <code>@(Modulo)Service.cs</code> (registrados en <code>ServiciosUi.cs</code> y en el menú <code>ModulosAdmin.cs</code>).</li>
+            <li>La pantalla, el ViewModel y el servicio se escriben aquí; el kit de componentes está en <code>Comun/Componentes</code>.</li>
+        </ul>
+    </div>
+</section>
+
+@code {
+    /// <summary>Nombre visible del apartado.</summary>
+    [Parameter, EditorRequired] public string Titulo { get; set; } = "";
+    /// <summary>Qué hará el apartado.</summary>
+    [Parameter, EditorRequired] public string Descripcion { get; set; } = "";
+    /// <summary>Ícono del apartado.</summary>
+    [Parameter, EditorRequired] public SvgIcon Icono { get; set; } = default!;
+    /// <summary>Letra del bloque de tareas (C, P o D).</summary>
+    [Parameter, EditorRequired] public string Bloque { get; set; } = "";
+    /// <summary>Archivo de la especificación.</summary>
+    [Parameter, EditorRequired] public string Spec { get; set; } = "";
+    /// <summary>Nombre del módulo en los archivos (por ejemplo <c>Clientes</c>).</summary>
+    [Parameter, EditorRequired] public string Modulo { get; set; } = "";
+
+    private string Carpeta => $"Modulos/{Modulo}";
+}
