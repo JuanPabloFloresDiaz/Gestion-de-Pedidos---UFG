@@ -1,14 +1,201 @@
-@* PROVISIONAL: apartado de Productos en progreso (bloque P de Tareas.md). Reemplazar el contenido por la pantalla real (Página + ViewModel):
-   ver Modulos/Usuarios/UsuariosPagina.razor como modelo y docs/Equipo/PrimerosPasos.md §5. *@
+@* Administración del inventario de productos. Solo marcado y enlace de eventos:
+   el estado y la lógica residen en ProductosViewModel. *@
 @implements IDisposable
 @inject ProductosViewModel Vm
+@inject SesionService Sesion
 
-<ModuloEnProgreso Modulo="Productos" Titulo="Productos" Icono="Lucide.Package" Bloque="P" Spec="docs/Especificaciones/Productos.md"
-                  Descripcion="Inventario: precios, existencias, clasificación por categoría y foto. Alta, edición y baja suave." />
+<PaginaModulo Titulo="Productos" Error="@Vm.Error" PanelVisible="Vm.Editando">
+    <Acciones>
+        @if (Sesion.TienePermiso(Permisos.ProductosCrear))
+        {
+            <Boton Variante="Primario" AlHacerClic="Vm.Nuevo">+ Nuevo producto</Boton>
+        }
+    </Acciones>
+
+    <Filtros>
+        <CampoTexto Etiqueta="Buscar" Placeholder="Nombre, descripción o código" @bind-Valor="Vm.TextoBusqueda" AlPresionarEnter="Vm.BuscarAsync" />
+        <CampoSelector Etiqueta="Categoría" @bind-Valor="Vm.FiltroCategoriaId" TextoVacio="Todas" Opciones="CategoriasOpciones" />
+        <CampoSelector Etiqueta="Subcategoría" @bind-Valor="Vm.FiltroSubcategoriaId" TextoVacio="Todas" Opciones="SubcategoriasFiltroOpciones" />
+        <CampoSelector Etiqueta="Estado" Valor="@EstadoComoNumero" ValorChanged="AlCambiarEstado" TextoVacio="Todos"
+                       Opciones="@(new[] { (1, "Activos"), (0, "Inactivos") })" />
+        <div class="filtros-botones">
+            <Boton Variante="Primario" Cargando="Vm.Cargando" AlHacerClic="Vm.BuscarAsync">Buscar</Boton>
+            <Boton AlHacerClic="Vm.LimpiarAsync">Limpiar</Boton>
+        </div>
+    </Filtros>
+
+    <Tabla>
+        <TablaDatos T="ProductoDto" Items="Vm.Pagina?.Elementos" Cargando="Vm.Cargando" EsInactiva="p => !p.Activo"
+                    AlSeleccionar="AlSeleccionar" TextoVacio="No hay productos con los filtros especificados.">
+            <Encabezado>
+                <th>Código</th>
+                <th>Producto</th>
+                <th>Subcategoría</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Tienda</th>
+                <th>Estado</th>
+                <th></th>
+            </Encabezado>
+            <Fila Context="p">
+                <td><code>@p.Codigo</code></td>
+                <td>
+                    <strong>@p.Nombre</strong>
+                    <br />
+                    <small class="nota">@Truncar(p.Descripcion, 60)</small>
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(p.Subcategoria))
+                    {
+                        <span class="etiqueta">@p.Subcategoria</span>
+                    }
+                    else
+                    {
+                        <span class="nota">Sin clasificar</span>
+                    }
+                </td>
+                <td><strong>@p.PrecioVenta.ToString("C2")</strong></td>
+                <td>
+                    @if (p.CantidadStock < 5)
+                    {
+                        <span class="etiqueta etiqueta-alerta" title="Stock bajo (&lt; 5 unidades)">@p.CantidadStock unid.</span>
+                    }
+                    else
+                    {
+                        <span>@p.CantidadStock unid.</span>
+                    }
+                </td>
+                <td>
+                    <small class="nota">@(p.MostrarStock ? "Stock exacto" : "Disponible/Agotado")</small>
+                </td>
+                <td>
+                    <ChipEstado Activo="p.Activo" Habilitado="PuedeCambiarEstado" AlHacerClic="() => Vm.SolicitarCambioEstado(p)" />
+                </td>
+                <td class="celda-acciones">
+                    @if (Sesion.TienePermiso(Permisos.ProductosEditar) && p.Activo)
+                    {
+                        <button class="enlace" @onclick="() => Vm.EditarAsync(p)">Editar</button>
+                    }
+                    @if (PuedeCambiarEstado)
+                    {
+                        <button class="enlace @(p.Activo ? "enlace-peligro" : "")" @onclick="() => Vm.SolicitarCambioEstado(p)" @onclick:stopPropagation="true">
+                            @(p.Activo ? "Dar de baja" : "Reactivar")
+                        </button>
+                    }
+                </td>
+            </Fila>
+        </TablaDatos>
+    </Tabla>
+
+    <Pie>
+        <Paginador Pagina="Vm.Pagina?.Pagina ?? 1" TotalPaginas="Vm.Pagina?.TotalPaginas ?? 0" Total="Vm.Pagina?.Total ?? 0"
+                   PaginaCambiada="Vm.IrAPaginaAsync" />
+    </Pie>
+
+    <Panel>
+        @if (Vm.Editando)
+        {
+            <form @onsubmit="Vm.GuardarAsync" @onsubmit:preventDefault>
+                <h2>@(Vm.Original is null ? "Nuevo producto" : $"Editar {Vm.Original.Nombre}")</h2>
+
+                <CampoTexto Etiqueta="Nombre del producto" @bind-Valor="Vm.Nombre" Error="@Vm.ErrorDe(nameof(Vm.Nombre))" />
+                <CampoTexto Etiqueta="Descripción" @bind-Valor="Vm.Descripcion" Error="@Vm.ErrorDe(nameof(Vm.Descripcion))" />
+
+                <div class="fila-campos">
+                    <CampoTexto Etiqueta="Precio de venta ($)" @bind-Valor="Vm.PrecioTexto" Error="@Vm.ErrorDe(nameof(Vm.PrecioTexto))" />
+                    <CampoTexto Etiqueta="Existencias (Stock)" Tipo="number" Valor="@Vm.CantidadStock.ToString()" ValorChanged="v => Vm.CantidadStock = int.TryParse(v, out var n) ? n : 0" Error="@Vm.ErrorDe(nameof(Vm.CantidadStock))" />
+                </div>
+
+                <CampoFecha Etiqueta="Fecha de ingreso al inventario" @bind-Valor="FechaIngresoNullable" Error="@Vm.ErrorDe(nameof(Vm.FechaIngreso))" Maximo="Hoy" />
+
+                <Casilla Etiqueta="Mostrar existencias exactas en la tienda pública" @bind-Valor="Vm.MostrarStock" />
+
+                <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--borde);" />
+
+                <h3>Clasificación y Filtros (Bloque K)</h3>
+                <CampoSelector Etiqueta="Subcategoría" Valor="Vm.SubcategoriaId" ValorChanged="Vm.AlCambiarSubcategoriaFormularioAsync"
+                               TextoVacio="Sin clasificar" Opciones="SubcategoriasFormularioOpciones" />
+
+                @if (Vm.FiltrosSubcategoria.Count > 0)
+                {
+                    <div class="filtros-producto" style="margin-top: 0.5rem;">
+                        <small class="nota" style="display:block; margin-bottom: 0.5rem;">Opciones de filtro para esta subcategoría:</small>
+                        @foreach (var f in Vm.FiltrosSubcategoria)
+                        {
+                            <CampoSelector Etiqueta="@f.Nombre"
+                                           Valor="@Vm.OpcionesPorFiltro.GetValueOrDefault(f.Id)"
+                                           ValorChanged="optId => Vm.EstablecerOpcionFiltro(f.Id, optId)"
+                                           TextoVacio="Sin especificar"
+                                           Opciones="f.Opciones.Where(o => o.Activo).Select(o => (o.Id, o.Valor))" />
+                        }
+                    </div>
+                }
+
+                <div class="fila-botones" style="margin-top: 1.5rem;">
+                    <Boton AlHacerClic="Vm.Cancelar">Cancelar</Boton>
+                    <Boton Variante="Primario" Tipo="submit" Cargando="Vm.Cargando">Guardar</Boton>
+                </div>
+            </form>
+        }
+    </Panel>
+</PaginaModulo>
+
+<DialogoConfirmacion Visible="Vm.HayConfirmacion" Titulo="@Vm.TituloConfirmacion" TextoConfirmar="@Vm.TextoConfirmar"
+                     Peligro="Vm.EsPeligro" Cargando="Vm.Cargando"
+                     AlConfirmar="Vm.ConfirmarAsync" AlCancelar="Vm.CancelarSolicitud">
+    @if (Vm.Pendiente is { } p)
+    {
+        @switch (Vm.Accion)
+        {
+            case AccionProducto.DarDeBaja:
+                <p>El producto <strong>@p.Nombre</strong> pasará a estado inactivo. No podrá ser agregado a nuevos pedidos ni se ofrecerá en la tienda web, pero sus datos e historial se conservan.</p>
+                break;
+            case AccionProducto.Reactivar:
+                <p>El producto <strong>@p.Nombre</strong> volverá a estar activo y disponible para el catálogo de pedidos y la tienda.</p>
+                break;
+        }
+    }
+</DialogoConfirmacion>
 
 @code {
-    // Cuando armen la pantalla real: suscribirse al evento del ViewModel con += y darse de baja con -= en Dispose, y repintar con InvokeAsync(StateHasChanged).
-    protected override void OnInitialized() => Vm.Cambiado += Vm_Cambiado;
+    private bool PuedeCambiarEstado => Sesion.TienePermiso(Permisos.ProductosDesactivar);
+
+    private int? EstadoComoNumero => Vm.FiltroActivo is null ? null : (Vm.FiltroActivo.Value ? 1 : 0);
+
+    private DateOnly Hoy => DateOnly.FromDateTime(DateTime.Today);
+
+    private DateOnly? FechaIngresoNullable
+    {
+        get => Vm.FechaIngreso;
+        set => Vm.FechaIngreso = value ?? Hoy;
+    }
+
+    private IEnumerable<(int, string)> CategoriasOpciones =>
+        Vm.Categorias.Select(c => (c.Id, c.Nombre));
+
+    private IEnumerable<(int, string)> SubcategoriasFiltroOpciones =>
+        Vm.FiltroCategoriaId is { } catId
+            ? Vm.Categorias.FirstOrDefault(c => c.Id == catId)?.Subcategorias.Select(s => (s.Id, s.Nombre)) ?? Enumerable.Empty<(int, string)>()
+            : Vm.Categorias.SelectMany(c => c.Subcategorias).Select(s => (s.Id, $"{s.Nombre} ({Vm.Categorias.First(cat => cat.Subcategorias.Any(sub => sub.Id == s.Id)).Nombre})"));
+
+    private IEnumerable<(int, string)> SubcategoriasFormularioOpciones =>
+        Vm.Categorias.SelectMany(c => c.Subcategorias.Where(s => s.Activo).Select(s => (s.Id, $"{c.Nombre} › {s.Nombre}")));
+
+    protected override async Task OnInitializedAsync()
+    {
+        Vm.Cambiado += Vm_Cambiado;
+        await Vm.IniciarAsync();
+    }
+
+    private void AlCambiarEstado(int? valor) => Vm.FiltroActivo = valor is null ? null : valor == 1;
+
+    private void AlSeleccionar(ProductoDto p)
+    {
+        if (p.Activo && Sesion.TienePermiso(Permisos.ProductosEditar)) _ = Vm.EditarAsync(p);
+    }
+
+    private static string Truncar(string texto, int longitud) =>
+        texto.Length <= longitud ? texto : texto[..longitud] + "…";
 
     private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
 
