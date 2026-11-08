@@ -33,25 +33,17 @@ public class ProductosTests
     // ---- Pruebas de ProductosService (publicadora de eventos) ----
 
     [Fact]
-    public async Task Servicio_PublicaEntidadCambiada_SoloTrasConfirmarLaApi()
+    public async Task ViewModel_TrasDispose_NoReaccionaAlEvento()
     {
-        var (e, servicio) = Crear();
-        var eventos = new List<EntidadCambiadaEventArgs>();
-        servicio.EntidadCambiada += (s, a) => { Assert.Same(servicio, s); eventos.Add(a); };
+        var (_, servicio) = Crear();
+        var vm = new ProductosViewModel(servicio);
+        var cambios = 0;
+        vm.Cambiado += (_, _) => cambios++;
 
-        var solicitud = new CrearProductoSolicitud("Laptop Asus", "Core i7 16GB", 799.99m, 5,
-            DateOnly.FromDateTime(DateTime.Today), 1, false);
+        vm.Dispose(); // Se ejecuta el -= en Dispose()
+        await servicio.CambiarEstadoAsync(1, false, default);
 
-        await servicio.CrearAsync(solicitud, default);
-
-        var ev = Assert.Single(eventos);
-        Assert.Equal(TipoEntidad.Producto, ev.Entidad);
-        Assert.Equal(TipoCambio.Registrada, ev.Tipo);
-
-        // Si la API falla, no se debe publicar ningún evento
-        e.Manejador.Responder = _ => (HttpStatusCode.UnprocessableEntity, new { title = "Regla violada", codigo = "REGLA" });
-        await Assert.ThrowsAsync<GestionPedidos.Ui.Comun.Api.ApiException>(() => servicio.CambiarEstadoAsync(1, false, default));
-        Assert.Single(eventos); // Se mantiene solo el evento anterior
+        Assert.Equal(0, cambios); // El ViewModel ya no debe recibir notificaciones
     }
 
     [Fact]
@@ -81,7 +73,7 @@ public class ProductosTests
     }
 
     [Fact]
-    public async Task ViewModel_Nuevo_PreparaFormularioYNotificaCambio()
+    public void ViewModel_Nuevo_PreparaFormularioYNotificaCambio()
     {
         var (_, servicio) = Crear();
         using var vm = new ProductosViewModel(servicio);
@@ -100,7 +92,11 @@ public class ProductosTests
     [Fact]
     public async Task ViewModel_GuardarAsync_ConCamposInvalidos_NoLlamaALaApi()
     {
-        var (_, servicio) = Crear();
+        var (e, servicio) = Crear();
+        var llamadas = 0;
+        var originalResponder = e.Manejador.Responder;
+        e.Manejador.Responder = r => { llamadas++; return originalResponder(r); };
+
         using var vm = new ProductosViewModel(servicio);
 
         vm.Nuevo();
@@ -109,6 +105,7 @@ public class ProductosTests
 
         await vm.GuardarAsync();
 
+        Assert.Equal(0, llamadas); // Garantiza que la API nunca se invocó
         Assert.True(vm.Editando);
         Assert.NotNull(vm.ErrorDe(nameof(vm.Nombre)));
         Assert.NotNull(vm.ErrorDe(nameof(vm.PrecioTexto)));

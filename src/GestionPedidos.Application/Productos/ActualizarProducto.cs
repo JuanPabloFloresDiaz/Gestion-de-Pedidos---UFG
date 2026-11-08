@@ -10,16 +10,19 @@ public sealed class ActualizarProducto
     private readonly IProductoRepository _productos;
     private readonly IUnitOfWork _uow;
     private readonly EventosAplicacion _eventos;
+    private readonly TimeProvider _reloj;
 
     /// <summary>Crea el caso de uso con sus dependencias.</summary>
     /// <param name="productos">Repositorio de productos.</param>
     /// <param name="uow">Unidad de trabajo.</param>
     /// <param name="eventos">Publicador de eventos del servidor.</param>
-    public ActualizarProducto(IProductoRepository productos, IUnitOfWork uow, EventosAplicacion eventos)
+    /// <param name="reloj">Proveedor de tiempo para pruebas de fecha de ingreso.</param>
+    public ActualizarProducto(IProductoRepository productos, IUnitOfWork uow, EventosAplicacion eventos, TimeProvider reloj)
     {
         _productos = productos;
         _uow = uow;
         _eventos = eventos;
+        _reloj = reloj;
     }
 
     /// <summary>Ejecuta la actualización del producto.</summary>
@@ -30,19 +33,10 @@ public sealed class ActualizarProducto
     /// <returns>Resultado con el producto actualizado o el error correspondiente.</returns>
     public async Task<Resultado<ProductoDto>> EjecutarAsync(int id, ActualizarProductoSolicitud s, int actorId, CancellationToken ct)
     {
-        var error = Validaciones.Texto(s.Nombre, "El nombre del producto", 150)
-            ?? Validaciones.Texto(s.Descripcion, "La descripción", 500);
+        var hoy = DateOnly.FromDateTime(_reloj.GetLocalNow().DateTime);
+        var error = ValidacionesProducto.Validar(s.Nombre, s.Descripcion, s.PrecioVenta, s.CantidadStock, s.FechaIngreso, hoy);
         if (error is not null)
             return Resultado<ProductoDto>.Falla(TipoError.Validacion, CodigosError.Validacion, error);
-
-        if (s.PrecioVenta < 0)
-            return Resultado<ProductoDto>.Falla(TipoError.Validacion, CodigosError.Validacion, "El precio de venta no puede ser negativo.");
-
-        if (s.CantidadStock < 0)
-            return Resultado<ProductoDto>.Falla(TipoError.Validacion, CodigosError.Validacion, "El stock no puede ser negativo.");
-
-        if (s.FechaIngreso > DateOnly.FromDateTime(DateTime.Today))
-            return Resultado<ProductoDto>.Falla(TipoError.Validacion, CodigosError.Validacion, "La fecha de ingreso no puede ser futura.");
 
         var producto = await _productos.ObtenerPorIdAsync(id, ct);
         if (producto is null)

@@ -14,8 +14,8 @@
 
     <Filtros>
         <CampoTexto Etiqueta="Buscar" Placeholder="Nombre, descripción o código" @bind-Valor="Vm.TextoBusqueda" AlPresionarEnter="Vm.BuscarAsync" />
-        <CampoSelector Etiqueta="Categoría" @bind-Valor="Vm.FiltroCategoriaId" TextoVacio="Todas" Opciones="CategoriasOpciones" />
-        <CampoSelector Etiqueta="Subcategoría" @bind-Valor="Vm.FiltroSubcategoriaId" TextoVacio="Todas" Opciones="SubcategoriasFiltroOpciones" />
+        <CampoSelector Etiqueta="Categoría" @bind-Valor="Vm.FiltroCategoriaId" TextoVacio="Todas" Opciones="Vm.CategoriasOpciones" />
+        <CampoSelector Etiqueta="Subcategoría" @bind-Valor="Vm.FiltroSubcategoriaId" TextoVacio="Todas" Opciones="Vm.SubcategoriasFiltroOpciones" />
         <CampoSelector Etiqueta="Estado" Valor="@EstadoComoNumero" ValorChanged="AlCambiarEstado" TextoVacio="Todos"
                        Opciones="@(new[] { (1, "Activos"), (0, "Inactivos") })" />
         <div class="filtros-botones">
@@ -56,9 +56,9 @@
                 </td>
                 <td><strong>@p.PrecioVenta.ToString("C2")</strong></td>
                 <td>
-                    @if (p.CantidadStock < 5)
+                    @if (Vm.EsStockBajo(p))
                     {
-                        <span class="etiqueta etiqueta-alerta" title="Stock bajo (&lt; 5 unidades)">@p.CantidadStock unid.</span>
+                        <span class="etiqueta etiqueta-alerta" title="Stock bajo (&lt; @ProductosViewModel.UmbralStockBajo unidades)">@p.CantidadStock unid.</span>
                     }
                     else
                     {
@@ -110,16 +110,16 @@
 
                 <Casilla Etiqueta="Mostrar existencias exactas en la tienda pública" @bind-Valor="Vm.MostrarStock" />
 
-                <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--borde);" />
+                <hr class="separador" />
 
-                <h3>Clasificación y Filtros (Bloque K)</h3>
+                <h3>Clasificación y filtros</h3>
                 <CampoSelector Etiqueta="Subcategoría" Valor="Vm.SubcategoriaId" ValorChanged="Vm.AlCambiarSubcategoriaFormularioAsync"
-                               TextoVacio="Sin clasificar" Opciones="SubcategoriasFormularioOpciones" />
+                               TextoVacio="Sin clasificar" Opciones="Vm.SubcategoriasFormularioOpciones" />
 
                 @if (Vm.FiltrosSubcategoria.Count > 0)
                 {
-                    <div class="filtros-producto" style="margin-top: 0.5rem;">
-                        <small class="nota" style="display:block; margin-bottom: 0.5rem;">Opciones de filtro para esta subcategoría:</small>
+                    <div class="filtros-producto">
+                        <small class="nota">Opciones de filtro para esta subcategoría:</small>
                         @foreach (var f in Vm.FiltrosSubcategoria)
                         {
                             <CampoSelector Etiqueta="@f.Nombre"
@@ -131,7 +131,7 @@
                     </div>
                 }
 
-                <div class="fila-botones" style="margin-top: 1.5rem;">
+                <div class="fila-botones fila-botones-pie">
                     <Boton AlHacerClic="Vm.Cancelar">Cancelar</Boton>
                     <Boton Variante="Primario" Tipo="submit" Cargando="Vm.Cargando">Guardar</Boton>
                 </div>
@@ -169,17 +169,6 @@
         get => Vm.FechaIngreso;
         set => Vm.FechaIngreso = value ?? Hoy;
     }
-
-    private IEnumerable<(int, string)> CategoriasOpciones =>
-        Vm.Categorias.Select(c => (c.Id, c.Nombre));
-
-    private IEnumerable<(int, string)> SubcategoriasFiltroOpciones =>
-        Vm.FiltroCategoriaId is { } catId
-            ? Vm.Categorias.FirstOrDefault(c => c.Id == catId)?.Subcategorias.Select(s => (s.Id, s.Nombre)) ?? Enumerable.Empty<(int, string)>()
-            : Vm.Categorias.SelectMany(c => c.Subcategorias).Select(s => (s.Id, $"{s.Nombre} ({Vm.Categorias.First(cat => cat.Subcategorias.Any(sub => sub.Id == s.Id)).Nombre})"));
-
-    private IEnumerable<(int, string)> SubcategoriasFormularioOpciones =>
-        Vm.Categorias.SelectMany(c => c.Subcategorias.Where(s => s.Activo).Select(s => (s.Id, $"{c.Nombre} › {s.Nombre}")));
 
     protected override async Task OnInitializedAsync()
     {

@@ -71,7 +71,7 @@ public sealed class ProductoRepository : IProductoRepository
         if (ids.Count == 0) return Array.Empty<(int, int)>();
 
         var validas = await _db.OpcionesFiltro
-            .Where(o => ids.Contains(o.Id) && o.Filtro.SubcategoriaId == subcategoriaId)
+            .Where(o => ids.Contains(o.Id) && o.Filtro!.SubcategoriaId == subcategoriaId)
             .Select(o => new { o.FiltroId, OpcionId = o.Id })
             .ToListAsync(ct);
 

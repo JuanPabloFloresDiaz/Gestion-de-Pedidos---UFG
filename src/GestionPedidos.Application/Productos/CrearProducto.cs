@@ -7,42 +7,31 @@ namespace GestionPedidos.Application.Productos;
 
 /// <summary>Caso de uso: alta de un nuevo producto en el catálogo.</summary>
 public sealed class CrearProducto
-{
-    private readonly IProductoRepository _productos;
+{private readonly IProductoRepository _productos;
     private readonly IUnitOfWork _uow;
     private readonly EventosAplicacion _eventos;
+    private readonly TimeProvider _reloj;
 
     /// <summary>Crea el caso de uso con sus dependencias.</summary>
     /// <param name="productos">Repositorio de productos.</param>
     /// <param name="uow">Unidad de trabajo.</param>
     /// <param name="eventos">Publicador de eventos del servidor.</param>
-    public CrearProducto(IProductoRepository productos, IUnitOfWork uow, EventosAplicacion eventos)
+    /// <param name="reloj">Proveedor de tiempo para pruebas de fecha de ingreso.</param>
+    public CrearProducto(IProductoRepository productos, IUnitOfWork uow, EventosAplicacion eventos, TimeProvider reloj)
     {
         _productos = productos;
         _uow = uow;
         _eventos = eventos;
+        _reloj = reloj;
     }
 
     /// <summary>Ejecuta el alta del producto.</summary>
-    /// <param name="s">Datos de la solicitud.</param>
-    /// <param name="actorId">Usuario administrador u operador que realiza la acción.</param>
-    /// <param name="ct">Token de cancelación.</param>
-    /// <returns>Resultado con el producto creado o el error correspondiente.</returns>
     public async Task<Resultado<ProductoDto>> EjecutarAsync(CrearProductoSolicitud s, int actorId, CancellationToken ct)
     {
-        var error = Validaciones.Texto(s.Nombre, "El nombre del producto", 150)
-            ?? Validaciones.Texto(s.Descripcion, "La descripción", 500);
+        var hoy = DateOnly.FromDateTime(_reloj.GetLocalNow().DateTime);
+        var error = ValidacionesProducto.Validar(s.Nombre, s.Descripcion, s.PrecioVenta, s.CantidadStock, s.FechaIngreso, hoy);
         if (error is not null)
             return Resultado<ProductoDto>.Falla(TipoError.Validacion, CodigosError.Validacion, error);
-
-        if (s.PrecioVenta < 0)
-            return Resultado<ProductoDto>.Falla(TipoError.Validacion, CodigosError.Validacion, "El precio de venta no puede ser negativo.");
-
-        if (s.CantidadStock < 0)
-            return Resultado<ProductoDto>.Falla(TipoError.Validacion, CodigosError.Validacion, "El stock no puede ser negativo.");
-
-        if (s.FechaIngreso > DateOnly.FromDateTime(DateTime.Today))
-            return Resultado<ProductoDto>.Falla(TipoError.Validacion, CodigosError.Validacion, "La fecha de ingreso no puede ser futura.");
 
         if (await _productos.ExisteNombreAsync(s.Nombre.Trim(), null, ct))
             return Resultado<ProductoDto>.Falla(TipoError.Conflicto, CodigosError.Conflicto, "Ya existe un producto con ese nombre.");
