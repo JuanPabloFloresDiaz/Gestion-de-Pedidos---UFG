@@ -200,10 +200,23 @@ a { color: var(--color-primario); }
   font-weight: 600; border: 1px solid transparent; }
 .chip-punto { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .chip-activo { color: var(--color-exito); background: color-mix(in srgb, var(--color-exito) 14%, transparent); border-color: color-mix(in srgb, var(--color-exito) 35%, transparent); }
+.chip-advertencia { color: var(--color-advertencia); background: color-mix(in srgb, var(--color-advertencia) 14%, transparent); border-color: color-mix(in srgb, var(--color-advertencia) 35%, transparent); }
 .chip-inactivo { color: var(--color-texto-suave); background: var(--color-superficie-2); border-color: var(--color-borde); }
 .chip-clicable { cursor: pointer; transition: transform .1s, box-shadow .15s; }
 .chip-clicable:hover { transform: translateY(-1px); box-shadow: 0 2px 8px color-mix(in srgb, currentColor 25%, transparent); }
 .baja-fecha { display: block; font-size: .74rem; color: var(--color-texto-suave); margin-top: 3px; }
+
+/* ---- Detalle interactivo de líneas (Pedidos) ---- */
+.tabla-lineas { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: .88rem; }
+.tabla-lineas th { text-align: left; padding: 6px 8px; border-bottom: 2px solid var(--color-borde); color: var(--color-texto-suave); }
+.tabla-lineas td { padding: 8px; border-bottom: 1px solid var(--color-borde); vertical-align: middle; }
+.tabla-lineas tfoot td { padding: 10px 8px; border-top: 2px solid var(--color-borde); }
+.input-cantidad { width: 70px; padding: 4px 6px; border: 1px solid var(--color-borde); border-radius: var(--radio); background: var(--color-superficie); color: var(--color-texto); }
+.total-destacado { font-size: 1.15rem; font-weight: 700; color: var(--color-primario); }
+.seccion-lineas { margin-top: 16px; margin-bottom: 16px; border-top: 1px solid var(--color-borde); padding-top: 12px; }
+.seccion-lineas-cabecera { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.aviso-vacio { color: var(--color-texto-suave); font-style: italic; margin: 12px 0; }
+.valor-fijo { margin: 4px 0 10px; color: var(--color-texto); }
 
 /* ---- Diálogo de confirmación ---- */
 .dialogo-fondo { position: fixed; inset: 0; background: rgba(8, 12, 22, .55); display: grid; place-items: center; z-index: 90; padding: 16px; animation: aparecer .15s; }

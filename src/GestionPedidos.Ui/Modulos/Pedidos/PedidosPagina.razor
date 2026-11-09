@@ -1,17 +1,262 @@
-@* PROVISIONAL: apartado de Pedidos en progreso (bloque D de Tareas.md). Reemplazar el contenido por la pantalla real (Página + ViewModel):
-   ver Modulos/Usuarios/UsuariosPagina.razor como modelo y docs/Equipo/PrimerosPasos.md §5. *@
+@* Administración de Pedidos y Detalles de Pedido ([Pedidos.md]).
+   Solo marcado y enlace de eventos: el estado y la lógica residen en PedidosViewModel. *@
 @implements IDisposable
 @inject PedidosViewModel Vm
+@inject SesionService Sesion
 
-<ModuloEnProgreso Modulo="Pedidos" Titulo="Pedidos" Icono="Lucide.ClipboardList" Bloque="D" Spec="docs/Especificaciones/Pedidos.md"
-                  Descripcion="Pedidos con sus líneas, estados y búsquedas. Alta, cambio de estado y baja suave." />
+<PaginaModulo Titulo="Pedidos" Error="@Vm.Error" PanelVisible="Vm.Editando">
+    <Acciones>
+        @if (Sesion.TienePermiso(Permisos.PedidosCrear))
+        {
+            <Boton Variante="Primario" AlHacerClic="Vm.Nuevo">
+                <Icono Svg="Lucide.Plus" /> + Nuevo pedido
+            </Boton>
+        }
+    </Acciones>
+
+    <Filtros>
+        <CampoTexto Etiqueta="Cliente" Placeholder="Nombre o apellidos" @bind-Valor="Vm.TextoCliente" AlPresionarEnter="Vm.BuscarAsync" />
+        <CampoTexto Etiqueta="Producto" Placeholder="Nombre de producto" @bind-Valor="Vm.TextoProducto" AlPresionarEnter="Vm.BuscarAsync" />
+        <CampoSelector Etiqueta="Estado" Valor="@EstadoComoNumero" ValorChanged="AlCambiarEstado" TextoVacio="Todos"
+                       Opciones="@(new[] { (1, "Pendiente"), (2, "Entregado"), (3, "Cancelado") })" />
+        <CampoFecha Etiqueta="Entrega desde" @bind-Valor="Vm.FiltroEntregaDesde" />
+        <CampoFecha Etiqueta="Entrega hasta" @bind-Valor="Vm.FiltroEntregaHasta" />
+        <div class="filtros-botones">
+            <Boton Variante="Primario" Cargando="Vm.Cargando" AlHacerClic="Vm.BuscarAsync">Buscar</Boton>
+            <Boton AlHacerClic="Vm.LimpiarAsync">Limpiar</Boton>
+        </div>
+    </Filtros>
+
+    <Tabla>
+        <TablaDatos T="PedidoResumenDto" Items="Vm.Pagina?.Elementos" Cargando="Vm.Cargando" EsInactiva="p => !p.Activo"
+                    AlSeleccionar="AlSeleccionar" TextoVacio="No hay pedidos registrados con esos filtros.">
+            <Encabezado>
+                <th>#</th>
+                <th>Fecha Pedido</th>
+                <th>Cliente</th>
+                <th>Entrega Prevista</th>
+                <th>Estado</th>
+                <th>Líneas</th>
+                <th>Total</th>
+                <th></th>
+            </Encabezado>
+            <Fila Context="p">
+                <td><strong>#@p.Id</strong></td>
+                <td>@p.FechaPedido.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@p.Cliente</td>
+                <td>@p.FechaEntrega.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <span class="chip-estado @(ClaseEstado(p.Estado, p.Activo))">
+                        @if (!p.Activo)
+                        {
+                            <Icono Svg="Lucide.Ban" />
+                            <span>Inactivo</span>
+                        }
+                        else
+                        {
+                            <span>@p.Estado</span>
+                        }
+                    </span>
+                </td>
+                <td>@p.Lineas @(p.Lineas == 1 ? "producto" : "productos")</td>
+                <td><strong>$@p.Total.ToString("0.00")</strong></td>
+                <td class="celda-acciones">
+                    @if (p.Activo && p.Estado == EstadosPedido.Pendiente && Sesion.TienePermiso(Permisos.PedidosEditar))
+                    {
+                        <button class="enlace" @onclick="() => Vm.EditarAsync(p.Id)" @onclick:stopPropagation="true">Editar</button>
+                    }
+                    @if (p.Activo && p.Estado == EstadosPedido.Pendiente && Sesion.TienePermiso(Permisos.PedidosCambiarEstado))
+                    {
+                        <button class="enlace" @onclick="() => Vm.SolicitarEntrega(p)" @onclick:stopPropagation="true">Entregar</button>
+                        <button class="enlace enlace-peligro" @onclick="() => Vm.SolicitarCancelacion(p)" @onclick:stopPropagation="true">Cancelar</button>
+                    }
+                    @if (p.Activo && Sesion.TienePermiso(Permisos.PedidosDesactivar))
+                    {
+                        <button class="enlace enlace-peligro" @onclick="() => Vm.SolicitarBaja(p)" @onclick:stopPropagation="true">Dar de baja</button>
+                    }
+                </td>
+            </Fila>
+        </TablaDatos>
+    </Tabla>
+
+    <Pie>
+        <Paginador Pagina="Vm.Pagina?.Pagina ?? 1" TotalPaginas="Vm.Pagina?.TotalPaginas ?? 0" Total="Vm.Pagina?.Total ?? 0"
+                   PaginaCambiada="Vm.IrAPaginaAsync" />
+    </Pie>
+
+    <Panel>
+        @if (Vm.Editando)
+        {
+            <form @onsubmit="Vm.GuardarAsync" @onsubmit:preventDefault class="formulario-pedido">
+                <h2>@(Vm.Original is null ? "Nuevo Pedido" : $"Editar Pedido #{Vm.Original.Id}")</h2>
+
+                @if (Vm.Original is null)
+                {
+                    <CampoSelector Etiqueta="Cliente" @bind-Valor="Vm.ClienteId" Error="@Vm.ErrorDe(nameof(Vm.ClienteId))"
+                                   Opciones="OpcionesClientes" TextoVacio="Seleccione un cliente…" />
+                }
+                else
+                {
+                    <div class="campo">
+                        <label>Cliente</label>
+                        <p class="valor-fijo"><strong>@Vm.Original.Cliente</strong> (Tel: @Vm.Original.TelefonoCliente)</p>
+                    </div>
+                }
+
+                <CampoFecha Etiqueta="Fecha de entrega" @bind-Valor="Vm.FechaEntrega" Error="@Vm.ErrorDe(nameof(Vm.FechaEntrega))" />
+                <CampoTexto Etiqueta="Comentarios u observaciones" @bind-Valor="Vm.Comentarios" Error="@Vm.ErrorDe(nameof(Vm.Comentarios))" />
+
+                <div class="seccion-lineas">
+                    <div class="seccion-lineas-cabecera">
+                        <h3>Líneas de Producto</h3>
+                        <div class="selector-agregar-producto">
+                            <CampoSelector Etiqueta="Agregar producto" Valor="_productoSeleccionadoId" ValorChanged="AlSeleccionarProductoParaAgregar"
+                                           Opciones="OpcionesProductos" TextoVacio="Seleccione un producto para agregar…" />
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Vm.ErrorDe("Lineas")))
+                    {
+                        <small class="mensaje-error" role="alert">@Vm.ErrorDe("Lineas")</small>
+                    }
+
+                    @if (Vm.Lineas.Count == 0)
+                    {
+                        <p class="aviso-vacio">No ha agregado productos a este pedido. Seleccione uno arriba para añadirlo.</p>
+                    }
+                    else
+                    {
+                        <table class="tabla-lineas">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Producto</th>
+                                    <th>Precio</th>
+                                    <th>Cantidad</th>
+                                    <th>Subtotal</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var linea in Vm.Lineas)
+                                {
+                                    <tr>
+                                        <td><code>@linea.Codigo</code></td>
+                                        <td>@linea.Producto</td>
+                                        <td>$@linea.PrecioUnitario.ToString("0.00")</td>
+                                        <td class="celda-cantidad">
+                                            <input type="number" min="1" max="999" value="@linea.Cantidad"
+                                                   @onchange="(e) => AlCambiarCantidadLinea(linea, e)" class="input-cantidad" />
+                                        </td>
+                                        <td><strong>$@linea.Subtotal.ToString("0.00")</strong></td>
+                                        <td>
+                                            <button type="button" class="enlace enlace-peligro" @onclick="() => Vm.QuitarLinea(linea)">
+                                                <Icono Svg="Lucide.Trash" /> Quitar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4" class="texto-derecha"><strong>Total:</strong></td>
+                                    <td colspan="2"><span class="total-destacado">$@Vm.TotalCalculado.ToString("0.00")</span></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    }
+                </div>
+
+                <div class="fila-botones">
+                    <Boton AlHacerClic="Vm.CancelarEdicion">Cancelar</Boton>
+                    <Boton Variante="Primario" Tipo="submit" Cargando="Vm.Cargando">Guardar Pedido</Boton>
+                </div>
+            </form>
+        }
+    </Panel>
+</PaginaModulo>
+
+<DialogoConfirmacion Visible="Vm.HayConfirmacion" Titulo="@Vm.TituloConfirmacion" TextoConfirmar="@Vm.TextoConfirmar"
+                     Peligro="Vm.EsAccionPeligro" Cargando="Vm.Cargando"
+                     AlConfirmar="Vm.ConfirmarAccionAsync" AlCancelar="Vm.CancelarSolicitud">
+    <p>@Vm.MensajeConfirmacion</p>
+</DialogoConfirmacion>
 
 @code {
-    // Cuando armen la pantalla real: suscribirse al evento del ViewModel con += y darse de baja con -= en Dispose, y repintar con InvokeAsync(StateHasChanged).
-    protected override void OnInitialized() => Vm.Cambiado += Vm_Cambiado;
+    private int? _productoSeleccionadoId;
+
+    private IEnumerable<(int, string)> OpcionesClientes =>
+        Vm.ClientesDisponibles.Select(c => (c.Id, $"{c.Nombre} ({c.Telefono})"));
+
+    private IEnumerable<(int, string)> OpcionesProductos =>
+        Vm.ProductosDisponibles.Select(p => (p.Id, $"{p.Nombre} (${p.PrecioVenta:0.00} - Stock: {p.CantidadStock})"));
+
+    private int? EstadoComoNumero => Vm.FiltroEstado switch
+    {
+        EstadosPedido.Pendiente => 1,
+        EstadosPedido.Entregado => 2,
+        EstadosPedido.Cancelado => 3,
+        _ => null
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        Vm.Cambiado += Vm_Cambiado;
+        await Vm.IniciarAsync();
+    }
+
+    private void AlCambiarEstado(int? valor)
+    {
+        Vm.FiltroEstado = valor switch
+        {
+            1 => EstadosPedido.Pendiente,
+            2 => EstadosPedido.Entregado,
+            3 => EstadosPedido.Cancelado,
+            _ => null
+        };
+    }
+
+    private void AlSeleccionarProductoParaAgregar(int? prodId)
+    {
+        _productoSeleccionadoId = null;
+        if (!prodId.HasValue) return;
+
+        var prod = Vm.ProductosDisponibles.FirstOrDefault(p => p.Id == prodId.Value);
+        if (prod is not null)
+        {
+            Vm.AgregarProducto(prod);
+        }
+    }
+
+    private void AlCambiarCantidadLinea(LineaPedidoEditable linea, ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var cant) && cant > 0)
+        {
+            Vm.CambiarCantidad(linea, cant);
+        }
+    }
+
+    private void AlSeleccionar(PedidoResumenDto p)
+    {
+        if (p.Activo && p.Estado == EstadosPedido.Pendiente && Sesion.TienePermiso(Permisos.PedidosEditar))
+        {
+            _ = Vm.EditarAsync(p.Id);
+        }
+    }
+
+    private static string ClaseEstado(string estado, bool activo)
+    {
+        if (!activo) return "chip-inactivo";
+        return estado switch
+        {
+            EstadosPedido.Entregado => "chip-activo",
+            EstadosPedido.Cancelado => "chip-inactivo",
+            _ => "chip-advertencia"
+        };
+    }
 
     private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
 
-    /// <summary>Baja de la suscripción (par obligatorio del +=).</summary>
+    /// <summary>Baja de la suscripción al cerrar la vista.</summary>
     public void Dispose() => Vm.Cambiado -= Vm_Cambiado;
 }
