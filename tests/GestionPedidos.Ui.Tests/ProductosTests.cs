@@ -36,7 +36,7 @@ public class ProductosTests
     public async Task ViewModel_TrasDispose_NoReaccionaAlEvento()
     {
         var (_, servicio) = Crear();
-        var vm = new ProductosViewModel(servicio);
+        var vm = new ProductosViewModel(servicio, TimeProvider.System);
         var cambios = 0;
         vm.Cambiado += (_, _) => cambios++;
 
@@ -59,7 +59,7 @@ public class ProductosTests
     public async Task ViewModel_IniciarAsync_CargaCategoriasYResultados()
     {
         var (_, servicio) = Crear();
-        using var vm = new ProductosViewModel(servicio);
+        using var vm = new ProductosViewModel(servicio, TimeProvider.System);
 
         var cambios = 0;
         vm.Cambiado += (_, _) => cambios++;
@@ -76,7 +76,7 @@ public class ProductosTests
     public void ViewModel_Nuevo_PreparaFormularioYNotificaCambio()
     {
         var (_, servicio) = Crear();
-        using var vm = new ProductosViewModel(servicio);
+        using var vm = new ProductosViewModel(servicio, TimeProvider.System);
 
         var cambioNotificado = false;
         vm.Cambiado += (_, _) => cambioNotificado = true;
@@ -97,7 +97,7 @@ public class ProductosTests
         var originalResponder = e.Manejador.Responder;
         e.Manejador.Responder = r => { llamadas++; return originalResponder(r); };
 
-        using var vm = new ProductosViewModel(servicio);
+        using var vm = new ProductosViewModel(servicio, TimeProvider.System);
 
         vm.Nuevo();
         vm.Nombre = ""; // inválido
@@ -115,7 +115,7 @@ public class ProductosTests
     public async Task ViewModel_SolicitarCambioEstado_Y_Confirmar_CambiaElEstado()
     {
         var (_, servicio) = Crear();
-        using var vm = new ProductosViewModel(servicio);
+        using var vm = new ProductosViewModel(servicio, TimeProvider.System);
 
         var producto = Producto(1, activo: true);
         vm.SolicitarCambioEstado(producto);
@@ -134,7 +134,7 @@ public class ProductosTests
     public async Task ViewModel_CambioDeSubcategoria_CargaFiltrosDinamicos()
     {
         var (_, servicio) = Crear();
-        using var vm = new ProductosViewModel(servicio);
+        using var vm = new ProductosViewModel(servicio, TimeProvider.System);
 
         await vm.AlCambiarSubcategoriaFormularioAsync(1);
 

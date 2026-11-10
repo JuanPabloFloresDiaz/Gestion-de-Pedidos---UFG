@@ -1,5 +1,6 @@
 using GestionPedidos.Application.Common;
 using GestionPedidos.Application.Eventos;
+using GestionPedidos.Application.Tienda;
 using GestionPedidos.Contracts;
 
 namespace GestionPedidos.Application.Productos;
@@ -33,10 +34,18 @@ public sealed class ActualizarProducto
     /// <returns>Resultado con el producto actualizado o el error correspondiente.</returns>
     public async Task<Resultado<ProductoDto>> EjecutarAsync(int id, ActualizarProductoSolicitud s, int actorId, CancellationToken ct)
     {
-        var hoy = DateOnly.FromDateTime(_reloj.GetLocalNow().DateTime);
+        var hoy = RealizarPedidoDeCliente.Hoy(_reloj);   // fecha de El Salvador, no la del servidor
         var error = ValidacionesProducto.Validar(s.Nombre, s.Descripcion, s.PrecioVenta, s.CantidadStock, s.FechaIngreso, hoy);
         if (error is not null)
             return Resultado<ProductoDto>.Falla(TipoError.Validacion, CodigosError.Validacion, error);
+
+        var (errorVersion, version) = ValidacionesProducto.LeerVersion(s.RowVersion);
+        if (errorVersion is not null)
+            return Resultado<ProductoDto>.Falla(TipoError.Validacion, CodigosError.Validacion, errorVersion);
+
+        var (errorClasificacion, opciones) = await ValidacionesProducto.ResolverClasificacionAsync(_productos, s.SubcategoriaId, s.OpcionIds, ct);
+        if (errorClasificacion is not null)
+            return Resultado<ProductoDto>.Falla(TipoError.Validacion, CodigosError.Validacion, errorClasificacion);
 
         var producto = await _productos.ObtenerPorIdAsync(id, ct);
         if (producto is null)
@@ -48,8 +57,7 @@ public sealed class ActualizarProducto
         if (await _productos.ExisteNombreAsync(s.Nombre.Trim(), id, ct))
             return Resultado<ProductoDto>.Falla(TipoError.Conflicto, CodigosError.Conflicto, "Ya existe otro producto con ese nombre.");
 
-        if (!string.IsNullOrEmpty(s.RowVersion))
-            _productos.FijarVersionOriginal(producto, Convert.FromBase64String(s.RowVersion));
+        _productos.FijarVersionOriginal(producto, version);
 
         producto.Nombre = s.Nombre.Trim();
         producto.Descripcion = s.Descripcion.Trim();
@@ -58,18 +66,7 @@ public sealed class ActualizarProducto
         producto.FechaIngreso = s.FechaIngreso;
         producto.MostrarStock = s.MostrarStock;
 
-        if (s.SubcategoriaId is { } subId)
-        {
-            var opcionesValidas = s.OpcionIds is not null && s.OpcionIds.Count > 0
-                ? await _productos.ObtenerOpcionesValidasAsync(subId, s.OpcionIds, ct)
-                : Array.Empty<(int, int)>();
-
-            producto.EstablecerClasificacion(subId, opcionesValidas);
-        }
-        else
-        {
-            producto.EstablecerClasificacion(null, Array.Empty<(int, int)>());
-        }
+        producto.EstablecerClasificacion(s.SubcategoriaId, opciones);
 
         await _uow.GuardarAsync(ct);
 

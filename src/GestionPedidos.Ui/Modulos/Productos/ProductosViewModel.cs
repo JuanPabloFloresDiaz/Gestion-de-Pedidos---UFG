@@ -22,27 +22,42 @@ public enum AccionProducto
 /// </summary>
 public sealed class ProductosViewModel : ViewModelBase
 {
+    /// <summary>Unidades por debajo de las cuales el listado marca el stock como bajo.</summary>
     public const int UmbralStockBajo = 5;
     private readonly ProductosService _servicio;
+    private readonly TimeProvider _reloj;
     private int _pagina = 1;
 
     /// <summary>Crea el ViewModel y se suscribe al evento de cambio de entidades para refrescar.</summary>
     /// <param name="servicio">Servicio de productos.</param>
-    public ProductosViewModel(ProductosService servicio)
+    /// <param name="reloj">Reloj inyectado (en las pruebas se controla la fecha).</param>
+    public ProductosViewModel(ProductosService servicio, TimeProvider reloj)
     {
         _servicio = servicio;
+        _reloj = reloj;
+        _fechaIngreso = Hoy;
         _servicio.EntidadCambiada += Productos_EntidadCambiada;
     }
 
-   /// <summary>Indica si el producto tiene pocas existencias.</summary>
+    /// <summary>Hoy en El Salvador (UTC−6); la fecha de ingreso no puede ser posterior.</summary>
+    public DateOnly Hoy => DateOnly.FromDateTime(_reloj.GetUtcNow().UtcDateTime.AddHours(-6));
+
+    /// <summary>Indica si el producto tiene pocas existencias.</summary>
+    /// <param name="p">Producto del listado.</param>
     public bool EsStockBajo(ProductoDto p) => p.CantidadStock < UmbralStockBajo;
 
+    /// <summary>Texto de búsqueda por nombre, descripción o código.</summary>
     public string TextoBusqueda { get; set; } = "";
+    /// <summary>Filtro por categoría en el listado.</summary>
     public int? FiltroCategoriaId { get; set; }
+    /// <summary>Filtro por subcategoría en el listado.</summary>
     public int? FiltroSubcategoriaId { get; set; }
+    /// <summary>Filtro por estado: <c>null</c> todos, <c>true</c> activos, <c>false</c> inactivos.</summary>
     public bool? FiltroActivo { get; set; } = true;
 
+    /// <summary>Página de resultados actual.</summary>
     public PaginaDto<ProductoDto>? Pagina { get; private set; }
+    /// <summary>Árbol de categorías disponibles en el sistema.</summary>
     public IReadOnlyList<CategoriaDto> Categorias { get; private set; } = Array.Empty<CategoriaDto>();
 
     /// <summary>Opciones del selector de categorías formateadas para la UI.</summary>
@@ -59,10 +74,13 @@ public sealed class ProductosViewModel : ViewModelBase
     public IEnumerable<(int Id, string Nombre)> SubcategoriasFormularioOpciones =>
         Categorias.SelectMany(c => c.Subcategorias.Where(s => s.Activo).Select(s => (s.Id, $"{c.Nombre} › {s.Nombre}")));
 
+    /// <summary>Indica si el panel de alta/edición está abierto.</summary>
     public bool Editando { get; private set; }
+    /// <summary>Producto en edición, o <c>null</c> si es uno nuevo.</summary>
     public ProductoDto? Original { get; private set; }
 
     private string _nombre = "";
+    /// <summary>Campo: nombre del producto.</summary>
     public string Nombre
     {
         get => _nombre;
@@ -70,6 +88,7 @@ public sealed class ProductosViewModel : ViewModelBase
     }
 
     private string _descripcion = "";
+    /// <summary>Campo: descripción del producto.</summary>
     public string Descripcion
     {
         get => _descripcion;
@@ -77,6 +96,7 @@ public sealed class ProductosViewModel : ViewModelBase
     }
 
     private string _precioTexto = "0.00";
+    /// <summary>Campo: precio de venta en formato texto para edición.</summary>
     public string PrecioTexto
     {
         get => _precioTexto;
@@ -84,44 +104,54 @@ public sealed class ProductosViewModel : ViewModelBase
     }
 
     private int _cantidadStock;
+    /// <summary>Campo: cantidad en existencias.</summary>
     public int CantidadStock
     {
         get => _cantidadStock;
         set { _cantidadStock = value; ErroresCampos.Remove(nameof(CantidadStock)); }
     }
 
-    private DateOnly _fechaIngreso = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly _fechaIngreso;
+    /// <summary>Campo: fecha de ingreso al inventario.</summary>
     public DateOnly FechaIngreso
     {
         get => _fechaIngreso;
         set { _fechaIngreso = value; ErroresCampos.Remove(nameof(FechaIngreso)); }
     }
 
+    /// <summary>Campo: interruptor para mostrar existencias exactas en la tienda web.</summary>
     public bool MostrarStock { get; set; }
 
     private int? _subcategoriaId;
+    /// <summary>Campo: subcategoría elegida (Bloque K).</summary>
     public int? SubcategoriaId
     {
         get => _subcategoriaId;
         set { _subcategoriaId = value; ErroresCampos.Remove(nameof(SubcategoriaId)); }
     }
 
+    /// <summary>Filtros asociados a la subcategoría seleccionada en el formulario.</summary>
     public IReadOnlyList<FiltroDto> FiltrosSubcategoria { get; private set; } = Array.Empty<FiltroDto>();
+    /// <summary>Opciones elegidas por cada filtro (clave: FiltroId, valor: OpcionId).</summary>
     public Dictionary<int, int?> OpcionesPorFiltro { get; } = new();
+    /// <summary>Errores de validación por campo para la interfaz.</summary>
     public Dictionary<string, string> ErroresCampos { get; } = new();
 
+    /// <summary>Carga inicial de categorías y de la primera página de productos.</summary>
     public async Task IniciarAsync()
     {
         await EjecutarAsync(async ct => Categorias = await _servicio.ObtenerCategoriasAsync(ct));
         await BuscarAsync();
     }
 
+    /// <summary>Busca productos con los filtros aplicados desde la primera página.</summary>
     public Task BuscarAsync()
     {
         _pagina = 1;
         return CargarAsync();
     }
 
+    /// <summary>Limpia los filtros de búsqueda y recarga el listado.</summary>
     public Task LimpiarAsync()
     {
         TextoBusqueda = "";
@@ -131,6 +161,8 @@ public sealed class ProductosViewModel : ViewModelBase
         return BuscarAsync();
     }
 
+    /// <summary>Navega a una página específica.</summary>
+    /// <param name="pagina">Número de página.</param>
     public Task IrAPaginaAsync(int pagina)
     {
         _pagina = pagina;
@@ -140,6 +172,7 @@ public sealed class ProductosViewModel : ViewModelBase
     private Task CargarAsync() => EjecutarAsync(async ct =>
         Pagina = await _servicio.BuscarAsync(TextoBusqueda, FiltroCategoriaId, FiltroSubcategoriaId, FiltroActivo, _pagina, 10, ct));
 
+    /// <summary>Abre el panel lateral para dar de alta un producto nuevo.</summary>
     public void Nuevo()
     {
         Original = null;
@@ -150,7 +183,7 @@ public sealed class ProductosViewModel : ViewModelBase
         Descripcion = "";
         PrecioTexto = "0.00";
         CantidadStock = 0;
-        FechaIngreso = DateOnly.FromDateTime(DateTime.Today);
+        FechaIngreso = Hoy;
         MostrarStock = false;
         SubcategoriaId = null;
         FiltrosSubcategoria = Array.Empty<FiltroDto>();
@@ -158,6 +191,8 @@ public sealed class ProductosViewModel : ViewModelBase
         OnCambiado();
     }
 
+    /// <summary>Abre el panel lateral para editar un producto existente.</summary>
+    /// <param name="producto">Producto seleccionado.</param>
     public async Task EditarAsync(ProductoDto producto)
     {
         Original = producto;
@@ -193,6 +228,7 @@ public sealed class ProductosViewModel : ViewModelBase
         OnCambiado();
     }
 
+    /// <summary>Cierra el panel lateral sin guardar cambios.</summary>
     public void Cancelar()
     {
         Editando = false;
@@ -202,6 +238,8 @@ public sealed class ProductosViewModel : ViewModelBase
         OnCambiado();
     }
 
+    /// <summary>Se ejecuta al cambiar la subcategoría en el formulario para cargar sus filtros dinámicos.</summary>
+    /// <param name="subcategoriaId">Identificador de la subcategoría elegida.</param>
     public async Task AlCambiarSubcategoriaFormularioAsync(int? subcategoriaId)
     {
         SubcategoriaId = subcategoriaId;
@@ -224,12 +262,16 @@ public sealed class ProductosViewModel : ViewModelBase
         OnCambiado();
     }
 
+    /// <summary>Actualiza la opción seleccionada para un filtro específico.</summary>
+    /// <param name="filtroId">Identificador del filtro.</param>
+    /// <param name="opcionId">Identificador de la opción seleccionada.</param>
     public void EstablecerOpcionFiltro(int filtroId, int? opcionId)
     {
         OpcionesPorFiltro[filtroId] = opcionId;
         OnCambiado();
     }
 
+    /// <summary>Valida los datos y persiste el producto (alta o modificación).</summary>
     public async Task GuardarAsync()
     {
         if (!Validar()) { OnCambiado(); return; }
@@ -276,10 +318,14 @@ public sealed class ProductosViewModel : ViewModelBase
         }
     }
 
+    /// <summary>Producto sobre el que se solicita confirmación.</summary>
     public ProductoDto? Pendiente { get; private set; }
+    /// <summary>Acción que espera confirmación.</summary>
     public AccionProducto Accion { get; private set; }
+    /// <summary>Indica si el diálogo de confirmación está abierto.</summary>
     public bool HayConfirmacion => Pendiente is not null && Accion != AccionProducto.Ninguna;
 
+    /// <summary>Título del diálogo de confirmación.</summary>
     public string TituloConfirmacion => Accion switch
     {
         AccionProducto.DarDeBaja => "¿Dar de baja al producto?",
@@ -287,6 +333,7 @@ public sealed class ProductosViewModel : ViewModelBase
         _ => "",
     };
 
+    /// <summary>Texto del botón de confirmación.</summary>
     public string TextoConfirmar => Accion switch
     {
         AccionProducto.DarDeBaja => "Dar de baja",
@@ -294,8 +341,11 @@ public sealed class ProductosViewModel : ViewModelBase
         _ => "Confirmar",
     };
 
+    /// <summary>Indica si la acción es destructiva o de advertencia.</summary>
     public bool EsPeligro => Accion == AccionProducto.DarDeBaja;
 
+    /// <summary>Solicita confirmación para dar de baja o reactivar un producto.</summary>
+    /// <param name="producto">Producto seleccionado.</param>
     public void SolicitarCambioEstado(ProductoDto producto)
     {
         Pendiente = producto;
@@ -303,6 +353,7 @@ public sealed class ProductosViewModel : ViewModelBase
         OnCambiado();
     }
 
+    /// <summary>Cierra el diálogo de confirmación sin ejecutar la acción.</summary>
     public void CancelarSolicitud()
     {
         Pendiente = null;
@@ -310,6 +361,7 @@ public sealed class ProductosViewModel : ViewModelBase
         OnCambiado();
     }
 
+    /// <summary>Ejecuta la acción de estado confirmada.</summary>
     public async Task ConfirmarAsync()
     {
         var producto = Pendiente;
@@ -339,17 +391,21 @@ public sealed class ProductosViewModel : ViewModelBase
         if (CantidadStock < 0)
             ErroresCampos[nameof(CantidadStock)] = "El stock no puede ser negativo.";
 
-        if (FechaIngreso > DateOnly.FromDateTime(DateTime.Today))
+        if (FechaIngreso > Hoy)
             ErroresCampos[nameof(FechaIngreso)] = "La fecha de ingreso no puede ser futura.";
 
         return ErroresCampos.Count == 0;
     }
 
+    /// <summary>Obtiene el error asociado a un campo del formulario.</summary>
+    /// <param name="campo">Nombre de la propiedad.</param>
+    /// <returns>Mensaje de error o <c>null</c>.</returns>
     public string? ErrorDe(string campo) => ErroresCampos.GetValueOrDefault(campo);
 
     private async void Productos_EntidadCambiada(object sender, EntidadCambiadaEventArgs e) =>
         await CargarAsync();
 
+    /// <summary>Libera recursos y desuscribe eventos.</summary>
     public override void Dispose()
     {
         _servicio.EntidadCambiada -= Productos_EntidadCambiada;

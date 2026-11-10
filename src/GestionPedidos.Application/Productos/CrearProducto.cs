@@ -1,5 +1,6 @@
 using GestionPedidos.Application.Common;
 using GestionPedidos.Application.Eventos;
+using GestionPedidos.Application.Tienda;
 using GestionPedidos.Contracts;
 using GestionPedidos.Domain.Productos;
 
@@ -7,7 +8,8 @@ namespace GestionPedidos.Application.Productos;
 
 /// <summary>Caso de uso: alta de un nuevo producto en el catálogo.</summary>
 public sealed class CrearProducto
-{private readonly IProductoRepository _productos;
+{
+    private readonly IProductoRepository _productos;
     private readonly IUnitOfWork _uow;
     private readonly EventosAplicacion _eventos;
     private readonly TimeProvider _reloj;
@@ -26,9 +28,13 @@ public sealed class CrearProducto
     }
 
     /// <summary>Ejecuta el alta del producto.</summary>
+    /// <param name="s">Datos de la solicitud.</param>
+    /// <param name="actorId">Usuario administrador u operador que realiza la acción.</param>
+    /// <param name="ct">Token de cancelación.</param>
+    /// <returns>Resultado con el producto creado o el error correspondiente.</returns>
     public async Task<Resultado<ProductoDto>> EjecutarAsync(CrearProductoSolicitud s, int actorId, CancellationToken ct)
     {
-        var hoy = DateOnly.FromDateTime(_reloj.GetLocalNow().DateTime);
+        var hoy = RealizarPedidoDeCliente.Hoy(_reloj);   // fecha de El Salvador, no la del servidor
         var error = ValidacionesProducto.Validar(s.Nombre, s.Descripcion, s.PrecioVenta, s.CantidadStock, s.FechaIngreso, hoy);
         if (error is not null)
             return Resultado<ProductoDto>.Falla(TipoError.Validacion, CodigosError.Validacion, error);
@@ -50,14 +56,12 @@ public sealed class CrearProducto
         if (!string.IsNullOrWhiteSpace(s.Codigo))
             producto.Codigo = s.Codigo.Trim().ToUpperInvariant();
 
-        if (s.SubcategoriaId is { } subId)
-        {
-            var opcionesValidas = s.OpcionIds is not null && s.OpcionIds.Count > 0
-                ? await _productos.ObtenerOpcionesValidasAsync(subId, s.OpcionIds, ct)
-                : Array.Empty<(int, int)>();
+        var (errorClasificacion, opciones) = await ValidacionesProducto.ResolverClasificacionAsync(_productos, s.SubcategoriaId, s.OpcionIds, ct);
+        if (errorClasificacion is not null)
+            return Resultado<ProductoDto>.Falla(TipoError.Validacion, CodigosError.Validacion, errorClasificacion);
 
-            producto.EstablecerClasificacion(subId, opcionesValidas);
-        }
+        if (s.SubcategoriaId is not null)
+            producto.EstablecerClasificacion(s.SubcategoriaId, opciones);
 
         _productos.Agregar(producto);
         await _uow.GuardarAsync(ct);

@@ -29,6 +29,12 @@ public interface IProductoRepository
     /// <returns><c>true</c> si existe, <c>false</c> en caso contrario.</returns>
     Task<bool> ExisteNombreAsync(string nombre, int? exceptoId, CancellationToken ct);
 
+    /// <summary>Comprueba que la subcategoría exista y esté activa.</summary>
+    /// <param name="subcategoriaId">Identificador de la subcategoría.</param>
+    /// <param name="ct">Token de cancelación.</param>
+    /// <returns><c>true</c> si existe y está activa.</returns>
+    Task<bool> ExisteSubcategoriaActivaAsync(int subcategoriaId, CancellationToken ct);
+
     /// <summary>Valida que las opciones pertenezcan a filtros de la subcategoría indicada.</summary>
     /// <param name="subcategoriaId">Identificador de la subcategoría.</param>
     /// <param name="opcionIds">Identificadores de las opciones.</param>

@@ -65,6 +65,10 @@ public sealed class ProductoRepository : IProductoRepository
         _db.Productos.AnyAsync(p => p.Nombre == nombre && (exceptoId == null || p.Id != exceptoId.Value), ct);
 
     /// <inheritdoc/>
+    public Task<bool> ExisteSubcategoriaActivaAsync(int subcategoriaId, CancellationToken ct) =>
+        _db.Subcategorias.AnyAsync(s => s.Id == subcategoriaId && s.Activo, ct);
+
+    /// <inheritdoc/>
     public async Task<IReadOnlyList<(int FiltroId, int OpcionId)>> ObtenerOpcionesValidasAsync(int subcategoriaId, IEnumerable<int> opcionIds, CancellationToken ct)
     {
         var ids = opcionIds.Distinct().ToList();

@@ -162,7 +162,7 @@
 
     private int? EstadoComoNumero => Vm.FiltroActivo is null ? null : (Vm.FiltroActivo.Value ? 1 : 0);
 
-    private DateOnly Hoy => DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly Hoy => Vm.Hoy;
 
     private DateOnly? FechaIngresoNullable
     {

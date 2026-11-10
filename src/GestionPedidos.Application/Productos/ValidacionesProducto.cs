@@ -27,4 +27,49 @@ internal static class ValidacionesProducto
 
         return null;
     }
+
+    /// <summary>
+    /// Valida la clasificación pedida (subcategoría y opciones de filtro) y devuelve los pares (filtro, opción) a guardar.
+    /// Rechaza con un mensaje claro lo que antes terminaba en error 500 o se descartaba en silencio: subcategoría inexistente
+    /// o inactiva, opciones que no existen o son de otra subcategoría, dos opciones del mismo filtro y opciones sin subcategoría.
+    /// </summary>
+    public static async Task<(string? Error, IReadOnlyList<(int FiltroId, int OpcionId)> Opciones)> ResolverClasificacionAsync(
+        IProductoRepository productos, int? subcategoriaId, IReadOnlyList<int>? opcionIds, CancellationToken ct)
+    {
+        var pedidas = (opcionIds ?? Array.Empty<int>()).Distinct().ToList();
+
+        if (subcategoriaId is null)
+            return pedidas.Count > 0
+                ? ("No se pueden elegir opciones de filtro sin una subcategoría.", Array.Empty<(int, int)>())
+                : (null, Array.Empty<(int, int)>());
+
+        if (!await productos.ExisteSubcategoriaActivaAsync(subcategoriaId.Value, ct))
+            return ("La subcategoría seleccionada no existe o está inactiva.", Array.Empty<(int, int)>());
+
+        if (pedidas.Count == 0)
+            return (null, Array.Empty<(int, int)>());
+
+        var validas = await productos.ObtenerOpcionesValidasAsync(subcategoriaId.Value, pedidas, ct);
+        if (validas.Count != pedidas.Count)
+            return ("Una o más opciones de filtro no existen o no pertenecen a la subcategoría elegida.", Array.Empty<(int, int)>());
+
+        if (validas.GroupBy(v => v.FiltroId).Any(g => g.Count() > 1))
+            return ("Solo se puede elegir una opción por filtro.", Array.Empty<(int, int)>());
+
+        return (null, validas);
+    }
+
+    /// <summary>
+    /// Interpreta la versión (base64) que manda el cliente para la concurrencia optimista. Es obligatoria al editar.
+    /// </summary>
+    public static (string? Error, byte[] Version) LeerVersion(string? rowVersion)
+    {
+        if (string.IsNullOrWhiteSpace(rowVersion))
+            return ("Falta la versión del producto (RowVersion). Recargue los datos e intente de nuevo.", Array.Empty<byte>());
+
+        var buffer = new byte[rowVersion.Length];
+        return Convert.TryFromBase64String(rowVersion, buffer, out var escritos) && escritos > 0
+            ? (null, buffer[..escritos])
+            : ("La versión del producto (RowVersion) no es válida. Recargue los datos e intente de nuevo.", Array.Empty<byte>());
+    }
 }
