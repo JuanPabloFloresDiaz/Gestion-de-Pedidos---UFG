@@ -3,6 +3,7 @@ using System.Threading.RateLimiting;
 using GestionPedidos.Api.Modulos.Auth;
 using GestionPedidos.Api.Modulos.Catalogos;
 using GestionPedidos.Api.Modulos.Clasificacion;
+using GestionPedidos.Api.Modulos.Clientes;
 using GestionPedidos.Api.Modulos.Historial;
 using GestionPedidos.Api.Modulos.Imagenes;
 using GestionPedidos.Api.Modulos.Roles;
@@ -153,6 +154,7 @@ app.MapGet("/health/ready", async (GestionPedidosDbContext db, CancellationToken
     .AllowAnonymous();
 app.MapAuth();
 app.MapUsuarios();
+app.MapClientes();
 app.MapRoles();
 app.MapCatalogos();
 app.MapHistorial();
