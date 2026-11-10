@@ -40,7 +40,12 @@ public sealed class CambiarEstadoCliente
         if (cliente.Activo != activo)
         {
             cliente.CambiarEstado(activo, _reloj.GetUtcNow());
-            await _uow.GuardarAsync(ct);
+            try { await _uow.GuardarAsync(ct); }
+            catch (ConcurrenciaException)
+            {
+                return Resultado<ClienteDto>.Falla(TipoError.Conflicto, CodigosError.Conflicto,
+                    "El cliente fue modificado por otra persona. Recargue la pantalla e intente de nuevo.");
+            }
 
             _eventos.OnEntidadCambiada(new EntidadCambiadaServidorEventArgs
             {

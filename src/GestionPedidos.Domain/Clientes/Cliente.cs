@@ -106,9 +106,10 @@ public class Cliente : IAuditable
         if (string.IsNullOrWhiteSpace(telefono)) return false;
         var t = telefono.Trim();
         if (t.Length is < 8 or > 20) return false;
-        return t.All(c => char.IsDigit(c) || c is ' ' or '+' or '-');
+        if (!t.All(c => char.IsDigit(c) || c is ' ' or '+' or '-')) return false;
+        return t.Count(char.IsDigit) >= 8;   // al menos 8 dígitos reales
     }
-
+    
     /// <summary>Enlaza la cuenta web de usuario.</summary>
     public void EnlazarUsuario(int usuarioId) => UsuarioId = usuarioId;
 }

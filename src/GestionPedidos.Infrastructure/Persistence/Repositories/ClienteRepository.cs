@@ -32,11 +32,15 @@ public sealed class ClienteRepository : IClienteRepository
 
         if (!string.IsNullOrWhiteSpace(q))
         {
-            var texto = q.Trim();
-            consulta = consulta.Where(c => c.Nombres.Contains(texto)
-                || c.Apellidos.Contains(texto)
-                || c.Telefono.Contains(texto)
-                || (c.Correo != null && c.Correo.Contains(texto)));
+            foreach (var palabra in q.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var p = palabra;   // copia local para la consulta
+                consulta = consulta.Where(c =>
+                    EF.Functions.Collate(c.Nombres, "Latin1_General_CI_AI").Contains(p)
+                    || EF.Functions.Collate(c.Apellidos, "Latin1_General_CI_AI").Contains(p)
+                    || EF.Functions.Collate(c.Telefono, "Latin1_General_CI_AI").Contains(p)
+                    || (c.Correo != null && EF.Functions.Collate(c.Correo, "Latin1_General_CI_AI").Contains(p)));
+            }
         }
 
         if (departamentoId is not null)

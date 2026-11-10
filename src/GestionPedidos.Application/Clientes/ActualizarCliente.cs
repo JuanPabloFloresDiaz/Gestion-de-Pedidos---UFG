@@ -50,8 +50,12 @@ public sealed class ActualizarCliente
         if (!string.IsNullOrWhiteSpace(s.Correo) && await _clientes.ExisteCorreoAsync(s.Correo.Trim(), cliente.Id, ct))
             return Resultado<ClienteDto>.Falla(TipoError.Conflicto, CodigosError.Conflicto, "Ya existe otro cliente con ese correo electrónico.");
 
-        if (!string.IsNullOrEmpty(s.RowVersion))
-            _clientes.FijarVersionOriginal(cliente, Convert.FromBase64String(s.RowVersion));
+        if (string.IsNullOrWhiteSpace(s.RowVersion)
+            || !Convert.TryFromBase64String(s.RowVersion, new byte[s.RowVersion.Length], out var n))
+            return Resultado<ClienteDto>.Falla(TipoError.Validacion, CodigosError.Validacion,
+                "Falta la versión del cliente. Recargue la pantalla e intente de nuevo.");
+
+        _clientes.FijarVersionOriginal(cliente, Convert.FromBase64String(s.RowVersion));
 
         cliente.Actualizar(s.Nombres, s.Apellidos, s.Telefono, s.Direccion, s.Correo, s.CiudadId);
 
