@@ -1,0 +1,19 @@
+/* Estilos aislados del módulo de productos (Pautas de CSS/Tema) */
+.separador {
+    margin: 1rem 0;
+    border: none;
+    border-top: 1px solid var(--borde);
+}
+
+.filtros-producto {
+    margin-top: 0.5rem;
+}
+
+.filtros-producto .nota {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.fila-botones-pie {
+    margin-top: 1.5rem;
+}

@@ -1,6 +1,7 @@
 using GestionPedidos.Application.Autenticacion;
 using GestionPedidos.Application.Catalogo;
 using GestionPedidos.Application.Catalogos;
+using GestionPedidos.Application.Productos;
 using GestionPedidos.Application.Roles;
 using GestionPedidos.Application.Tienda;
 using GestionPedidos.Application.Common;
@@ -38,6 +39,7 @@ public static class DependencyInjection
         servicios.AddScoped<IRegistroClienteRepository, RegistroClienteRepository>();
         servicios.AddScoped<ICatalogoGeoRepository, CatalogoGeoRepository>();
         servicios.AddScoped<IActividadRepository, ActividadRepository>();
+        servicios.AddScoped<IProductoRepository, ProductoRepository>();
         servicios.AddScoped<IClasificacionRepository, ClasificacionRepository>();
         servicios.AddScoped<ICatalogoPublicoRepository, CatalogoPublicoRepository>();
         servicios.AddScoped<IPedidosClienteRepository, PedidosClienteRepository>();
@@ -77,6 +79,11 @@ public static class DependencyInjection
         servicios.AddScoped<GestionarSubcategorias>();
         servicios.AddScoped<GestionarFiltros>();
         servicios.AddScoped<GestionarOpciones>();
+        servicios.AddScoped<BuscarProductos>();
+        servicios.AddScoped<ObtenerProducto>();
+        servicios.AddScoped<CrearProducto>();
+        servicios.AddScoped<ActualizarProducto>();
+        servicios.AddScoped<CambiarEstadoProducto>();
 
         // Eventos: una publicadora única y el historial como suscriptor (se registra en un solo lugar)
         servicios.AddSingleton<EventosAplicacion>();
