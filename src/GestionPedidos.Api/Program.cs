@@ -92,7 +92,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
 {
-    o.SwaggerDoc("v1", new OpenApiInfo { Title = "Gestión de Pedidos (UFG)", Version = "v1" });
+    o.SwaggerDoc("v1", new OpenApiInfo { Title = "NoviXtore Proyecto", Version = "v1" });
     o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         { Type = SecuritySchemeType.Http, Scheme = "bearer", BearerFormat = "JWT", In = ParameterLocation.Header });
     o.AddSecurityRequirement(new OpenApiSecurityRequirement

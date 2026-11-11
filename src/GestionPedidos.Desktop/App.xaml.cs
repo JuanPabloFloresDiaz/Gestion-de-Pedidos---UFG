@@ -14,7 +14,7 @@ public partial class App : Application
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
 		var ventana = base.CreateWindow(activationState);
-		ventana.Title = "Gestión de Pedidos — UFG";
+		ventana.Title = "NoviXtore";
 		ventana.Width = 1280;
 		ventana.Height = 800;
 		ventana.MinimumWidth = 900;
