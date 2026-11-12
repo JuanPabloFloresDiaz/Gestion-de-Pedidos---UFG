@@ -335,9 +335,26 @@ public class ClientesCasosDeUsoTests
         Existente(2, "b@e.com", activo: false);
         Existente(3, "c@e.com");
 
-        var activos = await new ListarClientes(_repo).EjecutarAsync(null, null, null, true, 1, 1, default);
+        var activos = await new ListarClientes(_repo).EjecutarAsync(null, null, null, true, null, 1, 1, default);
 
         Assert.Equal(2, activos.Total);
         Assert.Single(activos.Elementos);
+    }
+
+    [Fact]
+    public async Task Listar_SinFiltroDeEstado_DevuelveSoloActivos_YConIncluirInactivosTodos()
+    {
+        Existente(1);
+        Existente(2, "b@e.com", activo: false);
+
+        var porDefecto = await new ListarClientes(_repo).EjecutarAsync(null, null, null, null, null, 1, 20, default);
+        var todos = await new ListarClientes(_repo).EjecutarAsync(null, null, null, null, true, 1, 20, default);
+        var soloInactivos = await new ListarClientes(_repo).EjecutarAsync(null, null, null, false, null, 1, 20, default);
+
+        Assert.Equal(1, porDefecto.Total);
+        Assert.All(porDefecto.Elementos, c => Assert.True(c.Activo));
+        Assert.Equal(2, todos.Total);
+        Assert.Equal(1, soloInactivos.Total);
+        Assert.False(soloInactivos.Elementos.Single().Activo);
     }
 }

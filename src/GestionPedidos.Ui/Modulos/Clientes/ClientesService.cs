@@ -23,7 +23,9 @@ public sealed class ClientesService : IPublicadorDeCambios
         if (!string.IsNullOrWhiteSpace(q)) consulta.Add($"q={Uri.EscapeDataString(q.Trim())}");
         if (departamentoId is not null) consulta.Add($"departamentoId={departamentoId}");
         if (ciudadId is not null) consulta.Add($"ciudadId={ciudadId}");
+        // "Todos" (null) hay que pedirlo: sin filtro de estado la API devuelve solo los activos.
         if (activo is not null) consulta.Add($"activo={activo.ToString()!.ToLowerInvariant()}");
+        else consulta.Add("incluirInactivos=true");
         return _api.GetAsync<PaginaDto<ClienteDto>>($"/api/v1/clientes?{string.Join('&', consulta)}", ct);
     }
 

@@ -218,4 +218,17 @@ public class ClientesTests
 
         Assert.Equal(antes + 1, e.Manejador.Peticiones.Count);   // solo la petición del cambio: no recargó el listado
     }
+
+    [Fact]
+    public async Task Servicio_Buscar_ConTodos_PideExplicitamenteLosInactivos()
+    {
+        var (e, servicio) = Crear();
+
+        await servicio.BuscarAsync(null, null, null, null, 1, 10, default);
+        await servicio.BuscarAsync(null, null, null, true, 1, 10, default);
+
+        Assert.Contains("incluirInactivos=true", e.Manejador.Peticiones[0].RequestUri!.Query);
+        Assert.Contains("activo=true", e.Manejador.Peticiones[1].RequestUri!.Query);
+        Assert.DoesNotContain("incluirInactivos", e.Manejador.Peticiones[1].RequestUri!.Query);
+    }
 }

@@ -14,9 +14,9 @@ public static class ClientesEndpoints
     {
         var g = app.MapGroup("/api/v1/clientes").WithTags("Clientes");
 
-        g.MapGet("/", async (string? q, int? departamentoId, int? ciudadId, bool? activo, int? pagina,
-                int? tamanoPagina, ListarClientes caso, CancellationToken ct) =>
-                Results.Ok(await caso.EjecutarAsync(q, departamentoId, ciudadId, activo, pagina, tamanoPagina, ct)))
+        g.MapGet("/", async (string? q, int? departamentoId, int? ciudadId, bool? activo,
+                bool? incluirInactivos, int? pagina, int? tamanoPagina, ListarClientes caso, CancellationToken ct) =>
+                Results.Ok(await caso.EjecutarAsync(q, departamentoId, ciudadId, activo, incluirInactivos, pagina, tamanoPagina, ct)))
             .RequierePermiso(CatalogoPermisos.ClientesVer);
 
         g.MapGet("/{id:int}", async (int id, ObtenerCliente caso, CancellationToken ct) =>

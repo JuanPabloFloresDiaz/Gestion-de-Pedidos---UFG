@@ -230,4 +230,21 @@ public class ClientesApiTests
         var admin = await _api.AdminAsync();
         Assert.Equal(HttpStatusCode.NotFound, (await admin.GetAsync("/api/v1/clientes/999999")).StatusCode);
     }
+
+    [Fact]
+    public async Task Listar_SinFiltroDeEstado_SoloActivos_ConIncluirInactivos_Todos()
+    {
+        var admin = await _api.AdminAsync();
+        var marca = "Es" + Sufijo();
+        var activo = await CrearAsync(admin, Nuevo(await CiudadAsync(admin), apellidos: marca + "A"));
+        var inactivo = await CrearAsync(admin, Nuevo(await CiudadAsync(admin), apellidos: marca + "B"));
+        await admin.PatchAsJsonAsync($"/api/v1/clientes/{inactivo.Id}/estado", new CambiarEstadoSolicitud(false));
+
+        async Task<PaginaDto<ClienteDto>> Lista(string extra) => (await admin.GetFromJsonAsync<PaginaDto<ClienteDto>>($"/api/v1/clientes?q={marca}{extra}"))!;
+
+        var porDefecto = await Lista("");
+        Assert.Equal(activo.Id, Assert.Single(porDefecto.Elementos).Id);
+        Assert.Equal(2, (await Lista("&incluirInactivos=true")).Total);
+        Assert.Equal(inactivo.Id, Assert.Single((await Lista("&activo=false")).Elementos).Id);
+    }
 }
