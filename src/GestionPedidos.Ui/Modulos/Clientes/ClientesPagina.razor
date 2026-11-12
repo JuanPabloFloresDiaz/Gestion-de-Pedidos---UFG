@@ -1,14 +1,152 @@
-@* PROVISIONAL: apartado de Clientes en progreso (bloque C de Tareas.md). Reemplazar el contenido por la pantalla real (Página + ViewModel):
-   ver Modulos/Usuarios/UsuariosPagina.razor como modelo y docs/Equipo/PrimerosPasos.md §5. *@
+@* Administración de clientes ([Clientes.md]). Marcado y enlace de eventos: lógica en ClientesViewModel. *@
 @implements IDisposable
 @inject ClientesViewModel Vm
+@inject SesionService Sesion
 
-<ModuloEnProgreso Modulo="Clientes" Titulo="Clientes" Icono="Lucide.Users" Bloque="C" Spec="docs/Especificaciones/Clientes.md"
-                  Descripcion="Registro de clientes: contacto, dirección, ciudad y cuenta web. Alta, edición y baja suave." />
+<PaginaModulo Titulo="Clientes" Error="@Vm.Error" PanelVisible="Vm.Editando">
+    <Acciones>
+        @if (Sesion.TienePermiso(Permisos.ClientesCrear))
+        {
+            <Boton Variante="Primario" AlHacerClic="Vm.Nuevo">+ Nuevo cliente</Boton>
+        }
+    </Acciones>
+
+    <Filtros>
+        <CampoTexto Etiqueta="Buscar" Placeholder="Nombres, apellidos, teléfono o correo"
+                    @bind-Valor="Vm.TextoBusqueda" AlPresionarEnter="Vm.BuscarAsync" />
+        <CampoSelector Etiqueta="Departamento" Valor="Vm.FiltroDepartamentoId"
+                       ValorChanged="Vm.AlCambiarDepartamentoFiltroAsync" TextoVacio="Todos"
+                       Opciones="Vm.Departamentos.Select(d => (d.Id, d.Nombre))" />
+        <CampoSelector Etiqueta="Ciudad" @bind-Valor="Vm.FiltroCiudadId" TextoVacio="Todas"
+                       Opciones="Vm.CiudadesFiltro.Select(c => (c.Id, c.Nombre))"
+                       Deshabilitado="Vm.FiltroDepartamentoId is null" />
+        <CampoSelector Etiqueta="Estado" Valor="@EstadoComoNumero" ValorChanged="AlCambiarEstado" TextoVacio="Todos"
+                       Opciones="@(new[] { (1, "Activos"), (0, "Inactivos") })" />
+        <div class="filtros-botones">
+            <Boton Variante="Primario" Cargando="Vm.Cargando" AlHacerClic="Vm.BuscarAsync">Buscar</Boton>
+            <Boton AlHacerClic="Vm.LimpiarAsync">Limpiar</Boton>
+        </div>
+    </Filtros>
+
+    <Tabla>
+        <TablaDatos T="ClienteDto" Items="Vm.Pagina?.Elementos" Cargando="Vm.Cargando" EsInactiva="c => !c.Activo"
+                    AlSeleccionar="AlSeleccionar" TextoVacio="No hay clientes con esos filtros.">
+            <Encabezado>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
+                <th>Ciudad</th>
+                <th>Departamento</th>
+                <th>Cuenta web</th>
+                <th>Estado</th>
+                <th></th>
+            </Encabezado>
+            <Fila Context="c">
+                <td><strong>@c.NombreCompleto</strong></td>
+                <td>@c.Telefono</td>
+                <td>@(c.Correo ?? "—")</td>
+                <td>@c.Ciudad</td>
+                <td>@c.Departamento</td>
+                <td>
+                    @if (c.TieneCuentaWeb)
+                    {
+                        <span class="etiqueta etiqueta-exito">Tiene cuenta</span>
+                    }
+                    else
+                    {
+                        <span class="nota">—</span>
+                    }
+                </td>
+                <td>
+                    <ChipEstado Activo="c.Activo" Habilitado="PuedeCambiarEstado" AlHacerClic="() => Vm.SolicitarCambioEstado(c)" />
+                </td>
+                <td class="celda-acciones">
+                    @if (Sesion.TienePermiso(Permisos.ClientesEditar) && c.Activo)
+                    {
+                        <button class="enlace" @onclick="() => Vm.EditarAsync(c)">Editar</button>
+                    }
+                    @if (PuedeCambiarEstado)
+                    {
+                        <button class="enlace @(c.Activo ? "enlace-peligro" : "")"
+                                @onclick="() => Vm.SolicitarCambioEstado(c)" @onclick:stopPropagation="true">
+                            @(c.Activo ? "Dar de baja" : "Reactivar")
+                        </button>
+                    }
+                </td>
+            </Fila>
+        </TablaDatos>
+    </Tabla>
+
+    <Pie>
+        <Paginador Pagina="Vm.Pagina?.Pagina ?? 1" TotalPaginas="Vm.Pagina?.TotalPaginas ?? 0" Total="Vm.Pagina?.Total ?? 0"
+                   PaginaCambiada="Vm.IrAPaginaAsync" />
+    </Pie>
+
+    <Panel>
+        @if (Vm.Editando)
+        {
+            <form @onsubmit="Vm.GuardarAsync" @onsubmit:preventDefault>
+                <h2>@(Vm.Original is null ? "Nuevo cliente" : $"Editar {Vm.Original.NombreCompleto}")</h2>
+
+                <CampoTexto Etiqueta="Nombres" @bind-Valor="Vm.Nombres" Error="@Vm.ErrorDe(nameof(Vm.Nombres))" />
+                <CampoTexto Etiqueta="Apellidos" @bind-Valor="Vm.Apellidos" Error="@Vm.ErrorDe(nameof(Vm.Apellidos))" />
+                <CampoTexto Etiqueta="Teléfono (ej. 7123-4567)" @bind-Valor="Vm.Telefono" Error="@Vm.ErrorDe(nameof(Vm.Telefono))" />
+                <CampoTexto Etiqueta="Dirección" @bind-Valor="Vm.Direccion" Error="@Vm.ErrorDe(nameof(Vm.Direccion))" />
+                <CampoTexto Etiqueta="Correo (opcional)" Tipo="email" @bind-Valor="Vm.Correo" Error="@Vm.ErrorDe(nameof(Vm.Correo))" />
+
+                <CampoSelector Etiqueta="Departamento" Valor="Vm.DepartamentoId"
+                               ValorChanged="Vm.AlCambiarDepartamentoFormularioAsync"
+                               Error="@Vm.ErrorDe(nameof(Vm.DepartamentoId))" TextoVacio="Seleccione un departamento"
+                               Opciones="Vm.Departamentos.Select(d => (d.Id, d.Nombre))" />
+
+                <CampoSelector Etiqueta="Ciudad" @bind-Valor="Vm.CiudadId"
+                               Error="@Vm.ErrorDe(nameof(Vm.CiudadId))" TextoVacio="Seleccione una ciudad"
+                               Opciones="Vm.CiudadesFormulario.Select(c => (c.Id, c.Nombre))"
+                               Deshabilitado="Vm.DepartamentoId is null" />
+
+                <div class="fila-botones">
+                    <Boton AlHacerClic="Vm.Cancelar">Cancelar</Boton>
+                    <Boton Variante="Primario" Tipo="submit" Cargando="Vm.Cargando">Guardar</Boton>
+                </div>
+            </form>
+        }
+    </Panel>
+</PaginaModulo>
+
+<DialogoConfirmacion Visible="Vm.HayConfirmacion" Titulo="@Vm.TituloConfirmacion" TextoConfirmar="@Vm.TextoConfirmar"
+                     Peligro="Vm.EsPeligro" Cargando="Vm.Cargando"
+                     AlConfirmar="Vm.ConfirmarAsync" AlCancelar="Vm.CancelarSolicitud">
+    @if (Vm.Pendiente is { } c)
+    {
+        @if (Vm.Accion == AccionCliente.DarDeBaja)
+        {
+            <p>¿Seguro que deseas dar de baja a <strong>@c.NombreCompleto</strong>? Pasará a estado inactivo y no podrá tener nuevos pedidos, pero su historial se conserva.</p>
+        }
+        else if (Vm.Accion == AccionCliente.Reactivar)
+        {
+            <p>¿Deseas reactivar al cliente <strong>@c.NombreCompleto</strong>?</p>
+        }
+    }
+</DialogoConfirmacion>
 
 @code {
-    // Cuando armen la pantalla real: suscribirse al evento del ViewModel con += y darse de baja con -= en Dispose, y repintar con InvokeAsync(StateHasChanged).
-    protected override void OnInitialized() => Vm.Cambiado += Vm_Cambiado;
+    private bool PuedeCambiarEstado => Sesion.TienePermiso(Permisos.ClientesDesactivar);
+
+    private int? EstadoComoNumero => Vm.FiltroActivo is null ? null : (Vm.FiltroActivo.Value ? 1 : 0);
+
+    protected override async Task OnInitializedAsync()
+    {
+        Vm.Cambiado += Vm_Cambiado;
+        await Vm.IniciarAsync();
+    }
+
+    private void AlCambiarEstado(int? valor) => Vm.FiltroActivo = valor is null ? null : valor == 1;
+
+    private void AlSeleccionar(ClienteDto c)
+    {
+        if (c.Activo && Sesion.TienePermiso(Permisos.ClientesEditar))
+            _ = Vm.EditarAsync(c);
+    }
 
     private void Vm_Cambiado(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
 

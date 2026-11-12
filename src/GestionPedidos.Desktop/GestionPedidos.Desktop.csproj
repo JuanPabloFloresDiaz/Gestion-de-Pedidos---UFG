@@ -21,7 +21,7 @@
     <!-- Esta capa usa sus propias versiones (las de MAUI), no las centralizadas del resto de la solución -->
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
 
-    <ApplicationTitle>Gestión de Pedidos</ApplicationTitle>
+    <ApplicationTitle>NoviXtore</ApplicationTitle>
     <ApplicationId>sv.edu.ufg.gestionpedidos</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
