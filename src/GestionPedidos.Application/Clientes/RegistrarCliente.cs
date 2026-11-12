@@ -23,19 +23,8 @@ public sealed class RegistrarCliente
     /// <summary>Registra el cliente tras validar todas las reglas de negocio.</summary>
     public async Task<Resultado<ClienteDto>> EjecutarAsync(CrearClienteSolicitud s, int actorId, CancellationToken ct)
     {
-        var error = Validaciones.Texto(s.Nombres, "Los nombres", 100)
-            ?? Validaciones.Texto(s.Apellidos, "Los apellidos", 100)
-            ?? Validaciones.Texto(s.Direccion, "La dirección", 250);
-
-        if (error is not null)
-            return Resultado<ClienteDto>.Falla(TipoError.Validacion, CodigosError.Validacion, error);
-
-        if (!Cliente.EsTelefonoValido(s.Telefono))
-            return Resultado<ClienteDto>.Falla(TipoError.Validacion, CodigosError.Validacion,
-                "El teléfono debe tener entre 8 y 20 caracteres y contener solo números, espacios, + o -.");
-
-        if (!string.IsNullOrWhiteSpace(s.Correo) && !Validaciones.EsCorreo(s.Correo))
-            return Resultado<ClienteDto>.Falla(TipoError.Validacion, CodigosError.Validacion, "El correo no tiene un formato válido.");
+        var invalido = ValidacionesCliente.Campos(s.Nombres, s.Apellidos, s.Telefono, s.Direccion, s.Correo);
+        if (invalido is not null) return invalido;
 
         if (!await _clientes.ExisteCiudadAsync(s.CiudadId, ct))
             return Resultado<ClienteDto>.Falla(TipoError.Regla, CodigosError.Regla, "La ciudad seleccionada no existe.");

@@ -1,5 +1,6 @@
 using GestionPedidos.Contracts;
 using GestionPedidos.Ui.Comun;
+using GestionPedidos.Ui.Comun.Api;
 using GestionPedidos.Ui.Comun.Eventos;
 
 namespace GestionPedidos.Ui.Modulos.Clientes;
@@ -244,6 +245,28 @@ public sealed class ClientesViewModel : ViewModelBase
             Editando = false;
             Original = null;
             OnCambiado();
+        }
+        else if (Original is not null)
+        {
+            await RefrescarVersionAsync();
+        }
+    }
+
+    /// <summary>
+    /// Tras un error al guardar (por ejemplo, un conflicto de concurrencia) vuelve a leer el cliente para tener su versión
+    /// actual; si no, cada nuevo intento fallaría con la versión vieja. Lo que la persona escribió en el formulario se conserva
+    /// y el mensaje de error original no se pierde.
+    /// </summary>
+    private async Task RefrescarVersionAsync()
+    {
+        try
+        {
+            Original = await _clientes.ObtenerAsync(Original!.Id, CancellationToken.None);
+            OnCambiado();
+        }
+        catch (ApiException)
+        {
+            // Si tampoco se puede releer, se deja el error que ya se mostró.
         }
     }
 

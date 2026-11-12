@@ -76,6 +76,10 @@ public class ClienteTests
     [InlineData("1234", false)]              // muy corto
     [InlineData("123456789012345678901", false)] // más de 20 caracteres
     [InlineData("7123-ABCD", false)]         // letras inválidas
+    [InlineData("--------", false)]          // 8 caracteres pero ningún dígito
+    [InlineData("++++++++", false)]
+    [InlineData("+-+-+-+-", false)]
+    [InlineData("123 456 7", false)]         // solo 7 dígitos
     [InlineData("", false)]
     [InlineData(null, false)]
     public void EsTelefonoValido_ValidaSegunRegla(string? telefono, bool esperado)

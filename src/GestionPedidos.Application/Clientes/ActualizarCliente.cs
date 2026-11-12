@@ -23,19 +23,11 @@ public sealed class ActualizarCliente
     /// <summary>Actualiza el cliente si está activo y cumple las reglas de negocio.</summary>
     public async Task<Resultado<ClienteDto>> EjecutarAsync(int id, ActualizarClienteSolicitud s, int actorId, CancellationToken ct)
     {
-        var error = Validaciones.Texto(s.Nombres, "Los nombres", 100)
-            ?? Validaciones.Texto(s.Apellidos, "Los apellidos", 100)
-            ?? Validaciones.Texto(s.Direccion, "La dirección", 250);
+        var invalido = ValidacionesCliente.Campos(s.Nombres, s.Apellidos, s.Telefono, s.Direccion, s.Correo);
+        if (invalido is not null) return invalido;
 
-        if (error is not null)
-            return Resultado<ClienteDto>.Falla(TipoError.Validacion, CodigosError.Validacion, error);
-
-        if (!Cliente.EsTelefonoValido(s.Telefono))
-            return Resultado<ClienteDto>.Falla(TipoError.Validacion, CodigosError.Validacion,
-                "El teléfono debe tener entre 8 y 20 caracteres y contener solo números, espacios, + o -.");
-
-        if (!string.IsNullOrWhiteSpace(s.Correo) && !Validaciones.EsCorreo(s.Correo))
-            return Resultado<ClienteDto>.Falla(TipoError.Validacion, CodigosError.Validacion, "El correo no tiene un formato válido.");
+        invalido = ValidacionesCliente.Version(s.RowVersion, out var version);
+        if (invalido is not null) return invalido;
 
         var cliente = await _clientes.ObtenerPorIdAsync(id, ct);
         if (cliente is null)
@@ -50,12 +42,7 @@ public sealed class ActualizarCliente
         if (!string.IsNullOrWhiteSpace(s.Correo) && await _clientes.ExisteCorreoAsync(s.Correo.Trim(), cliente.Id, ct))
             return Resultado<ClienteDto>.Falla(TipoError.Conflicto, CodigosError.Conflicto, "Ya existe otro cliente con ese correo electrónico.");
 
-        if (string.IsNullOrWhiteSpace(s.RowVersion)
-            || !Convert.TryFromBase64String(s.RowVersion, new byte[s.RowVersion.Length], out var n))
-            return Resultado<ClienteDto>.Falla(TipoError.Validacion, CodigosError.Validacion,
-                "Falta la versión del cliente. Recargue la pantalla e intente de nuevo.");
-
-        _clientes.FijarVersionOriginal(cliente, Convert.FromBase64String(s.RowVersion));
+        _clientes.FijarVersionOriginal(cliente, version);
 
         cliente.Actualizar(s.Nombres, s.Apellidos, s.Telefono, s.Direccion, s.Correo, s.CiudadId);
 
