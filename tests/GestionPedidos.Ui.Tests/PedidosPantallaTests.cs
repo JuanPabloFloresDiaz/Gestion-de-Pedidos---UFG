@@ -293,6 +293,7 @@ public class PedidosPantallaTests
         using var vm = new PedidosViewModel(servicio);
         await vm.IniciarAsync();
         vm.Nuevo();
+        vm.ClienteId = vm.ClientesDisponibles.First().Id;   // la persona elige el cliente
         vm.AgregarProducto(vm.ProductosDisponibles.First());
         e.Manejador.Responder = r => r.Method == HttpMethod.Post
             ? (HttpStatusCode.Conflict, new { title = "Camisa: solo quedan 1 unidades disponibles.", codigo = CodigosError.StockInsuficiente })
@@ -492,7 +493,6 @@ public class PedidosPantallaTests
 
     /// <summary>Revisión del PR #2 (<c>PedidosViewModel.cs:240</c>): la cantidad no debe superar el stock disponible.</summary>
     [Fact]
-    [Trait("Revision", "pendiente-de-correccion")]
     public async Task ViewModel_CambiarCantidad_NoDebePasarDelStockDisponible()
     {
         var (_, servicio) = Armar();
@@ -512,7 +512,6 @@ public class PedidosPantallaTests
     /// pedido ya reservó.
     /// </summary>
     [Fact]
-    [Trait("Revision", "pendiente-de-correccion")]
     public async Task ViewModel_Editar_ElStockDisponibleIncluyeLoQueElPedidoYaReservo()
     {
         var (_, servicio) = Armar();
@@ -527,7 +526,6 @@ public class PedidosPantallaTests
 
     /// <summary>Revisión del PR #2 (<c>PedidosViewModel.cs:211</c>): "Nuevo pedido" no debe elegir un cliente por el usuario.</summary>
     [Fact]
-    [Trait("Revision", "pendiente-de-correccion")]
     public async Task ViewModel_Nuevo_NoDebePreseleccionarUnCliente()
     {
         var (_, servicio) = Armar();

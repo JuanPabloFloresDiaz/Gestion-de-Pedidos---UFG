@@ -42,7 +42,7 @@ public sealed class RegistrarPedido
             return Valida("Los comentarios no pueden superar 500 caracteres.");
 
         var ahoraUtc = _reloj.GetUtcNow();
-        var hoy = DateOnly.FromDateTime(ahoraUtc.UtcDateTime.AddHours(-6)); // Hora El Salvador
+        var hoy = Application.Tienda.RealizarPedidoDeCliente.Hoy(_reloj); // Hora El Salvador
         if (s.FechaEntrega < hoy)
             return Valida("La fecha de entrega no puede ser anterior a hoy.");
 
@@ -111,6 +111,8 @@ public sealed class RegistrarPedido
             Detalle = $"Pedido #{pedido.Id} registrado por ${pedido.Total:0.00} ({cliente.Nombres} {cliente.Apellidos})"
         });
 
-        return Resultado<PedidoDetalleDto>.Ok(pedido.ADetalleDto());
+        // Se vuelve a leer con sus relaciones (usuario, cliente, productos) para que la respuesta salga completa.
+        var cargado = await _repo.ObtenerPorIdAsync(pedido.Id, ct);
+        return Resultado<PedidoDetalleDto>.Ok((cargado ?? pedido).ADetalleDto());
     }
 }

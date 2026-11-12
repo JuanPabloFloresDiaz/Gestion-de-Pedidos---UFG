@@ -207,7 +207,7 @@ public sealed class PedidosViewModel : ViewModelBase
         Editando = true;
         Error = null;
         ErroresCampos.Clear();
-        ClienteId = ClientesDisponibles.FirstOrDefault()?.Id;
+        ClienteId = null;   // la persona debe elegir el cliente: no se decide por ella
         FechaEntrega = DateOnly.FromDateTime(DateTime.Today).AddDays(1);
         Comentarios = "";
         Lineas.Clear();
@@ -237,7 +237,8 @@ public sealed class PedidosViewModel : ViewModelBase
                     Codigo = l.Codigo,
                     PrecioUnitario = l.PrecioUnitario,
                     Cantidad = l.Cantidad,
-                    StockDisponible = prodInfo?.CantidadStock ?? 0
+                    // Disponible = lo que queda en el almacén + lo que este mismo pedido ya tiene reservado.
+                    StockDisponible = (prodInfo?.CantidadStock ?? 0) + l.Cantidad
                 });
             }
         });
@@ -259,7 +260,7 @@ public sealed class PedidosViewModel : ViewModelBase
         var existente = Lineas.FirstOrDefault(l => l.ProductoId == prod.Id);
         if (existente is not null)
         {
-            existente.Cantidad++;
+            if (existente.Cantidad < existente.StockDisponible) existente.Cantidad++;
         }
         else
         {
@@ -284,11 +285,11 @@ public sealed class PedidosViewModel : ViewModelBase
         OnCambiado();
     }
 
-    /// <summary>Actualiza la cantidad de una línea asegurando que sea mayor a cero.</summary>
+    /// <summary>Actualiza la cantidad de una línea: mayor a cero y sin pasar del stock disponible.</summary>
     public void CambiarCantidad(LineaPedidoEditable linea, int nuevaCantidad)
     {
         if (nuevaCantidad <= 0) return;
-        linea.Cantidad = nuevaCantidad;
+        linea.Cantidad = Math.Min(nuevaCantidad, Math.Max(linea.StockDisponible, 1));
         OnCambiado();
     }
 

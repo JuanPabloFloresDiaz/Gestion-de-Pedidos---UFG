@@ -417,7 +417,6 @@ public class PedidosApiTests
     /// con el mensaje "modificado por otro usuario", que no es cierto; debe ser 400 ("falta la versión").
     /// </summary>
     [Fact]
-    [Trait("Revision", "pendiente-de-correccion")]
     public async Task EditarYCambiarEstado_SinRowVersion_DebenResponder400()
     {
         var admin = await _api.AdminAsync();

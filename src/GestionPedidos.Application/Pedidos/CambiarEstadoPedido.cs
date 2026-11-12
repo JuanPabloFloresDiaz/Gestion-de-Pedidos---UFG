@@ -27,6 +27,10 @@ public sealed class CambiarEstadoPedido
     /// <param name="ct">Token de cancelación.</param>
     public async Task<Resultado<PedidoDetalleDto>> EjecutarAsync(int id, CambiarEstadoPedidoSolicitud s, int usuarioId, CancellationToken ct)
     {
+        if (s.RowVersion is not { Length: > 0 })
+            return Resultado<PedidoDetalleDto>.Falla(TipoError.Validacion, CodigosError.Validacion,
+                "Falta la versión del pedido. Recargue la pantalla e intente de nuevo.");
+
         var pedido = await _repo.ObtenerPorIdAsync(id, ct);
         if (pedido is null)
             return Resultado<PedidoDetalleDto>.Falla(TipoError.NoEncontrado, CodigosError.NoEncontrado, "El pedido no existe.");

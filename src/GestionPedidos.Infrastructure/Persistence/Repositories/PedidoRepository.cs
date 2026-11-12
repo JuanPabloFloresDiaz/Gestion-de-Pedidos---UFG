@@ -177,7 +177,7 @@ public sealed class PedidoRepository : IPedidoRepository
 
         return await consulta
             .OrderBy(c => c.Nombres).ThenBy(c => c.Apellidos)
-            .Take(50)
+            .Take(500)   // tope de seguridad: con filtro por texto nunca se acerca; sin filtro caben todos los clientes de la demostración
             .Select(c => new ClienteSelectorDto(c.Id, $"{c.Nombres} {c.Apellidos}", c.Telefono, c.Direccion))
             .ToListAsync(ct);
     }
@@ -185,7 +185,8 @@ public sealed class PedidoRepository : IPedidoRepository
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ProductoSelectorDto>> ListarProductosSelectorAsync(string? q, CancellationToken ct)
     {
-        var consulta = _db.Productos.AsNoTracking().Where(p => p.Activo);
+        // Solo productos activos y con existencias: un producto agotado no se puede pedir.
+        var consulta = _db.Productos.AsNoTracking().Where(p => p.Activo && p.CantidadStock > 0);
         if (!string.IsNullOrWhiteSpace(q))
         {
             var txt = q.Trim();
@@ -194,7 +195,7 @@ public sealed class PedidoRepository : IPedidoRepository
 
         return await consulta
             .OrderBy(p => p.Nombre)
-            .Take(100)
+            .Take(500)   // tope de seguridad (el catálogo de la demostración tiene ~110 productos)
             .Select(p => new ProductoSelectorDto(p.Id, p.Codigo, p.Nombre, p.PrecioVenta, p.CantidadStock))
             .ToListAsync(ct);
     }

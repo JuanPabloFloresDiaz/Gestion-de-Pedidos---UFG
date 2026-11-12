@@ -207,7 +207,8 @@ a { color: var(--color-primario); }
 .baja-fecha { display: block; font-size: .74rem; color: var(--color-texto-suave); margin-top: 3px; }
 
 /* ---- Detalle interactivo de líneas (Pedidos) ---- */
-.tabla-lineas { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: .88rem; }
+.tabla-lineas-contenedor { overflow-x: auto; }   /* si el panel es angosto, la tabla se desliza en vez de cortarse */
+.tabla-lineas { width: 100%; min-width: 32rem; border-collapse: collapse; margin-top: 8px; font-size: .88rem; }
 .tabla-lineas th { text-align: left; padding: 6px 8px; border-bottom: 2px solid var(--color-borde); color: var(--color-texto-suave); }
 .tabla-lineas td { padding: 8px; border-bottom: 1px solid var(--color-borde); vertical-align: middle; }
 .tabla-lineas tfoot td { padding: 10px 8px; border-top: 2px solid var(--color-borde); }

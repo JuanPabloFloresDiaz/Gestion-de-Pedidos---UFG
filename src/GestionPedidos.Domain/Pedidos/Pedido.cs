@@ -67,7 +67,8 @@ public class Pedido : IAuditable
         if (clienteId <= 0) throw new ArgumentOutOfRangeException(nameof(clienteId), "El cliente es obligatorio.");
         if (usuarioId <= 0) throw new ArgumentOutOfRangeException(nameof(usuarioId), "El usuario es obligatorio.");
 
-        var fechaPedidoDate = DateOnly.FromDateTime(fechaPedido.UtcDateTime);
+        // La fecha del pedido es la de El Salvador (UTC−6): después de las 6 p. m. el día UTC ya cambió, pero "hoy" no.
+        var fechaPedidoDate = DateOnly.FromDateTime(fechaPedido.UtcDateTime.AddHours(-6));
         if (fechaEntrega < fechaPedidoDate)
             throw new ArgumentException("La fecha de entrega no puede ser anterior a la fecha del pedido.", nameof(fechaEntrega));
 
@@ -160,7 +161,10 @@ public class Pedido : IAuditable
         {
             if (!diccionarioNuevas.ContainsKey(detalle.ProductoId))
             {
-                detalle.Producto?.ReponerStock(detalle.Cantidad);
+                if (detalle.Producto is null)
+                    throw new InvalidOperationException("No se puede quitar la línea: falta cargar su producto para reponer el stock.");
+
+                detalle.Producto.ReponerStock(detalle.Cantidad);
                 Detalles.Remove(detalle);
             }
         }
@@ -215,9 +219,13 @@ public class Pedido : IAuditable
         if (!Activo || Estado != EstadoPedido.Pendiente)
             throw new InvalidOperationException($"Solo se pueden cancelar los pedidos pendientes (actual: {Estado.ToLowerInvariant()}).");
 
+        // Sin el producto cargado no se puede reponer su stock: cancelar "en silencio" dejaría el inventario descuadrado.
+        if (Detalles.Any(d => d.Producto is null))
+            throw new InvalidOperationException("No se puede cancelar el pedido: falta cargar los productos de sus líneas para reponer el stock.");
+
         foreach (var d in Detalles)
         {
-            d.Producto?.ReponerStock(d.Cantidad);
+            d.Producto!.ReponerStock(d.Cantidad);
         }
 
         Estado = EstadoPedido.Cancelado;

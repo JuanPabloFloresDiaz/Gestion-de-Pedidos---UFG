@@ -42,6 +42,9 @@ public sealed class ActualizarPedido
         if (s.Comentarios?.Trim().Length > 500)
             return Valida("Los comentarios no pueden superar 500 caracteres.");
 
+        if (s.RowVersion is not { Length: > 0 })
+            return Valida("Falta la versión del pedido. Recargue la pantalla e intente de nuevo.");
+
         var pedido = await _repo.ObtenerPorIdAsync(id, ct);
         if (pedido is null)
             return Resultado<PedidoDetalleDto>.Falla(TipoError.NoEncontrado, CodigosError.NoEncontrado, "El pedido no existe.");
@@ -50,7 +53,7 @@ public sealed class ActualizarPedido
             return Resultado<PedidoDetalleDto>.Falla(TipoError.Regla, CodigosError.Regla,
                 $"Solo se pueden modificar pedidos pendientes: este pedido está {pedido.Estado.ToLowerInvariant()}.");
 
-        var hoy = DateOnly.FromDateTime(_reloj.GetUtcNow().UtcDateTime.AddHours(-6));
+        var hoy = Application.Tienda.RealizarPedidoDeCliente.Hoy(_reloj);
         if (s.FechaEntrega < hoy)
             return Valida("La fecha de entrega no puede ser anterior a hoy.");
 

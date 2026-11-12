@@ -326,7 +326,6 @@ public class PedidosCasosDeUsoCompletosTests
     /// y el dominio rechazaba una entrega "hoy" con una excepción sin capturar (500). 19:00 del 9-nov = 01:00 UTC del 10-nov.
     /// </summary>
     [Fact]
-    [Trait("Revision", "pendiente-de-correccion")]
     public async Task Registrar_EntregaHoyEnElSalvador_DespuesDeLas6pm_DebeRegistrar()
     {
         var reloj = new FakeTimeProvider(new DateTimeOffset(2026, 11, 10, 1, 0, 0, TimeSpan.Zero));
@@ -338,7 +337,6 @@ public class PedidosCasosDeUsoCompletosTests
 
     /// <summary>Revisión del PR #2 (<c>ActualizarPedido.cs:57</c>): la versión es obligatoria al editar.</summary>
     [Fact]
-    [Trait("Revision", "pendiente-de-correccion")]
     public async Task Actualizar_SinRowVersion_DebeSerValidacion()
     {
         PedidoExistente(100, (_teclado, 1));

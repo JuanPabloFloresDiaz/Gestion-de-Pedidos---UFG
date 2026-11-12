@@ -181,7 +181,7 @@ public class PedidosCasosDeUsoTests
         _repo.Pedidos.Add(p);
 
         var caso = new CambiarEstadoPedido(_repo, _uow, _eventos);
-        var res = await caso.EjecutarAsync(100, new CambiarEstadoPedidoSolicitud(EstadoPedido.Entregado, p.RowVersion), 99, CancellationToken.None);
+        var res = await caso.EjecutarAsync(100, new CambiarEstadoPedidoSolicitud(EstadoPedido.Entregado, new byte[] { 0, 0, 0, 0, 0, 0, 7, 1 }), 99, CancellationToken.None);
 
         Assert.True(res.Exito);
         Assert.Equal(EstadoPedido.Entregado, res.Valor!.Estado);
@@ -200,7 +200,7 @@ public class PedidosCasosDeUsoTests
         Assert.Equal(3, prod.CantidadStock);
 
         var caso = new CambiarEstadoPedido(_repo, _uow, _eventos);
-        var res = await caso.EjecutarAsync(101, new CambiarEstadoPedidoSolicitud(EstadoPedido.Cancelado, p.RowVersion), 99, CancellationToken.None);
+        var res = await caso.EjecutarAsync(101, new CambiarEstadoPedidoSolicitud(EstadoPedido.Cancelado, new byte[] { 0, 0, 0, 0, 0, 0, 7, 1 }), 99, CancellationToken.None);
 
         Assert.True(res.Exito);
         Assert.Equal(EstadoPedido.Cancelado, res.Valor!.Estado);

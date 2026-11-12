@@ -328,7 +328,6 @@ public class PedidosReglasTests
     /// <c>Cancelado</c> sin reponer el stock. Debe fallar (o el dominio exigir el producto cargado).
     /// </summary>
     [Fact]
-    [Trait("Revision", "pendiente-de-correccion")]
     public void Cancelar_ConLineaSinProductoCargado_NoDebeCancelarEnSilencio()
     {
         var pedido = Pedido.Crear(1, 2, FechaPedido, FechaEntrega, null);
