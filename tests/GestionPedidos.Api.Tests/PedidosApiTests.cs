@@ -620,4 +620,26 @@ public class PedidosApiTests
         Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync("/api/v1/pedidos?pagina=-5&tamanoPagina=99999")).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await admin.GetAsync("/api/v1/pedidos?pagina=abc")).StatusCode);
     }
+
+    /// <summary>
+    /// Integración Clientes × Pedidos ([Clientes.md §3]): un cliente con pedidos pendientes no se puede dar de baja;
+    /// al cancelar el pedido, sí.
+    /// </summary>
+    [Fact]
+    public async Task Cliente_ConPedidoPendiente_NoSePuedeDarDeBaja_HastaQueSeCancela()
+    {
+        var admin = await _api.AdminAsync();
+        var cliente = await ClienteAsync();
+        var producto = await ProductoAsync(5);
+        var pedido = await RegistrarAsync(admin, cliente, (producto, 1));
+
+        var bloqueada = await admin.PatchAsJsonAsync($"/api/v1/clientes/{cliente}/estado", new CambiarEstadoSolicitud(false));
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, bloqueada.StatusCode);
+
+        var cancelar = await admin.PatchAsJsonAsync($"/api/v1/pedidos/{pedido.Id}/estado", new CambiarEstadoPedidoSolicitud("Cancelado", pedido.RowVersion));
+        Assert.Equal(HttpStatusCode.OK, cancelar.StatusCode);
+
+        var baja = await admin.PatchAsJsonAsync($"/api/v1/clientes/{cliente}/estado", new CambiarEstadoSolicitud(false));
+        Assert.Equal(HttpStatusCode.OK, baja.StatusCode);
+    }
 }
