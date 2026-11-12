@@ -6,6 +6,7 @@ using GestionPedidos.Api.Modulos.Clasificacion;
 using GestionPedidos.Api.Modulos.Clientes;
 using GestionPedidos.Api.Modulos.Historial;
 using GestionPedidos.Api.Modulos.Imagenes;
+using GestionPedidos.Api.Modulos.Pedidos;
 using GestionPedidos.Api.Modulos.Productos;
 using GestionPedidos.Api.Modulos.Roles;
 using GestionPedidos.Api.Modulos.Tienda;
@@ -163,6 +164,7 @@ app.MapClasificacion();
 app.MapProductos();
 app.MapTienda();
 app.MapMisPedidos();
+app.MapPedidos();
 app.MapImagenes();
 
 // --- Arranque de la base de datos (migraciones con el usuario dueño + semillas) -------------------

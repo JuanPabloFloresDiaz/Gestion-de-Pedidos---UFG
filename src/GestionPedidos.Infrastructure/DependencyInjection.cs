@@ -2,6 +2,7 @@ using GestionPedidos.Application.Autenticacion;
 using GestionPedidos.Application.Catalogo;
 using GestionPedidos.Application.Catalogos;
 using GestionPedidos.Application.Clientes;
+using GestionPedidos.Application.Pedidos;
 using GestionPedidos.Application.Productos;
 using GestionPedidos.Application.Roles;
 using GestionPedidos.Application.Tienda;
@@ -44,6 +45,7 @@ public static class DependencyInjection
         servicios.AddScoped<IClasificacionRepository, ClasificacionRepository>();
         servicios.AddScoped<ICatalogoPublicoRepository, CatalogoPublicoRepository>();
         servicios.AddScoped<IPedidosClienteRepository, PedidosClienteRepository>();
+        servicios.AddScoped<IPedidoRepository, PedidoRepository>();
         servicios.AddScoped<IImagenesRepository, ImagenesRepository>();
         servicios.AddScoped<IClienteRepository, ClienteRepository>();
         servicios.AddSingleton<IAlmacenImagenes, AlmacenImagenesS3>();   // el cliente S3 no abre conexiones hasta que se usa
@@ -80,6 +82,12 @@ public static class DependencyInjection
         servicios.AddScoped<RealizarPedidoDeCliente>();
         servicios.AddScoped<ListarPedidosDeCliente>();
         servicios.AddScoped<CancelarPedidoDeCliente>();
+        servicios.AddScoped<RegistrarPedido>();
+        servicios.AddScoped<ActualizarPedido>();
+        servicios.AddScoped<CambiarEstadoPedido>();
+        servicios.AddScoped<DesactivarPedido>();
+        servicios.AddScoped<ObtenerPedido>();
+        servicios.AddScoped<BuscarPedidos>();
         servicios.AddScoped<ObtenerArbolDeCatalogo>();
         servicios.AddScoped<ObtenerFiltrosDeSubcategoria>();
         servicios.AddScoped<GestionarCategorias>();

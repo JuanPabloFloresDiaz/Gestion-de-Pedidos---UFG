@@ -118,18 +118,12 @@ public sealed class RealizarPedidoDeCliente
         if (problemas.Count > 0)
             return Resultado<PedidoClienteDto>.Falla(TipoError.Conflicto, CodigosError.StockInsuficiente, string.Join(" ", problemas));
 
-        var pedido = new Pedido
-        {
-            ClienteId = cliente.Id, UsuarioId = usuarioId, FechaPedido = _reloj.GetUtcNow(), FechaEntrega = s.FechaEntrega,
-            Comentarios = string.IsNullOrWhiteSpace(s.Comentarios) ? null : s.Comentarios.Trim(), Estado = EstadoPedido.Pendiente,
-        };
+        var pedido = Pedido.Crear(cliente.Id, usuarioId, _reloj.GetUtcNow(), s.FechaEntrega, s.Comentarios);
         foreach (var (id, cantidad) in pedidas)
         {
             var p = productos[id];
-            p.DescontarStock(cantidad);   // el precio es el vigente: nunca el que mande el cliente
-            pedido.Detalles.Add(new DetallePedido { Producto = p, ProductoId = id, Cantidad = cantidad, PrecioUnitario = p.PrecioVenta });
+            pedido.AgregarLinea(p, cantidad);
         }
-        pedido.Total = pedido.Detalles.Sum(d => d.Cantidad * d.PrecioUnitario);
         _repo.Agregar(pedido);
 
         try { await _uow.GuardarAsync(ct); }
@@ -203,8 +197,7 @@ public sealed class CancelarPedidoDeCliente
             return Resultado<PedidoClienteDto>.Falla(TipoError.Regla, CodigosError.Regla,
                 $"Solo se pueden cancelar los pedidos pendientes: este está {pedido.Estado.ToLowerInvariant()}.");
 
-        foreach (var d in pedido.Detalles) d.Producto!.ReponerStock(d.Cantidad);
-        pedido.Estado = EstadoPedido.Cancelado;
+        pedido.Cancelar();
 
         try { await _uow.GuardarAsync(ct); }
         catch (ConcurrenciaException)
