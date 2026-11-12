@@ -7,7 +7,7 @@
 
 @if (Vm.Producto is { } p)
 {
-    <PageTitle>@p.Nombre · Tienda GP</PageTitle>
+    <PageTitle>@p.Nombre · NoviXtore</PageTitle>
     <nav class="migas" aria-label="Ruta">
         <a href="/tienda">Tienda</a>
         @if (p.CategoriaId is not null) { <span>›</span><a href="/tienda?categoria=@p.CategoriaId">@p.Categoria</a> }

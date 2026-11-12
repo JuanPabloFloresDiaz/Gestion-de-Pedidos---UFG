@@ -1,6 +1,7 @@
 using GestionPedidos.Application.Autenticacion;
 using GestionPedidos.Application.Catalogo;
 using GestionPedidos.Application.Catalogos;
+using GestionPedidos.Application.Clientes;
 using GestionPedidos.Application.Pedidos;
 using GestionPedidos.Application.Productos;
 using GestionPedidos.Application.Roles;
@@ -46,6 +47,7 @@ public static class DependencyInjection
         servicios.AddScoped<IPedidosClienteRepository, PedidosClienteRepository>();
         servicios.AddScoped<IPedidoRepository, PedidoRepository>();
         servicios.AddScoped<IImagenesRepository, ImagenesRepository>();
+        servicios.AddScoped<IClienteRepository, ClienteRepository>();
         servicios.AddSingleton<IAlmacenImagenes, AlmacenImagenesS3>();   // el cliente S3 no abre conexiones hasta que se usa
         servicios.AddSingleton<IHasherClave, HasherClave>();
         servicios.AddScoped<AdministradorInicial>();
@@ -62,6 +64,11 @@ public static class DependencyInjection
         servicios.AddScoped<ActualizarUsuario>();
         servicios.AddScoped<CambiarEstadoUsuario>();
         servicios.AddScoped<EliminarUsuario>();
+        servicios.AddScoped<ListarClientes>();
+        servicios.AddScoped<ObtenerCliente>();
+        servicios.AddScoped<RegistrarCliente>();
+        servicios.AddScoped<ActualizarCliente>();
+        servicios.AddScoped<CambiarEstadoCliente>();
         servicios.AddScoped<ListarRoles>();
         servicios.AddScoped<ListarPermisos>();
         servicios.AddScoped<ActualizarPermisosDeRol>();

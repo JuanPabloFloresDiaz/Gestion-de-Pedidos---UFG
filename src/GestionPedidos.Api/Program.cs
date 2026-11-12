@@ -3,6 +3,7 @@ using System.Threading.RateLimiting;
 using GestionPedidos.Api.Modulos.Auth;
 using GestionPedidos.Api.Modulos.Catalogos;
 using GestionPedidos.Api.Modulos.Clasificacion;
+using GestionPedidos.Api.Modulos.Clientes;
 using GestionPedidos.Api.Modulos.Historial;
 using GestionPedidos.Api.Modulos.Imagenes;
 using GestionPedidos.Api.Modulos.Pedidos;
@@ -92,7 +93,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
 {
-    o.SwaggerDoc("v1", new OpenApiInfo { Title = "Gestión de Pedidos (UFG)", Version = "v1" });
+    o.SwaggerDoc("v1", new OpenApiInfo { Title = "NoviXtore Proyecto", Version = "v1" });
     o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         { Type = SecuritySchemeType.Http, Scheme = "bearer", BearerFormat = "JWT", In = ParameterLocation.Header });
     o.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -155,6 +156,7 @@ app.MapGet("/health/ready", async (GestionPedidosDbContext db, CancellationToken
     .AllowAnonymous();
 app.MapAuth();
 app.MapUsuarios();
+app.MapClientes();
 app.MapRoles();
 app.MapCatalogos();
 app.MapHistorial();

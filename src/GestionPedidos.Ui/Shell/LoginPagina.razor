@@ -9,8 +9,7 @@
 <div class="login-fondo">
     <div class="login-apariencia"><BotonApariencia /></div>
     <form class="login-tarjeta" @onsubmit="Ingresar" @onsubmit:preventDefault>
-        <div class="login-marca" aria-hidden="true">GP</div>
-        <h1>Gestión de Pedidos</h1>
+        <div class="login-logo" align="center"><Logo Tamano="52"/></div>
         <p class="login-sub">@(Opciones.EsEscritorio ? "Administración" : "Ingrese a su cuenta")</p>
 
         @if (_sesionVencida)

@@ -1,0 +1,8 @@
+@* Logo de la marca: dos imágenes (claro/oscuro); el CSS de tema.css muestra la que corresponde al modo activo. *@
+<img class="logo-claro" src="_content/GestionPedidos.Ui/img/logo-claro.svg" width="@Tamano" height="@Tamano" alt="Logo" />
+<img class="logo-oscuro" src="_content/GestionPedidos.Ui/img/logo-oscuro.svg" width="@Tamano" height="@Tamano" alt="Logo" />
+
+@code {
+    /// <summary>Lado del logo en píxeles.</summary>
+    [Parameter] public int Tamano { get; set; } = 50;
+}

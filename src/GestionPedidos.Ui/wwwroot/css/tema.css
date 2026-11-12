@@ -143,6 +143,14 @@ a { color: var(--color-primario); }
   border-bottom: 1px solid var(--color-borde); }
 .marca { display: flex; align-items: center; gap: 10px; font-weight: 700; }
 .marca-logo { width: 30px; height: 30px; border-radius: 8px; font-size: .75rem; }
+.logo-claro, .logo-oscuro { display: block; flex-shrink: 0; width: auto; }
+.logo-oscuro { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-modo="claro"]) .logo-claro  { display: none; }
+  :root:not([data-modo="claro"]) .logo-oscuro { display: block; }
+}
+:root[data-modo="oscuro"] .logo-claro  { display: none; }
+:root[data-modo="oscuro"] .logo-oscuro { display: block; }
 .menu { display: flex; gap: 4px; flex: 1; }
 .menu-grupo { position: relative; }
 .menu-boton { background: none; border: 0; padding: 8px 12px; border-radius: var(--radio); font: inherit; color: var(--color-texto); cursor: pointer; }
