@@ -335,7 +335,7 @@ public sealed class ClientesViewModel : ViewModelBase
         Regla(nameof(Apellidos), Validacion.Primero(Apellidos, Validacion.Texto("Los apellidos", 100)));
 
         if (!EsTelefonoValido(Telefono))
-            ErroresCampos[nameof(Telefono)] = "Teléfono de 8 a 20 caracteres (números, espacios, + o -).";
+            ErroresCampos[nameof(Telefono)] = "Teléfono de 8 a 20 caracteres, con al menos 8 números (también se aceptan espacios, + y -).";
 
         Regla(nameof(Direccion), Validacion.Primero(Direccion, Validacion.Texto("La dirección", 250)));
 

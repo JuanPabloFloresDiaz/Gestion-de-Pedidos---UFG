@@ -54,7 +54,7 @@
                         <span class="nota">Sin clasificar</span>
                     }
                 </td>
-                <td><strong>@p.PrecioVenta.ToString("C2")</strong></td>
+                <td><strong>@GestionPedidos.Ui.Tienda.TiendaVisual.Dinero(p.PrecioVenta)</strong></td>
                 <td>
                     @if (Vm.EsStockBajo(p))
                     {
