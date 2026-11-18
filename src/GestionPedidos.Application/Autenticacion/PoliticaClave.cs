@@ -1,10 +1,10 @@
 namespace GestionPedidos.Application.Autenticacion;
 
-/// <summary>Política de contraseñas ([AutenticacionYPermisos.md §2]): 10 a 128 caracteres y distinta del usuario y del correo.</summary>
+/// <summary>Política de contraseñas ([AutenticacionYPermisos.md §2]): 14 a 128 caracteres y distinta del usuario y del correo.</summary>
 public static class PoliticaClave
 {
     /// <summary>Largo mínimo.</summary>
-    public const int Minimo = 10;
+    public const int Minimo = 14;
     /// <summary>Largo máximo.</summary>
     public const int Maximo = 128;
 
