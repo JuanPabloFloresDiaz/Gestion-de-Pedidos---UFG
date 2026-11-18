@@ -2424,6 +2424,10 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<DateTimeOffset?>("ConfirmadoPorClienteEn")
+                        .HasPrecision(0)
+                        .HasColumnType("datetimeoffset(0)");
+
                     b.Property<DateTimeOffset>("CreadoEn")
                         .HasPrecision(0)
                         .HasColumnType("datetimeoffset(0)");

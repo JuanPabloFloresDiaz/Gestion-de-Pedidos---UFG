@@ -14,6 +14,7 @@ Specs por módulo bajo **Spec Driven Documentation**: cada módulo se especifica
 | [Busquedas.md](Busquedas.md) | RF-06 | 2–4 | 🟡 Borrador |
 | [HistorialActividades.md](HistorialActividades.md) | RF-10 | 4 | 🟡 Borrador |
 | [PortalWeb.md](PortalWeb.md) | RF-11 | Web | 🟡 Borrador |
+| [Correos.md](Correos.md) | Correcciones del ingeniero (26/11/2026) | Transversal | 🟡 Borrador |
 | [Testing.md](Testing.md) | RNF | Transversal | 🟡 Borrador |
 | [RespaldoYEntrega.md](RespaldoYEntrega.md) | RE-02 a RE-04 | 5 | 🟡 Borrador |
 

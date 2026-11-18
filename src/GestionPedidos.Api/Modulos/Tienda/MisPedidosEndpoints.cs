@@ -37,6 +37,11 @@ public static class MisPedidosEndpoints
                 (await caso.EjecutarAsync(http.User.IdUsuario(), id, ct)).AHttp(Results.Ok))
             .RequierePermiso(CatalogoPermisos.MisPedidosCancelar);
 
+        // El cliente confirma que recibió un pedido entregado (el correo del comprobante lo invita a hacerlo).
+        g.MapPatch("/{id:int}/confirmar", async (int id, HttpContext http, ConfirmarRecepcionDePedido caso, CancellationToken ct) =>
+                (await caso.EjecutarAsync(http.User.IdUsuario(), id, ct)).AHttp(Results.Ok))
+            .RequierePermiso(CatalogoPermisos.MisPedidosVer);
+
         return app;
     }
 }

@@ -18,6 +18,7 @@ Registrar los pedidos de los clientes (con una o varias líneas de producto), se
 | Dueño del pedido | `ClienteId` | Cliente **activo** al crear |
 | Quién hizo el pedido | `UsuarioId` | El usuario autenticado; lo asigna el sistema, no la pantalla. En la web es el propio cliente ([PortalWeb.md](PortalWeb.md)) |
 | — | `Estado` | `Pendiente` → `Entregado` \| `Cancelado` |
+| — | `ConfirmadoPorClienteEn` | Fecha en que el **cliente confirmó desde la tienda** que recibió el pedido; nula hasta entonces y solo posible con el pedido `Entregado` ([Correos.md](Correos.md)) |
 | — | `Total` | Suma de subtotales; lo calcula el dominio |
 | — | `Activo` | Baja lógica |
 

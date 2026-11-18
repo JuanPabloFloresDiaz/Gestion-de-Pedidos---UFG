@@ -395,6 +395,50 @@ public class PedidosCasosDeUsoCompletosTests
     }
 
     [Fact]
+    public async Task CambiarEstado_Entregado_ConCorreoDelCliente_PublicaElComprobante()
+    {
+        _repo.Clientes[0].Correo = "carlos@ejemplo.com";
+        PedidoExistente(100, (_teclado, 2), (_mouse, 1));   // 2 × 50 + 1 × 25
+        var comprobantes = new List<PedidoEntregadoEventArgs>();
+        _eventos.PedidoEntregado += (_, e) => comprobantes.Add(e);
+
+        await CambiarEstado().EjecutarAsync(100, new CambiarEstadoPedidoSolicitud(EstadoPedido.Entregado, Version), 99, default);
+
+        var c = Assert.Single(comprobantes);
+        Assert.Equal(100, c.PedidoId);
+        Assert.Equal("carlos@ejemplo.com", c.Correo);
+        Assert.Equal("Carlos López", c.Cliente);
+        Assert.Equal(125m, c.Total);
+        Assert.Equal(new[] { "Mouse", "Teclado" }, c.Lineas.Select(l => l.Producto));   // en orden alfabético
+    }
+
+    [Fact]
+    public async Task CambiarEstado_Entregado_SinCorreoDelCliente_NoPublicaElComprobante()
+    {
+        PedidoExistente(100, (_teclado, 2));   // el cliente de este caso no tiene correo (es opcional)
+        var comprobantes = new List<PedidoEntregadoEventArgs>();
+        _eventos.PedidoEntregado += (_, e) => comprobantes.Add(e);
+
+        var res = await CambiarEstado().EjecutarAsync(100, new CambiarEstadoPedidoSolicitud(EstadoPedido.Entregado, Version), 99, default);
+
+        Assert.True(res.Exito);
+        Assert.Empty(comprobantes);
+    }
+
+    [Fact]
+    public async Task CambiarEstado_Cancelado_NoPublicaElComprobante()
+    {
+        _repo.Clientes[0].Correo = "carlos@ejemplo.com";
+        PedidoExistente(100, (_teclado, 2));
+        var comprobantes = new List<PedidoEntregadoEventArgs>();
+        _eventos.PedidoEntregado += (_, e) => comprobantes.Add(e);
+
+        await CambiarEstado().EjecutarAsync(100, new CambiarEstadoPedidoSolicitud(EstadoPedido.Cancelado, Version), 99, default);
+
+        Assert.Empty(comprobantes);
+    }
+
+    [Fact]
     public async Task CambiarEstado_Cancelado_PublicaEventoConStockRepuesto()
     {
         PedidoExistente(100, (_teclado, 2));

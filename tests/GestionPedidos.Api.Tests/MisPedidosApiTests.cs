@@ -161,6 +161,43 @@ public class MisPedidosApiTests
     }
 
     [Fact]
+    public async Task ConfirmarRecepcion_SoloPedidosPropiosYEntregados_UnaSolaVez_YQuedaEnElHistorial()
+    {
+        var cliente = await ClienteAsync();
+        var otro = await ClienteAsync();
+        var admin = await _api.AdminAsync();
+        var p = await ProductoAsync(stock: 10);
+        var pedido = (await (await cliente.PostAsJsonAsync("/api/v1/mis-pedidos", Pedido((p, 2)))).Content.ReadFromJsonAsync<PedidoClienteDto>())!;
+
+        // Pendiente: todavía no hay nada que confirmar
+        Assert.False(pedido.PuedeConfirmar);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await cliente.PatchAsync($"/api/v1/mis-pedidos/{pedido.Id}/confirmar", null)).StatusCode);
+
+        // El personal lo marca como entregado
+        var detalle = (await admin.GetFromJsonAsync<PedidoDetalleDto>($"/api/v1/pedidos/{pedido.Id}"))!;
+        Assert.Equal(HttpStatusCode.OK, (await admin.PatchAsJsonAsync($"/api/v1/pedidos/{pedido.Id}/estado",
+            new CambiarEstadoPedidoSolicitud(EstadosPedido.Entregado, detalle.RowVersion))).StatusCode);
+        var entregado = (await cliente.GetFromJsonAsync<PedidoClienteDto>($"/api/v1/mis-pedidos/{pedido.Id}"))!;
+        Assert.True(entregado.PuedeConfirmar);
+        Assert.Null(entregado.ConfirmadoEn);
+
+        // Otro cliente no puede confirmar un pedido ajeno (responde como si no existiera)
+        Assert.Equal(HttpStatusCode.NotFound, (await otro.PatchAsync($"/api/v1/mis-pedidos/{pedido.Id}/confirmar", null)).StatusCode);
+
+        var confirmado = await cliente.PatchAsync($"/api/v1/mis-pedidos/{pedido.Id}/confirmar", null);
+        Assert.Equal(HttpStatusCode.OK, confirmado.StatusCode);
+        var dto = (await confirmado.Content.ReadFromJsonAsync<PedidoClienteDto>())!;
+        Assert.NotNull(dto.ConfirmadoEn);
+        Assert.False(dto.PuedeConfirmar);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await cliente.PatchAsync($"/api/v1/mis-pedidos/{pedido.Id}/confirmar", null)).StatusCode);   // no dos veces
+
+        using var scope = _api.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<GestionPedidosDbContext>();
+        for (var i = 0; i < 40 && !await db.Actividades.AnyAsync(a => a.Entidad == "Pedido" && a.EntidadId == pedido.Id && a.Accion == "ConfirmarRecepcion"); i++) await Task.Delay(250);
+        Assert.True(await db.Actividades.AnyAsync(a => a.Entidad == "Pedido" && a.EntidadId == pedido.Id && a.Accion == "ConfirmarRecepcion"));
+    }
+
+    [Fact]
     public async Task ElPedidoQuedaEnElHistorial()
     {
         var cliente = await ClienteAsync();

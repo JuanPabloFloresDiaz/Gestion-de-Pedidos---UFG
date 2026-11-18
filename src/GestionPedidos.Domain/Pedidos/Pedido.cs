@@ -39,6 +39,8 @@ public class Pedido : IAuditable
     public string? Comentarios { get; set; }
     /// <summary>Estado de negocio: Pendiente, Entregado o Cancelado.</summary>
     public string Estado { get; set; } = EstadoPedido.Pendiente;
+    /// <summary>Cuándo el cliente confirmó desde la tienda que recibió el pedido (UTC); <c>null</c> mientras no lo haya hecho.</summary>
+    public DateTimeOffset? ConfirmadoPorClienteEn { get; set; }
     /// <summary>Total del pedido, calculado por la suma de subtotales de las líneas.</summary>
     public decimal Total { get; set; }
     /// <summary>Baja lógica: <c>false</c> = inactivo.</summary>
@@ -210,6 +212,19 @@ public class Pedido : IAuditable
             throw new InvalidOperationException($"Solo se pueden marcar como entregados los pedidos pendientes (actual: {Estado.ToLowerInvariant()}).");
 
         Estado = EstadoPedido.Entregado;
+    }
+
+    /// <summary>El cliente confirma que recibió su pedido: solo si está <c>Entregado</c>, activo y no confirmado antes.</summary>
+    /// <param name="ahora">Fecha y hora (UTC) de la confirmación.</param>
+    /// <exception cref="InvalidOperationException">El pedido no está entregado, está dado de baja o ya se confirmó.</exception>
+    public void ConfirmarRecepcion(DateTimeOffset ahora)
+    {
+        if (!Activo || Estado != EstadoPedido.Entregado)
+            throw new InvalidOperationException($"Solo se puede confirmar la recepción de pedidos entregados (actual: {Estado.ToLowerInvariant()}).");
+        if (ConfirmadoPorClienteEn is not null)
+            throw new InvalidOperationException("La recepción de este pedido ya fue confirmada.");
+
+        ConfirmadoPorClienteEn = ahora;
     }
 
     /// <summary>Cancela el pedido y repone el stock de todas las líneas (estado final).</summary>

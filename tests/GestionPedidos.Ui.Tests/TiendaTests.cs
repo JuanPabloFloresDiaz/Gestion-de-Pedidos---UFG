@@ -366,6 +366,44 @@ public class PedidoClienteTests
     }
 
     [Fact]
+    public async Task MisPedidos_ConfirmarRecibido_LlamaALaApi_YRefrescaLaLista()
+    {
+        var confirmado = false;
+        PedidoClienteDto Entregado() => Pedido(5, "Entregado", false) with { PuedeConfirmar = !confirmado, ConfirmadoEn = confirmado ? Ahora : null };
+        var e = new Entorno();
+        e.Manejador.Responder = r =>
+        {
+            if (r.Method == HttpMethod.Patch) { confirmado = true; return (HttpStatusCode.OK, Entregado()); }
+            return (HttpStatusCode.OK, new PaginaDto<PedidoClienteDto>(new[] { Entregado() }, 1, 1, 5));
+        };
+        var vm = new MisPedidosViewModel(new PedidosClienteService(e.Api));
+        await vm.IniciarAsync();
+        Assert.True(vm.Pagina!.Elementos.Single().PuedeConfirmar);
+
+        await vm.ConfirmarRecepcionAsync(vm.Pagina.Elementos[0]);
+
+        Assert.Contains(e.Manejador.Peticiones, p => p.Method == HttpMethod.Patch && p.RequestUri!.AbsolutePath.EndsWith("/mis-pedidos/5/confirmar"));
+        var actual = vm.Pagina!.Elementos.Single();
+        Assert.False(actual.PuedeConfirmar);
+        Assert.NotNull(actual.ConfirmadoEn);
+    }
+
+    [Fact]
+    public async Task MisPedidos_SiLaConfirmacionFalla_ElErrorSeMuestra()
+    {
+        var e = new Entorno();
+        e.Manejador.Responder = r => r.Method == HttpMethod.Patch
+            ? (HttpStatusCode.UnprocessableEntity, new { title = "Ya confirmaste la recepción de este pedido.", codigo = CodigosError.Regla })
+            : (HttpStatusCode.OK, new PaginaDto<PedidoClienteDto>(new[] { Pedido(5, "Entregado", false) with { PuedeConfirmar = true } }, 1, 1, 5));
+        var vm = new MisPedidosViewModel(new PedidosClienteService(e.Api));
+        await vm.IniciarAsync();
+
+        await vm.ConfirmarRecepcionAsync(vm.Pagina!.Elementos[0]);
+
+        Assert.Equal("Ya confirmaste la recepción de este pedido.", vm.Error);
+    }
+
+    [Fact]
     public async Task MisPedidos_SiYaNoEstabaPendiente_ElErrorSeMuestra_YLaListaSeActualiza()
     {
         var e = new Entorno();

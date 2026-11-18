@@ -90,6 +90,8 @@
         {
             case AccionUsuario.DarDeBaja:
                 <p><strong>@u.NombreUsuario</strong> dejará de poder iniciar sesión. Es un eliminado suave: sus datos y su historial se conservan y se puede reactivar cuando quieras.</p>
+                <p>Se le enviará un correo a <strong>@u.Correo</strong> con la justificación.</p>
+                <CampoTexto Etiqueta="Justificación de la baja" Placeholder="Por qué se da de baja la cuenta" @bind-Valor="Vm.MotivoBaja" Error="@Vm.ErrorMotivo" />
                 break;
             case AccionUsuario.Reactivar:
                 <p><strong>@u.NombreUsuario</strong> volverá a poder iniciar sesión.</p>

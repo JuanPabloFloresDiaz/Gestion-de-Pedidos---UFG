@@ -39,6 +39,15 @@ public sealed class MisPedidosViewModel : ViewModelBase
     /// <summary>Cierra el diálogo sin cancelar nada.</summary>
     public void DescartarCancelacion() { PorCancelar = null; OnCambiado(); }
 
+    /// <summary>Confirma que el cliente recibió el pedido y refresca la lista (un error se muestra en pantalla).</summary>
+    public async Task ConfirmarRecepcionAsync(PedidoClienteDto pedido)
+    {
+        var ok = await EjecutarAsync(ct => _pedidos.ConfirmarRecepcionAsync(pedido.Id, ct), cancelarAnterior: false);
+        var mensaje = Error;
+        await IrAPaginaAsync(_pagina);
+        if (!ok) { Error = mensaje; OnCambiado(); }
+    }
+
     /// <summary>Cancela el pedido confirmado; el diálogo se cierra y un error (por ejemplo, que ya no esté pendiente) se muestra en pantalla.</summary>
     public async Task ConfirmarCancelacionAsync()
     {

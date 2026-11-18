@@ -45,9 +45,13 @@ public sealed class UsuariosService : IPublicadorDeCambios
     }
 
     /// <summary>Da de baja o reactiva un usuario y notifica el cambio de estado.</summary>
-    public async Task<UsuarioDto> CambiarEstadoAsync(int id, bool activo, CancellationToken ct)
+    /// <param name="id">Usuario.</param>
+    /// <param name="activo"><c>false</c> para darlo de baja, <c>true</c> para reactivarlo.</param>
+    /// <param name="ct">Cancelación.</param>
+    /// <param name="motivo">Justificación de la baja (obligatoria al dar de baja; se le envía por correo al usuario).</param>
+    public async Task<UsuarioDto> CambiarEstadoAsync(int id, bool activo, CancellationToken ct, string? motivo = null)
     {
-        var u = await _api.PatchAsync<UsuarioDto>($"/api/v1/usuarios/{id}/estado", new CambiarEstadoSolicitud(activo), ct);
+        var u = await _api.PatchAsync<UsuarioDto>($"/api/v1/usuarios/{id}/estado", new CambiarEstadoSolicitud(activo, motivo), ct);
         OnEntidadCambiada(u, TipoCambio.EstadoCambiado);
         return u;
     }

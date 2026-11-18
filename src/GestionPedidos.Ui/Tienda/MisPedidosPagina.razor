@@ -64,6 +64,8 @@ else
                     <div class="pedido-pie">
                         <strong>Total @TiendaVisual.Dinero(p.Total)</strong>
                         @if (p.PuedeCancelar) { <button class="enlace enlace-peligro" @onclick="() => Vm.SolicitarCancelacion(p)">Cancelar pedido</button> }
+                        @if (p.PuedeConfirmar) { <button class="enlace" @onclick="() => Vm.ConfirmarRecepcionAsync(p)">Confirmar recibido</button> }
+                        @if (p.ConfirmadoEn is { } confirmado) { <small class="nota">Recepción confirmada el @confirmado.ToLocalTime().ToString("dd/MM/yyyy")</small> }
                     </div>
                 </li>
             }
