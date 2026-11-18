@@ -39,7 +39,7 @@
 
 Detalle en [AutenticacionYPermisos.md](Especificaciones/AutenticacionYPermisos.md). Resumen:
 
-* **Contraseñas**: `PasswordHasher<T>` (PBKDF2 con sal e iteraciones del framework); mínimo 10 caracteres; nunca en claro, ni en logs, ni en el historial.
+* **Contraseñas**: `PasswordHasher<T>` (PBKDF2 con sal e iteraciones del framework); mínimo 14 caracteres; nunca en claro, ni en logs, ni en el historial.
 * **Login**: usuario o correo + contraseña → un **JWT de 60 minutos** (sin *refresh tokens*; al vencer se vuelve a iniciar sesión). Mensaje genérico ("Usuario o contraseña incorrectos") y trabajo de hash equivalente aunque el usuario no exista (evita enumeración por tiempos). La API comprueba en cada petición que el usuario siga **activo** (caché de 60 s), así una baja surte efecto en ≤ 1 minuto.
 * **Bloqueo**: 5 intentos fallidos consecutivos → bloqueo de 15 minutos.
 * **Sesión del escritorio**: el token vive **solo en memoria**; no se escribe a disco. **Sesión de la web**: el token se guarda en `ProtectedSessionStorage` (cifrado por ASP.NET Core, ligado a la pestaña); no se usa `localStorage`. Cerrar sesión lo descarta.

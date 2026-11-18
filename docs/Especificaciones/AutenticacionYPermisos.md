@@ -44,7 +44,7 @@ sequenceDiagram
 | Logout | El cliente descarta el token (no hay estado en el servidor) |
 | Usuario dado de baja o con rol cambiado | La API comprueba en cada petición que el usuario siga **activo** (consulta con caché en memoria de 60 s), así la baja surte efecto en ≤ 1 minuto y no en 60 |
 | Bloqueo | 5 fallos seguidos → `BloqueadoHasta = ahora + 15 min`; un login correcto reinicia el contador |
-| Contraseña | Mínimo 10 y máximo 128 caracteres, distinta del nombre de usuario y del correo; hash con `PasswordHasher<T>` |
+| Contraseña | Mínimo 14 y máximo 128 caracteres, distinta del nombre de usuario y del correo; hash con `PasswordHasher<T>` |
 | Cambio obligatorio | Con `DebeCambiarClave = 1` solo se permite `POST /auth/cambiar-clave` hasta cambiarla |
 | Límite de peticiones | *Rate limiting* por IP en `login` y `registro` ([Seguridad.md §4](../Seguridad.md)) |
 

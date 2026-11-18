@@ -24,7 +24,7 @@ public static class Validacion
     public static ReglaDeValidacion<string?> Correo() => v =>
         v is { Length: > 3 } c && c.Contains('@') && c.Contains('.') && !c.Contains(' ') ? null : "El correo no es válido.";
 
-    /// <summary>Regla: contraseña de al menos 10 caracteres.</summary>
+    /// <summary>Regla: contraseña de al menos 14 caracteres.</summary>
     public static ReglaDeValidacion<string?> Clave() => v =>
-        v is { Length: >= 10 } ? null : "La contraseña debe tener al menos 10 caracteres.";
+        v is { Length: >= 14 } ? null : "La contraseña debe tener al menos 14 caracteres.";
 }

@@ -111,7 +111,7 @@ test('producto, carrito y registro de un cliente', async ({ page }) => {
   await page.getByLabel('Departamento').selectOption({ label: 'San Salvador' });
   await page.getByLabel('Distrito').selectOption({ index: 1 });
   await page.getByLabel('Dirección de entrega').fill('Colonia Escalón, pasaje 3, casa 12');
-  await page.getByLabel('Contraseña (mínimo 10 caracteres)').fill('ClaveCliente_2026');
+  await page.getByLabel('Contraseña (mínimo 14 caracteres)').fill('ClaveCliente_2026');
   await page.getByLabel('Repite la contraseña').fill('ClaveCliente_2026');
   await page.getByRole('button', { name: 'Crear cuenta' }).last().click();
   await expect(page.getByRole('button', { name: /Valeria/ })).toBeVisible();   // sesión iniciada: el encabezado saluda

@@ -16,7 +16,7 @@
             @if (!string.IsNullOrEmpty(Vm.Error)) { <div class="alerta alerta-error" role="alert">@Vm.Error</div> }
 
             <CampoTexto Etiqueta="Contraseña actual" Tipo="password" @bind-Valor="Vm.ClaveActual" Autocompletar="current-password" Deshabilitado="Vm.Cargando" />
-            <CampoTexto Etiqueta="Contraseña nueva (mínimo 10 caracteres)" Tipo="password" @bind-Valor="Vm.ClaveNueva" Autocompletar="new-password" Deshabilitado="Vm.Cargando" />
+            <CampoTexto Etiqueta="Contraseña nueva (mínimo 14 caracteres)" Tipo="password" @bind-Valor="Vm.ClaveNueva" Autocompletar="new-password" Deshabilitado="Vm.Cargando" />
             <CampoTexto Etiqueta="Repita la contraseña nueva" Tipo="password" @bind-Valor="Vm.Confirmacion" Autocompletar="new-password"
                         Deshabilitado="Vm.Cargando" AlPresionarEnter="Cambiar" />
             <div class="fila-botones">
