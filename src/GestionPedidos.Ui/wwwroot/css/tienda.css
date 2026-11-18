@@ -177,10 +177,18 @@
   .carrito-resumen { position: static; }
   .tienda-pie { grid-template-columns: 1fr 1fr; }
 }
+/* Menú desplegable de categorías: solo en pantallas pequeñas (en las anchas se usa la barra horizontal) */
+.tienda-categorias-menu { display: none; }
 @media (max-width: 640px) {
   .tienda-barra { flex-wrap: wrap; gap: 10px; } .tienda-buscar { order: 3; flex-basis: 100%; max-width: none; }
   .tienda-marca span:last-child { display: none; } .tienda-solo-ancho { display: none !important; }
-  .carrito-linea { grid-template-columns: 56px minmax(0, 1fr); } .carrito-linea .cantidad, .carrito-subtotal { grid-column: 2; justify-self: start; }
+  .tienda-categorias { display: none; }
+  .tienda-categorias-menu { display: block; padding: 0 20px 10px; }
+  .tienda-categorias-menu .menu-lista { left: 12px; right: 12px; top: 100%; max-height: 60vh; overflow-y: auto; z-index: 61; }
+  /* El panel de Apariencia se ancla al encabezado y no al botón (que está a la izquierda y lo dejaba fuera de la pantalla) */
+  .tienda-encabezado .apariencia { position: static; }
+  .tienda-encabezado .apariencia-panel { left: 12px; right: 12px; width: auto; max-height: 70vh; overflow-y: auto; }
+  .carrito-linea { grid-template-columns: 72px minmax(0, 1fr); } .carrito-linea .cantidad, .carrito-subtotal { grid-column: 2; justify-self: start; }
   .fila-campos { grid-template-columns: 1fr; }
   .tienda-pie { grid-template-columns: 1fr; }
 }

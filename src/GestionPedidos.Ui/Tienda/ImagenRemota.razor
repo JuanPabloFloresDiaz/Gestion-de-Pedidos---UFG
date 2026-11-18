@@ -1,0 +1,25 @@
+@* Foto de producto o categoría: pide a ImagenesService la dirección que el hospedaje puede mostrar y pinta un <img>. Los atributos extra
+   (loading, onerror, style...) se pasan tal cual al <img>. Si no hay foto no pinta nada y queda el ícono de respaldo. *@
+@inject ImagenesService Imagenes
+@if (_src is not null)
+{
+    <img src="@_src" @attributes="Atributos" />
+}
+
+@code {
+    /// <summary>Ruta relativa de la foto (<c>/imagenes/productos/CODIGO</c>).</summary>
+    [Parameter] public string? Ruta { get; set; }
+    /// <summary>Atributos HTML adicionales del <c>&lt;img&gt;</c>.</summary>
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? Atributos { get; set; }
+
+    private string? _src;
+    private string? _rutaResuelta;
+
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Ruta == _rutaResuelta) return;
+        _rutaResuelta = Ruta;
+        _src = await Imagenes.ResolverAsync(Ruta);
+    }
+}

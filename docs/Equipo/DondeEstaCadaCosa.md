@@ -66,7 +66,7 @@ Lo que llena la base con datos realistas para desarrollar y demostrar: categorí
 | **Infrastructure** | `src/GestionPedidos.Infrastructure/` | EF Core y adaptadores: `Persistence/Configurations/` (mapa de tablas), `Persistence/Repositories/`, `Persistence/Migrations/`, `Persistence/Seed/`, `Almacen/` (S3), `Seguridad/` (hash de claves) |
 | **Api** | `src/GestionPedidos.Api/` | Minimal APIs agrupadas por módulo en `Modulos/` (`Auth`, `Usuarios`, `Roles`, `Catalogos`, `Clasificacion`, `Tienda`, `Imagenes`, `Historial`); `Seguridad/` (JWT y políticas); `Program.cs` |
 | **Web** | `src/GestionPedidos.Web/` | Hospedaje web de la interfaz (Blazor Web App) |
-| **Desktop** | `src/GestionPedidos.Desktop/` | Hospedaje de escritorio (MAUI Blazor Hybrid, solo Windows) |
+| **Desktop** | `src/GestionPedidos.Desktop/` | Hospedaje nativo (MAUI Blazor Hybrid): **Windows** (escritorio) y **Android** (celular, `Platforms/Android/`); cómo probarlo: [`PruebaMovil.md`](PruebaMovil.md) |
 | **Ui** | `src/GestionPedidos.Ui/` | **Toda** la interfaz (la usan Web y Desktop): ver el siguiente apartado |
 
 **Dónde agrego un módulo nuevo** (por ejemplo Clientes): la receta paso a paso está en [`PrimerosPasos.md` §5](PrimerosPasos.md#5-receta-cómo-se-construye-un-módulo-nuevo) y el módulo **Usuarios** es el modelo a copiar.

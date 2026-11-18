@@ -4,7 +4,7 @@
     <Icono Svg="Svg" />
     @if (!string.IsNullOrEmpty(ImagenUrl))
     {
-        <img src="@ImagenUrl" alt="" loading="lazy" decoding="async" style="opacity:0" onload="this.style.opacity=1" onerror="this.remove()" />
+        <ImagenRemota Ruta="@ImagenUrl" alt="" loading="lazy" decoding="async" style="opacity:0" onload="this.style.opacity=1" onerror="this.remove()" />
     }
 </div>
 

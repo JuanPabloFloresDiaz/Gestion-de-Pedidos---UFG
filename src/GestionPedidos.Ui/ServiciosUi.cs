@@ -65,6 +65,7 @@ public static class ServiciosUi
         servicios.AddScoped<HistorialService>();
         servicios.AddTransient<HistorialViewModel>();
         // Tienda pública: servicio de consultas y carrito (por visita) y un ViewModel por página
+        servicios.AddSingleton<ImagenesService>();   // sin estado de usuario: las fotos son públicas, la caché se comparte
         servicios.AddScoped<TiendaService>();
         servicios.AddScoped<CarritoService>();
         servicios.AddScoped<PedidosClienteService>();
