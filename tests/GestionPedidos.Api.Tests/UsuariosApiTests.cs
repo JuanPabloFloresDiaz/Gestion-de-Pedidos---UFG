@@ -73,7 +73,7 @@ public class UsuariosApiTests
     {
         var admin = await _api.AdminAsync();
         var yo = (await admin.GetFromJsonAsync<UsuarioActualDto>("/api/v1/auth/yo"))!;
-        var r = await admin.PatchAsJsonAsync($"/api/v1/usuarios/{yo.Id}/estado", new CambiarEstadoSolicitud(false));
+        var r = await admin.PatchAsJsonAsync($"/api/v1/usuarios/{yo.Id}/estado", new CambiarEstadoSolicitud(false, "Baja de prueba automatizada"));
         Assert.Equal(HttpStatusCode.UnprocessableEntity, r.StatusCode);
     }
 

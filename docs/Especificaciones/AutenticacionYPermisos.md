@@ -95,7 +95,7 @@ sequenceDiagram
 ## 5. Reglas de Usuarios
 
 * Alta de usuarios del personal por un administrador (clave inicial temporal con `DebeCambiarClave = 1`).
-* **Dar de baja es un eliminado suave y siempre reversible**: `Activo = 0` y `EliminadoEn` con la fecha de baja; reactivar limpia `EliminadoEn`, el contador de intentos fallidos y el bloqueo. La misma regla (`EliminadoEn`) existe en `Clientes`, `Productos` y `Pedidos`.
+* **Dar de baja es un eliminado suave y siempre reversible**: `Activo = 0` y `EliminadoEn` con la fecha de baja; reactivar limpia `EliminadoEn`, el contador de intentos fallidos y el bloqueo. **Dar de baja a un usuario exige una justificación** (de 10 a 500 caracteres, `Motivo` en `PATCH /usuarios/{id}/estado`; `400 VALIDACION` si falta) que queda en el historial y **se le envía por correo al usuario** ([Correos.md](Correos.md)); reactivar no la pide. La misma regla (`EliminadoEn`) existe en `Clientes`, `Productos` y `Pedidos`.
 * **Eliminación definitiva** (`DELETE /api/v1/usuarios/{id}`, permiso `usuarios.eliminar`): solo de usuarios **ya dados de baja**, nunca de uno mismo ni del último administrador, y se rechaza si el usuario tiene pedidos (`409`). En la interfaz exige escribir el nombre de usuario. Al borrar, el historial y el cliente enlazado conservan sus datos (`UsuarioId` pasa a nulo).
 * **Siempre debe existir al menos un administrador activo**: se impide desactivar o degradar al último.
 * Un usuario no puede cambiar su propio rol ni desactivarse a sí mismo.

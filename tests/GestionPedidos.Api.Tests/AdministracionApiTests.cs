@@ -184,6 +184,20 @@ public class AdministracionApiTests
 
     // ---------------- Eliminado suave y eliminación definitiva ----------------
     [Fact]
+    public async Task DarDeBaja_SinJustificacion_Da400_YElUsuarioSigueActivo()
+    {
+        var admin = await _api.AdminAsync();
+        var n = "motivo" + Sufijo();
+        var u = (await (await admin.PostAsJsonAsync("/api/v1/usuarios", new CrearUsuarioSolicitud(n, "Sin motivo", $"{n}@e.com", 2, "ClaveTemporal_2026"))).Content.ReadFromJsonAsync<UsuarioDto>())!;
+
+        foreach (var motivo in new string?[] { null, "", "corto" })
+            Assert.Equal(HttpStatusCode.BadRequest, (await admin.PatchAsJsonAsync($"/api/v1/usuarios/{u.Id}/estado", new CambiarEstadoSolicitud(false, motivo))).StatusCode);
+
+        var actual = (await admin.GetFromJsonAsync<UsuarioDto>($"/api/v1/usuarios/{u.Id}"))!;
+        Assert.True(actual.Activo);
+    }
+
+    [Fact]
     public async Task DarDeBaja_GuardaEliminadoEn_ReactivarLoBorra_YElUsuarioNoPuedeIniciarSesion()
     {
         var admin = await _api.AdminAsync();
@@ -191,7 +205,7 @@ public class AdministracionApiTests
         var u = (await (await admin.PostAsJsonAsync("/api/v1/usuarios", new CrearUsuarioSolicitud(n, "Eliminado suave", $"{n}@e.com", 2, "ClaveTemporal_2026"))).Content.ReadFromJsonAsync<UsuarioDto>())!;
         Assert.Null(u.EliminadoEn);
 
-        var baja = (await (await admin.PatchAsJsonAsync($"/api/v1/usuarios/{u.Id}/estado", new CambiarEstadoSolicitud(false))).Content.ReadFromJsonAsync<UsuarioDto>())!;
+        var baja = (await (await admin.PatchAsJsonAsync($"/api/v1/usuarios/{u.Id}/estado", new CambiarEstadoSolicitud(false, "Baja de prueba automatizada"))).Content.ReadFromJsonAsync<UsuarioDto>())!;
         Assert.False(baja.Activo);
         Assert.NotNull(baja.EliminadoEn);
         Assert.True(baja.EliminadoEn > DateTimeOffset.UtcNow.AddMinutes(-2));
@@ -216,7 +230,7 @@ public class AdministracionApiTests
         Assert.Equal(HttpStatusCode.UnprocessableEntity, activo.StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync($"/api/v1/usuarios/{u.Id}")).StatusCode);
 
-        await admin.PatchAsJsonAsync($"/api/v1/usuarios/{u.Id}/estado", new CambiarEstadoSolicitud(false));
+        await admin.PatchAsJsonAsync($"/api/v1/usuarios/{u.Id}/estado", new CambiarEstadoSolicitud(false, "Baja de prueba automatizada"));
         var eliminado = await admin.DeleteAsync($"/api/v1/usuarios/{u.Id}");
         Assert.Equal(HttpStatusCode.NoContent, eliminado.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await admin.GetAsync($"/api/v1/usuarios/{u.Id}")).StatusCode);

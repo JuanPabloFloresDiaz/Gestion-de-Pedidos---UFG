@@ -7,6 +7,8 @@ using GestionPedidos.Application.Productos;
 using GestionPedidos.Application.Roles;
 using GestionPedidos.Application.Tienda;
 using GestionPedidos.Application.Common;
+using GestionPedidos.Application.Correo;
+using GestionPedidos.Infrastructure.Correo;
 using GestionPedidos.Application.Eventos;
 using GestionPedidos.Application.Historial;
 using GestionPedidos.Application.Imagenes;
@@ -82,6 +84,7 @@ public static class DependencyInjection
         servicios.AddScoped<RealizarPedidoDeCliente>();
         servicios.AddScoped<ListarPedidosDeCliente>();
         servicios.AddScoped<CancelarPedidoDeCliente>();
+        servicios.AddScoped<ConfirmarRecepcionDePedido>();
         servicios.AddScoped<RegistrarPedido>();
         servicios.AddScoped<ActualizarPedido>();
         servicios.AddScoped<CambiarEstadoPedido>();
@@ -106,6 +109,16 @@ public static class DependencyInjection
         servicios.AddSingleton<IRegistroActividades>(sp => sp.GetRequiredService<RegistroActividadesEnSegundoPlano>());
         servicios.AddHostedService(sp => sp.GetRequiredService<RegistroActividadesEnSegundoPlano>());
         servicios.AddSingleton<HistorialSubscriber>();
+
+        // Correo: el suscriptor encola y un servicio en segundo plano envía por SMTP (MailHog en desarrollo)
+        servicios.AddOptions<OpcionesCorreo>();
+        servicios.AddSingleton<IEnviadorDeCorreo, EnviadorSmtp>();
+        servicios.AddSingleton<ColaDeCorreosEnSegundoPlano>();
+        servicios.AddSingleton<IColaDeCorreos>(sp => sp.GetRequiredService<ColaDeCorreosEnSegundoPlano>());
+        servicios.AddHostedService(sp => sp.GetRequiredService<ColaDeCorreosEnSegundoPlano>());
+        servicios.AddSingleton(sp => new UrlsDelSitio(
+            sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<OpcionesCorreo>>().Value.UrlSitio.TrimEnd('/') + "/mis-pedidos"));
+        servicios.AddSingleton<CorreoSubscriber>();
         return servicios;
     }
 }

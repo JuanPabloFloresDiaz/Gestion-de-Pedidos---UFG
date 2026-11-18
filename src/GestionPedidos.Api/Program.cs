@@ -17,6 +17,7 @@ using GestionPedidos.Application.Historial;
 using GestionPedidos.Application.Seguridad;
 using GestionPedidos.Infrastructure;
 using GestionPedidos.Infrastructure.Almacen;
+using GestionPedidos.Infrastructure.Correo;
 using GestionPedidos.Infrastructure.Persistence;
 using GestionPedidos.Infrastructure.Persistence.Seed;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -35,6 +36,7 @@ var conexion = config.GetConnectionString("Default")
     ?? throw new InvalidOperationException("Falta ConnectionStrings:Default.");
 builder.Services.AddGestionPedidos(conexion);
 builder.Services.Configure<OpcionesAlmacen>(config.GetSection(OpcionesAlmacen.Seccion));   // Garage (S3) para las imágenes
+builder.Services.Configure<OpcionesCorreo>(config.GetSection(OpcionesCorreo.Seccion));   // SMTP (MailHog en desarrollo)
 
 builder.Services.Configure<OpcionesJwt>(config.GetSection(OpcionesJwt.Seccion));
 var jwt = config.GetSection(OpcionesJwt.Seccion).Get<OpcionesJwt>() ?? new OpcionesJwt();
@@ -198,6 +200,7 @@ if (config.GetValue("Database:MigrarAlIniciar", false))
 
 // El historial es un suscriptor: se instancia aquí para que escuche desde el primer evento.
 app.Services.GetRequiredService<HistorialSubscriber>();
+app.Services.GetRequiredService<GestionPedidos.Application.Correo.CorreoSubscriber>();   // avisos por correo
 
 app.Run();
 

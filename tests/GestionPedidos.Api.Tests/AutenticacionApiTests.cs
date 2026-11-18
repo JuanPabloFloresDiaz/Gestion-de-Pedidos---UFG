@@ -118,7 +118,7 @@ public class AutenticacionApiTests
         var c = _api.ClienteCon(s);
         Assert.Equal(HttpStatusCode.OK, (await c.GetAsync("/api/v1/auth/yo")).StatusCode);   // activo (se cachea 60 s)
 
-        var baja = await admin.PatchAsJsonAsync($"/api/v1/usuarios/{creado!.Id}/estado", new CambiarEstadoSolicitud(false));
+        var baja = await admin.PatchAsJsonAsync($"/api/v1/usuarios/{creado!.Id}/estado", new CambiarEstadoSolicitud(false, "Baja de prueba automatizada"));
         Assert.Equal(HttpStatusCode.OK, baja.StatusCode);
         // Un login nuevo ya no es posible (genérico)
         Assert.Equal(HttpStatusCode.Unauthorized, (await _api.CreateClient().PostAsJsonAsync("/api/v1/auth/login", new LoginSolicitud(n, "ClaveTemporal_2026"))).StatusCode);

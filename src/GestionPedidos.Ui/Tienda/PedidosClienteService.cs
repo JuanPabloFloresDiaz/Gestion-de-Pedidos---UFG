@@ -21,6 +21,10 @@ public sealed class PedidosClienteService
     public Task<PaginaDto<PedidoClienteDto>> ListarAsync(int pagina, CancellationToken ct) =>
         _api.GetAsync<PaginaDto<PedidoClienteDto>>($"/api/v1/mis-pedidos?pagina={pagina}&tamanoPagina=5", ct);
 
+    /// <summary>Confirma que se recibió un pedido entregado.</summary>
+    public Task<PedidoClienteDto> ConfirmarRecepcionAsync(int id, CancellationToken ct) =>
+        _api.PatchAsync<PedidoClienteDto>($"/api/v1/mis-pedidos/{id}/confirmar", null, ct);
+
     /// <summary>Cancela un pedido pendiente.</summary>
     public Task<PedidoClienteDto> CancelarAsync(int id, CancellationToken ct) =>
         _api.PatchAsync<PedidoClienteDto>($"/api/v1/mis-pedidos/{id}/cancelar", null, ct);

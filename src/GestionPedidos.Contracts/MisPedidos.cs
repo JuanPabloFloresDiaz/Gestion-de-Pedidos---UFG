@@ -15,8 +15,18 @@ public sealed record CrearPedidoClienteSolicitud(IReadOnlyList<LineaPedidoSolici
 public sealed record LineaPedidoClienteDto(int ProductoId, string Producto, int Cantidad, decimal PrecioUnitario, decimal Subtotal);
 
 /// <summary>Pedido del cliente con sus líneas.</summary>
+/// <param name="Id">Número de pedido.</param>
+/// <param name="FechaPedido">Cuándo se hizo.</param>
+/// <param name="FechaEntrega">Fecha de entrega.</param>
+/// <param name="Estado">Pendiente, Entregado o Cancelado.</param>
+/// <param name="Total">Total del pedido.</param>
+/// <param name="Comentarios">Comentarios del cliente.</param>
+/// <param name="PuedeCancelar"><c>true</c> si todavía se puede cancelar.</param>
+/// <param name="Lineas">Productos del pedido.</param>
+/// <param name="ConfirmadoEn">Cuándo el cliente confirmó que lo recibió; <c>null</c> si aún no.</param>
+/// <param name="PuedeConfirmar"><c>true</c> si el pedido está entregado y el cliente todavía no confirmó la recepción.</param>
 public sealed record PedidoClienteDto(int Id, DateTimeOffset FechaPedido, DateOnly FechaEntrega, string Estado, decimal Total, string? Comentarios,
-    bool PuedeCancelar, IReadOnlyList<LineaPedidoClienteDto> Lineas);
+    bool PuedeCancelar, IReadOnlyList<LineaPedidoClienteDto> Lineas, DateTimeOffset? ConfirmadoEn = null, bool PuedeConfirmar = false);
 
 /// <summary>Datos de entrega del cliente que está por hacer un pedido (los de su registro).</summary>
 public sealed record DatosEntregaDto(string Nombre, string Telefono, string Direccion, string Ciudad, string Departamento);

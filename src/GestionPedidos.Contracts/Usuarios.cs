@@ -34,7 +34,8 @@ public sealed record ActualizarUsuarioSolicitud(string NombreCompleto, string Co
 
 /// <summary>Cambio de estado (baja o reactivación).</summary>
 /// <param name="Activo">Estado deseado.</param>
-public sealed record CambiarEstadoSolicitud(bool Activo);
+/// <param name="Motivo">Justificación de la baja (obligatoria solo al dar de baja a un usuario; se le envía por correo).</param>
+public sealed record CambiarEstadoSolicitud(bool Activo, string? Motivo = null);
 
 /// <summary>Rol con sus permisos.</summary>
 /// <param name="Id">Identificador.</param>

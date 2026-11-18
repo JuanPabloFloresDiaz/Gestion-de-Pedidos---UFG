@@ -173,9 +173,16 @@ public sealed class UsuariosViewModel : ViewModelBase
     /// <summary>Texto que hay que escribir para confirmar una eliminación definitiva (el nombre de usuario).</summary>
     public string? TextoAConfirmar => Accion == AccionUsuario.Eliminar ? Pendiente?.NombreUsuario : null;
 
+    /// <summary>Justificación de la baja que escribe quien confirma (se le envía por correo al usuario).</summary>
+    public string MotivoBaja { get; set; } = "";
+    /// <summary>Error de la justificación, o <c>null</c> si es válida.</summary>
+    public string? ErrorMotivo { get; private set; }
+
     /// <summary>Pide confirmar la baja o la reactivación (según el estado actual del usuario).</summary>
     public void SolicitarCambioEstado(UsuarioDto usuario)
     {
+        MotivoBaja = "";
+        ErrorMotivo = null;
         Pendiente = usuario;
         Accion = usuario.Activo ? AccionUsuario.DarDeBaja : AccionUsuario.Reactivar;
         OnCambiado();
@@ -192,6 +199,8 @@ public sealed class UsuariosViewModel : ViewModelBase
     /// <summary>Cierra el diálogo sin hacer nada.</summary>
     public void CancelarSolicitud()
     {
+        MotivoBaja = "";
+        ErrorMotivo = null;
         Pendiente = null;
         Accion = AccionUsuario.Ninguna;
         OnCambiado();
@@ -203,9 +212,18 @@ public sealed class UsuariosViewModel : ViewModelBase
         var usuario = Pendiente;
         var accion = Accion;
         if (usuario is null || accion == AccionUsuario.Ninguna) return;
+        var motivo = MotivoBaja.Trim();
+        if (accion == AccionUsuario.DarDeBaja)
+        {
+            // La baja exige justificación; el diálogo sigue abierto hasta que sea válida.
+            ErrorMotivo = motivo.Length is < 10 or > 500 ? "Escribe la justificación de la baja (de 10 a 500 caracteres)." : null;
+            if (ErrorMotivo is not null) { OnCambiado(); return; }
+        }
         await EjecutarAsync(ct => accion == AccionUsuario.Eliminar
             ? _usuarios.EliminarAsync(usuario, ct)
-            : _usuarios.CambiarEstadoAsync(usuario.Id, accion == AccionUsuario.Reactivar, ct), cancelarAnterior: false);
+            : _usuarios.CambiarEstadoAsync(usuario.Id, accion == AccionUsuario.Reactivar, ct, motivo), cancelarAnterior: false);
+        MotivoBaja = "";
+        ErrorMotivo = null;
         Pendiente = null;
         Accion = AccionUsuario.Ninguna;
         OnCambiado();

@@ -35,7 +35,7 @@ public static class UsuariosEndpoints
 
         g.MapPatch("/{id:int}/estado", async (int id, CambiarEstadoSolicitud s, HttpContext http,
                 CambiarEstadoUsuario caso, CancellationToken ct) =>
-                (await caso.EjecutarAsync(id, s.Activo, http.User.IdUsuario(), ct)).AHttp(Results.Ok))
+                (await caso.EjecutarAsync(id, s.Activo, http.User.IdUsuario(), ct, s.Motivo)).AHttp(Results.Ok))
             .RequierePermiso(CatalogoPermisos.UsuariosDesactivar);
 
         // El DELETE del CRUD: eliminación definitiva, solo de usuarios que ya están dados de baja.

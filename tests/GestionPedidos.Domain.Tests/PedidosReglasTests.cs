@@ -266,6 +266,41 @@ public class PedidosReglasTests
     }
 
     [Fact]
+    public void ConfirmarRecepcion_PedidoEntregado_GuardaLaFecha()
+    {
+        var pedido = PedidoConLineas((Producto(10, 10m, 10), 2));
+        pedido.MarcarEntregado();
+        var ahora = new DateTimeOffset(2026, 11, 20, 15, 0, 0, TimeSpan.Zero);
+
+        pedido.ConfirmarRecepcion(ahora);
+
+        Assert.Equal(ahora, pedido.ConfirmadoPorClienteEn);
+    }
+
+    [Fact]
+    public void ConfirmarRecepcion_PedidoPendienteOCancelado_Lanza()
+    {
+        var pendiente = PedidoConLineas((Producto(10, 10m, 10), 2));
+        Assert.Throws<InvalidOperationException>(() => pendiente.ConfirmarRecepcion(FechaPedido));
+
+        var cancelado = PedidoConLineas((Producto(11, 10m, 10), 2));
+        cancelado.Cancelar();
+        Assert.Throws<InvalidOperationException>(() => cancelado.ConfirmarRecepcion(FechaPedido));
+        Assert.Null(pendiente.ConfirmadoPorClienteEn);
+    }
+
+    [Fact]
+    public void ConfirmarRecepcion_DosVeces_Lanza_YConservaLaPrimeraFecha()
+    {
+        var pedido = PedidoConLineas((Producto(10, 10m, 10), 2));
+        pedido.MarcarEntregado();
+        pedido.ConfirmarRecepcion(FechaPedido);
+
+        Assert.Throws<InvalidOperationException>(() => pedido.ConfirmarRecepcion(FechaPedido.AddDays(1)));
+        Assert.Equal(FechaPedido, pedido.ConfirmadoPorClienteEn);
+    }
+
+    [Fact]
     public void Cancelar_PedidoDadoDeBaja_Lanza()
     {
         var pedido = PedidoConLineas((Producto(10, 10m, 10), 1));

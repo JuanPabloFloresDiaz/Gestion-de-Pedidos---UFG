@@ -18,6 +18,11 @@ public sealed class CambiarEstadoUsuario
     private readonly EventosAplicacion _eventos;
     private readonly TimeProvider _reloj;
 
+    /// <summary>Mínimo de caracteres de la justificación de una baja.</summary>
+    public const int LongitudMinimaMotivo = 10;
+    /// <summary>Máximo de caracteres de la justificación de una baja.</summary>
+    public const int LongitudMaximaMotivo = 500;
+
     /// <summary>Crea el caso de uso con sus dependencias.</summary>
     public CambiarEstadoUsuario(IUsuarioRepository usuarios, IUnitOfWork uow, EventosAplicacion eventos, TimeProvider reloj)
     {
@@ -29,8 +34,14 @@ public sealed class CambiarEstadoUsuario
     /// <param name="activo">Estado deseado.</param>
     /// <param name="actorId">Administrador que lo cambia.</param>
     /// <param name="ct">Cancelación.</param>
-    public async Task<Resultado<UsuarioDto>> EjecutarAsync(int id, bool activo, int actorId, CancellationToken ct)
+    /// <param name="motivo">Justificación de la baja: es obligatoria al dar de baja (de 10 a 500 caracteres) y se le envía por correo al usuario.</param>
+    public async Task<Resultado<UsuarioDto>> EjecutarAsync(int id, bool activo, int actorId, CancellationToken ct, string? motivo = null)
     {
+        motivo = motivo?.Trim();
+        if (!activo && (motivo is null || motivo.Length < LongitudMinimaMotivo || motivo.Length > LongitudMaximaMotivo))
+            return Resultado<UsuarioDto>.Falla(TipoError.Validacion, CodigosError.Validacion,
+                $"Escribe la justificación de la baja ({LongitudMinimaMotivo} a {LongitudMaximaMotivo} caracteres).");
+
         var usuario = await _usuarios.ObtenerPorIdAsync(id, ct);
         if (usuario is null)
             return Resultado<UsuarioDto>.Falla(TipoError.NoEncontrado, CodigosError.NoEncontrado, "El usuario no existe.");
@@ -51,8 +62,15 @@ public sealed class CambiarEstadoUsuario
             _eventos.OnEntidadCambiada(new EntidadCambiadaServidorEventArgs
             {
                 Entidad = "Usuario", EntidadId = usuario.Id, Tipo = TipoCambioServidor.EstadoCambiado, UsuarioId = actorId,
-                Detalle = $"Usuario {usuario.NombreUsuario}: {(activo ? "reactivado" : "dado de baja")}",
+                Detalle = activo
+                    ? $"Usuario {usuario.NombreUsuario}: reactivado"
+                    : $"Usuario {usuario.NombreUsuario}: dado de baja. Motivo: {motivo}",
             });
+            if (!activo)
+                _eventos.OnUsuarioDadoDeBaja(new UsuarioDadoDeBajaEventArgs
+                {
+                    UsuarioId = usuario.Id, NombreCompleto = usuario.NombreCompleto, Correo = usuario.Correo, Motivo = motivo!, ActorId = actorId,
+                });
         }
         return Resultado<UsuarioDto>.Ok(usuario.ADto());
     }

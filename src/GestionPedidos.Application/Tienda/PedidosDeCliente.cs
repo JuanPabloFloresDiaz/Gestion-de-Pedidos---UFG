@@ -28,7 +28,8 @@ internal static class PedidoClienteMapeo
     public static PedidoClienteDto ADto(this Pedido p) => new(p.Id, p.FechaPedido, p.FechaEntrega, p.Estado, p.Total, p.Comentarios,
         p.Activo && p.Estado == EstadoPedido.Pendiente,
         p.Detalles.OrderBy(d => d.Producto?.Nombre).Select(d => new LineaPedidoClienteDto(d.ProductoId, d.Producto?.Nombre ?? "", d.Cantidad,
-            d.PrecioUnitario, d.Cantidad * d.PrecioUnitario)).ToList());
+            d.PrecioUnitario, d.Cantidad * d.PrecioUnitario)).ToList(),
+        p.ConfirmadoPorClienteEn, p.Activo && p.Estado == EstadoPedido.Entregado && p.ConfirmadoPorClienteEn is null);
 }
 
 /// <summary>Caso de uso: datos de entrega que se mostrarán al hacer el pedido.</summary>
@@ -210,6 +211,57 @@ public sealed class CancelarPedidoDeCliente
         {
             Entidad = "Pedido", EntidadId = pedido.Id, Tipo = TipoCambioServidor.EstadoCambiado, UsuarioId = usuarioId,
             Detalle = $"Pedido #{pedido.Id} cancelado por el cliente; existencias repuestas",
+        });
+        return Resultado<PedidoClienteDto>.Ok(pedido.ADto());
+    }
+}
+
+/// <summary>
+/// Caso de uso: el cliente confirma desde la tienda que recibió un pedido suyo ya <c>Entregado</c> (el correo del comprobante
+/// lo invita a hacerlo). Solo puede confirmar pedidos propios y una sola vez.
+/// </summary>
+public sealed class ConfirmarRecepcionDePedido
+{
+    private readonly IPedidosClienteRepository _repo;
+    private readonly IUnitOfWork _uow;
+    private readonly EventosAplicacion _eventos;
+    private readonly TimeProvider _reloj;
+
+    /// <summary>Crea el caso de uso.</summary>
+    public ConfirmarRecepcionDePedido(IPedidosClienteRepository repo, IUnitOfWork uow, EventosAplicacion eventos, TimeProvider reloj)
+    {
+        _repo = repo; _uow = uow; _eventos = eventos; _reloj = reloj;
+    }
+
+    /// <summary>Confirma la recepción del pedido.</summary>
+    /// <param name="usuarioId">Cliente que confirma.</param>
+    /// <param name="pedidoId">Pedido.</param>
+    /// <param name="ct">Cancelación.</param>
+    public async Task<Resultado<PedidoClienteDto>> EjecutarAsync(int usuarioId, int pedidoId, CancellationToken ct)
+    {
+        var cliente = await _repo.ObtenerClienteDeUsuarioAsync(usuarioId, ct);
+        var pedido = cliente is null ? null : await _repo.ObtenerAsync(cliente.Id, pedidoId, ct);
+        if (pedido is null)
+            return Resultado<PedidoClienteDto>.Falla(TipoError.NoEncontrado, CodigosError.NoEncontrado, "El pedido no existe.");
+        if (!pedido.Activo || pedido.Estado != EstadoPedido.Entregado)
+            return Resultado<PedidoClienteDto>.Falla(TipoError.Regla, CodigosError.Regla,
+                $"Solo se puede confirmar la recepción de los pedidos entregados: este está {pedido.Estado.ToLowerInvariant()}.");
+        if (pedido.ConfirmadoPorClienteEn is not null)
+            return Resultado<PedidoClienteDto>.Falla(TipoError.Regla, CodigosError.Regla, "Ya confirmaste la recepción de este pedido.");
+
+        pedido.ConfirmarRecepcion(_reloj.GetUtcNow());
+
+        try { await _uow.GuardarAsync(ct); }
+        catch (ConcurrenciaException)
+        {
+            return Resultado<PedidoClienteDto>.Falla(TipoError.Conflicto, CodigosError.Conflicto,
+                "El pedido cambió mientras lo confirmaba. Actualice la página e inténtelo de nuevo.");
+        }
+
+        _eventos.OnEntidadCambiada(new EntidadCambiadaServidorEventArgs
+        {
+            Entidad = "Pedido", EntidadId = pedido.Id, Tipo = TipoCambioServidor.Confirmada, UsuarioId = usuarioId,
+            Detalle = $"Pedido #{pedido.Id}: recepción confirmada por el cliente",
         });
         return Resultado<PedidoClienteDto>.Ok(pedido.ADto());
     }

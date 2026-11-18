@@ -1496,3 +1496,28 @@ GO
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261118064105_AgregarConfirmacionDePedido'
+)
+BEGIN
+    ALTER TABLE [Pedidos] ADD [ConfirmadoPorClienteEn] datetimeoffset(0) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261118064105_AgregarConfirmacionDePedido'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261118064105_AgregarConfirmacionDePedido', N'8.0.11');
+END;
+GO
+
+COMMIT;
+GO
+

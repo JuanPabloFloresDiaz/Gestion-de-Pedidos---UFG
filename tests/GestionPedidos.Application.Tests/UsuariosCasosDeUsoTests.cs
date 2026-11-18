@@ -72,7 +72,7 @@ public class UsuariosCasosDeUsoTests
     [Fact]
     public async Task CambiarEstado_NoPuedeDarseDeBajaASiMismo()
     {
-        var r = await Estado().EjecutarAsync(1, false, actorId: 1, default);
+        var r = await Estado().EjecutarAsync(1, false, actorId: 1, default, motivo: "Cuenta duplicada por error");
         Assert.Equal(TipoError.Regla, r.Error!.Tipo);
         Assert.True(_usuarios.Datos[0].Activo);
     }
@@ -81,7 +81,7 @@ public class UsuariosCasosDeUsoTests
     public async Task CambiarEstado_NoPuedeDarseDeBajaAlUltimoAdministrador()
     {
         _usuarios.Datos.Add(Fabrica.Usuario(3, "admin2", Fabrica.Operador));   // otro usuario, pero NO administrador
-        var r = await Estado().EjecutarAsync(1, false, actorId: 3, default);
+        var r = await Estado().EjecutarAsync(1, false, actorId: 3, default, motivo: "Cuenta duplicada por error");
         Assert.Equal("Debe quedar al menos un administrador activo.", r.Error!.Mensaje);
     }
 
@@ -89,10 +89,51 @@ public class UsuariosCasosDeUsoTests
     public async Task CambiarEstado_ConOtroAdministradorActivo_PermiteLaBaja_YPublica()
     {
         _usuarios.Datos.Add(Fabrica.Usuario(3, "admin2", Fabrica.Admin));
-        var r = await Estado().EjecutarAsync(1, false, actorId: 3, default);
+        var r = await Estado().EjecutarAsync(1, false, actorId: 3, default, motivo: "Cuenta duplicada por error");
         Assert.True(r.Exito);
         Assert.False(_usuarios.Datos[0].Activo);
         Assert.Equal(TipoCambioServidor.EstadoCambiado, Assert.Single(_cambios).Tipo);
+    }
+
+    [Fact]
+    public async Task CambiarEstado_Baja_ExigeJustificacion()
+    {
+        foreach (var motivo in new string?[] { null, "", "   ", "corto", new string('x', 501) })
+        {
+            var r = await Estado().EjecutarAsync(2, false, actorId: 1, default, motivo);
+            Assert.Equal(TipoError.Validacion, r.Error!.Tipo);
+        }
+        Assert.True(_usuarios.Datos[1].Activo);   // ninguna de esas bajas se aplicó
+        Assert.Empty(_cambios);
+    }
+
+    [Fact]
+    public async Task CambiarEstado_Baja_PublicaElEventoDeCorreo_ConElMotivoRecortado_YLoGuardaEnElHistorial()
+    {
+        var bajas = new List<UsuarioDadoDeBajaEventArgs>();
+        _eventos.UsuarioDadoDeBaja += (_, e) => bajas.Add(e);
+
+        var r = await Estado().EjecutarAsync(2, false, actorId: 1, default, "  Dejó de trabajar en la empresa  ");
+
+        Assert.True(r.Exito);
+        var baja = Assert.Single(bajas);
+        Assert.Equal(2, baja.UsuarioId);
+        Assert.Equal("Dejó de trabajar en la empresa", baja.Motivo);
+        Assert.Equal(_usuarios.Datos[1].Correo, baja.Correo);
+        Assert.Contains("Dejó de trabajar en la empresa", Assert.Single(_cambios).Detalle);
+    }
+
+    [Fact]
+    public async Task CambiarEstado_Reactivar_NoPideJustificacion_NiEnviaCorreo()
+    {
+        await Estado().EjecutarAsync(2, false, actorId: 1, default, "Cuenta duplicada por error");
+        var bajas = new List<UsuarioDadoDeBajaEventArgs>();
+        _eventos.UsuarioDadoDeBaja += (_, e) => bajas.Add(e);
+
+        var r = await Estado().EjecutarAsync(2, true, actorId: 1, default);
+
+        Assert.True(r.Exito);
+        Assert.Empty(bajas);
     }
 
     [Fact]
@@ -158,7 +199,7 @@ public class UsuariosCasosDeUsoTests
     public async Task DarDeBaja_GuardaLaFechaDeEliminadoSuave_YReactivarLaBorra()
     {
         _usuarios.Datos.Add(Fabrica.Usuario(3, "admin2", Fabrica.Admin));
-        var baja = await Estado().EjecutarAsync(2, false, actorId: 1, default);
+        var baja = await Estado().EjecutarAsync(2, false, actorId: 1, default, motivo: "Cuenta duplicada por error");
         Assert.Equal(_reloj.GetUtcNow(), baja.Valor!.EliminadoEn);
         var reactivado = await Estado().EjecutarAsync(2, true, actorId: 1, default);
         Assert.Null(reactivado.Valor!.EliminadoEn);
@@ -167,7 +208,7 @@ public class UsuariosCasosDeUsoTests
     [Fact]
     public async Task Eliminar_UsuarioDadoDeBaja_LoBorraDefinitivamente_YPublicaElEvento()
     {
-        await Estado().EjecutarAsync(2, false, actorId: 1, default);
+        await Estado().EjecutarAsync(2, false, actorId: 1, default, motivo: "Cuenta duplicada por error");
         _cambios.Clear();
         var r = await Eliminar().EjecutarAsync(2, actorId: 1, default);
         Assert.True(r.Exito);

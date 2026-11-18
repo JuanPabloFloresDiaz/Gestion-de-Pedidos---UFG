@@ -61,6 +61,14 @@ services:
       retries: 10
       start_period: 10s
 
+  # MailHog: servidor SMTP de pruebas. Atrapa todos los correos que envía la API y los muestra en una página web
+  # (no sale ninguno a Internet). Para enviar correos reales basta cambiar las variables CORREO_* del .env.
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${MAILHOG_UI_PORT:-4394}:8025"   # bandeja de entrada web: http://localhost:4394
+
   api:
     build:
       context: .
@@ -71,6 +79,8 @@ services:
         condition: service_completed_successfully
       garage:
         condition: service_healthy
+      mailhog:
+        condition: service_started
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ConnectionStrings__Default: Server=sqlserver,1433;Database=GestionPedidos;User Id=pedidos_app;Password=${PEDIDOS_APP_PASSWORD};Encrypt=True;TrustServerCertificate=True
@@ -85,6 +95,16 @@ services:
       Almacen__AccessKey: ${GARAGE_ACCESS_KEY:-GK6a1f0c3e9b27d84a5e10c9f3}
       Almacen__SecretKey: ${GARAGE_SECRET_KEY:-7c2e5a91d04b6f38a1e9c05d72b4f863e0a19d5c47b2f08e3a6d915c8b0e47a2}
       Almacen__ReenlazarAlIniciar: "true"   # recuperación: liga cada imagen del almacén con su producto o categoría por código
+      # Correo: por defecto va a MailHog (sin SSL ni credenciales). Con un SMTP real se cambian estas variables en el .env.
+      Correo__Habilitado: ${CORREO_HABILITADO:-true}
+      Correo__Host: ${CORREO_HOST:-mailhog}
+      Correo__Puerto: ${CORREO_PUERTO:-1025}
+      Correo__Usuario: ${CORREO_USUARIO:-}
+      Correo__Clave: ${CORREO_CLAVE:-}
+      Correo__UsarSsl: ${CORREO_USAR_SSL:-false}
+      Correo__Remitente: ${CORREO_REMITENTE:-no-responder@novixtore.local}
+      Correo__NombreRemitente: ${CORREO_NOMBRE_REMITENTE:-NoviXtore}
+      Correo__UrlSitio: ${CORREO_URL_SITIO:-http://localhost:4392}   # dirección pública de la web: los correos enlazan a «Mis pedidos»
     ports:
       - "${API_PORT:-4390}:8080"
     healthcheck:

@@ -74,6 +74,19 @@ public sealed class CambiarEstadoPedido
                       (pedido.Estado == EstadoPedido.Cancelado ? " (stock repuesto)" : "")
         });
 
+        // El comprobante por correo solo se envía si el cliente tiene correo (es opcional en el registro de clientes).
+        if (pedido.Estado == EstadoPedido.Entregado && !string.IsNullOrWhiteSpace(pedido.Cliente?.Correo))
+            _eventos.OnPedidoEntregado(new PedidoEntregadoEventArgs
+            {
+                PedidoId = pedido.Id,
+                Cliente = $"{pedido.Cliente!.Nombres} {pedido.Cliente.Apellidos}".Trim(),
+                Correo = pedido.Cliente.Correo!,
+                FechaPedido = pedido.FechaPedido,
+                Total = pedido.Total,
+                Lineas = pedido.Detalles.OrderBy(d => d.Producto?.Nombre)
+                    .Select(d => new LineaDeComprobante(d.Producto?.Nombre ?? "Producto", d.Cantidad, d.PrecioUnitario)).ToList(),
+            });
+
         return Resultado<PedidoDetalleDto>.Ok(pedido.ADetalleDto());
     }
 }

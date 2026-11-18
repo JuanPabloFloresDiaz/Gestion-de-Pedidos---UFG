@@ -79,6 +79,7 @@ public sealed class PedidoConfiguration : IEntityTypeConfiguration<Pedido>
         b.Property(x => x.Comentarios).HasMaxLength(500);
         b.Property(x => x.Estado).HasMaxLength(20).HasDefaultValue(EstadoPedido.Pendiente).IsRequired();
         b.Property(x => x.Activo).HasDefaultValue(true);
+        b.Property(x => x.ConfirmadoPorClienteEn);   // nulo hasta que el cliente confirma la recepción
         b.Property(x => x.RowVersion).IsRowVersion();
         b.HasIndex(x => x.ClienteId);
         b.HasIndex(x => x.UsuarioId);
