@@ -8,6 +8,7 @@
     <header class="modulo-cabecera">
         <h1>Roles y permisos</h1>
         <div class="modulo-acciones">
+            <BotonExportar Tipo="permisos-por-rol" Etiqueta="Permisos por rol" />
             @if (!Sesion.TienePermiso(Permisos.RolesEditar)) { <span class="solo-lectura">Solo lectura</span> }
         </div>
     </header>

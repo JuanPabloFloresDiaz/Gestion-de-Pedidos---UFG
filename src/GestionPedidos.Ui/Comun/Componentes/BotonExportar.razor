@@ -1,0 +1,36 @@
+@* Botón de exportar del kit: ofrece descargar un reporte en PDF, Excel o CSV. Muestra el indicador de carga del formato que se
+   está generando, un aviso al terminar y el error (si la API lo rechaza) sin romper la pantalla. *@
+@using GestionPedidos.Ui.Comun.Reportes
+@using GestionPedidos.Ui.Comun.Api
+@inject ReportesService Reportes
+@inject IAvisos Avisos
+
+<div class="exportar" role="group" aria-label="@(Etiqueta)">
+    <span class="exportar-etiqueta"><Icono Svg="Lucide.Download" /> @Etiqueta</span>
+    <Boton Cargando="_formato == FormatosDeReporte.Pdf" Deshabilitado="_formato is not null" AlHacerClic="() => ExportarAsync(FormatosDeReporte.Pdf)">PDF</Boton>
+    <Boton Cargando="_formato == FormatosDeReporte.Excel" Deshabilitado="_formato is not null" AlHacerClic="() => ExportarAsync(FormatosDeReporte.Excel)">Excel</Boton>
+    <Boton Cargando="_formato == FormatosDeReporte.Csv" Deshabilitado="_formato is not null" AlHacerClic="() => ExportarAsync(FormatosDeReporte.Csv)">CSV</Boton>
+</div>
+
+@code {
+    private string? _formato;
+
+    /// <summary>Identificador del reporte en la API (por ejemplo <c>usuarios-por-rol</c>).</summary>
+    [Parameter, EditorRequired] public string Tipo { get; set; } = "";
+    /// <summary>Texto visible junto a los botones.</summary>
+    [Parameter] public string Etiqueta { get; set; } = "Exportar reporte";
+    /// <summary>Filtros que se envían a la API (los valores vacíos se omiten).</summary>
+    [Parameter] public IReadOnlyDictionary<string, string?>? Filtros { get; set; }
+
+    private async Task ExportarAsync(string formato)
+    {
+        _formato = formato;
+        try
+        {
+            var nombre = await Reportes.DescargarAsync(Tipo, formato, Filtros);
+            Avisos.Exito($"Reporte descargado: {nombre}");
+        }
+        catch (ApiException ex) { Avisos.Error(ex.Message); }
+        finally { _formato = null; }
+    }
+}

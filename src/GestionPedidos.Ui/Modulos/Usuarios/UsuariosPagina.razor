@@ -6,6 +6,7 @@
 
 <PaginaModulo Titulo="Usuarios" Error="@Vm.Error" PanelVisible="Vm.Editando">
     <Acciones>
+        <BotonExportar Tipo="usuarios-por-rol" Etiqueta="Usuarios por rol" />
         @if (Sesion.TienePermiso(Permisos.UsuariosCrear))
         {
             <Boton Variante="Primario" AlHacerClic="Vm.Nuevo">+ Nuevo usuario</Boton>

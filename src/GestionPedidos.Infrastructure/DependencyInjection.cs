@@ -4,6 +4,8 @@ using GestionPedidos.Application.Catalogos;
 using GestionPedidos.Application.Clientes;
 using GestionPedidos.Application.Pedidos;
 using GestionPedidos.Application.Productos;
+using GestionPedidos.Application.Reportes;
+using GestionPedidos.Infrastructure.Reportes;
 using GestionPedidos.Application.Roles;
 using GestionPedidos.Application.Tienda;
 using GestionPedidos.Application.Common;
@@ -91,6 +93,9 @@ public static class DependencyInjection
         servicios.AddScoped<DesactivarPedido>();
         servicios.AddScoped<ObtenerPedido>();
         servicios.AddScoped<BuscarPedidos>();
+        servicios.AddScoped<IReportesRepository, ReportesRepository>();
+        servicios.AddSingleton<IExportadorDeReportes, ExportadorDeReportes>();
+        servicios.AddScoped<GenerarReporte>();
         servicios.AddScoped<ObtenerArbolDeCatalogo>();
         servicios.AddScoped<ObtenerFiltrosDeSubcategoria>();
         servicios.AddScoped<GestionarCategorias>();

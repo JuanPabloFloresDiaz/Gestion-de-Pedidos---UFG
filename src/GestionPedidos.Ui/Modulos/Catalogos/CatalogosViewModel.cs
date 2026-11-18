@@ -6,6 +6,11 @@ namespace GestionPedidos.Ui.Modulos.Catalogos;
 /// <summary>Estado y lógica de la consulta de departamentos y ciudades (solo lectura).</summary>
 public sealed class CatalogosViewModel : ViewModelBase
 {
+    /// <summary>Filtro del reporte «Clientes por departamento».</summary>
+    public static readonly IReadOnlyDictionary<string, string?> PorDepartamento = new Dictionary<string, string?> { ["agruparPor"] = "departamento" };
+    /// <summary>Filtro del reporte «Clientes por distrito».</summary>
+    public static readonly IReadOnlyDictionary<string, string?> PorDistrito = new Dictionary<string, string?> { ["agruparPor"] = "distrito" };
+
     private readonly CatalogosService _catalogos;
     private int _pagina = 1;
 
