@@ -14,7 +14,7 @@ async function entrar(page: Page, usuario: string, clave: string) {
 
 test('el administrador inicia sesión, cambia la clave obligatoria y entra a la administración', async ({ page }) => {
   await page.goto('/ingresar');
-  await expect(page.getByRole('heading', { name: 'Gestión de Pedidos' })).toBeVisible();
+  await expect(page.getByLabel('Usuario o correo')).toBeVisible();
   await captura(page, '01-inicio');
 
   // Credenciales incorrectas: mensaje genérico y sin entrar
@@ -134,7 +134,7 @@ test('varios módulos abiertos a la vez (pestañas), alta de usuario con notific
   // Cierre de sesión
   await page.getByRole('button', { name: /Administrador del sistema/ }).click();
   await page.getByRole('menuitem', { name: 'Cerrar sesión' }).click();
-  await expect(page.getByRole('heading', { name: 'Gestión de Pedidos' })).toBeVisible();
+  await expect(page.getByLabel('Usuario o correo')).toBeVisible();
   await expect(page).toHaveURL(/ingresar/);
 });
 
