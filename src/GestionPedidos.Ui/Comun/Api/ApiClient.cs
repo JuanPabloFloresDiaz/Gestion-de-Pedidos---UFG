@@ -6,6 +6,12 @@ using GestionPedidos.Ui.Comun.Sesion;
 
 namespace GestionPedidos.Ui.Comun.Api;
 
+/// <summary>Un archivo descargado de la API.</summary>
+/// <param name="Contenido">Bytes del archivo.</param>
+/// <param name="Nombre">Nombre sugerido por el servidor.</param>
+/// <param name="TipoContenido">Tipo MIME.</param>
+public sealed record ArchivoDescargado(byte[] Contenido, string Nombre, string TipoContenido);
+
 /// <summary>
 /// Único punto de salida hacia la API: añade el JWT, traduce <i>Problem Details</i> a <see cref="ApiException"/>
 /// con mensajes en español y avisa a la sesión cuando la API responde 401. Ninguna página crea su propio HttpClient.
@@ -42,6 +48,28 @@ public sealed class ApiClient
 
     /// <summary>PATCH con cuerpo JSON que devuelve un objeto JSON.</summary>
     public Task<T> PatchAsync<T>(string ruta, object? cuerpo, CancellationToken ct = default) => EnviarAsync<T>(HttpMethod.Patch, ruta, cuerpo, ct);
+
+    /// <summary>GET que devuelve un archivo (por ejemplo, un reporte): sus bytes, el nombre sugerido y el tipo de contenido.</summary>
+    /// <param name="ruta">Ruta de la API.</param>
+    /// <param name="ct">Cancelación.</param>
+    public async Task<ArchivoDescargado> DescargarAsync(string ruta, CancellationToken ct = default)
+    {
+        using var peticion = new HttpRequestMessage(HttpMethod.Get, ruta);
+        if (_sesion.Token is { } token) peticion.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        HttpResponseMessage respuesta;
+        try { respuesta = await _http.SendAsync(peticion, ct); }
+        catch (HttpRequestException) { throw new ApiException("No se pudo conectar con el servidor. Verifique que la API esté en ejecución."); }
+        catch (TaskCanceledException) when (!ct.IsCancellationRequested) { throw new ApiException("El servidor tardó demasiado en responder."); }
+
+        using (respuesta)
+        {
+            if (!respuesta.IsSuccessStatusCode) throw await CrearErrorAsync(respuesta, ct);
+            var nombre = respuesta.Content.Headers.ContentDisposition?.FileNameStar ?? respuesta.Content.Headers.ContentDisposition?.FileName?.Trim('"') ?? "reporte";
+            return new ArchivoDescargado(await respuesta.Content.ReadAsByteArrayAsync(ct), nombre,
+                respuesta.Content.Headers.ContentType?.MediaType ?? "application/octet-stream");
+        }
+    }
 
     private async Task<T> EnviarAsync<T>(HttpMethod metodo, string ruta, object? cuerpo, CancellationToken ct, bool sinRespuesta = false)
     {

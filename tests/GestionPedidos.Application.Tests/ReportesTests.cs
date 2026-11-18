@@ -1,0 +1,121 @@
+using GestionPedidos.Application.Common;
+using GestionPedidos.Application.Reportes;
+using Microsoft.Extensions.Time.Testing;
+
+namespace GestionPedidos.Application.Tests;
+
+/// <summary>El caso de uso de reportes: valida entradas, elige la consulta correcta y nombra el archivo.</summary>
+public class ReportesTests
+{
+    private sealed class RepoFake : IReportesRepository
+    {
+        public List<string> Llamadas { get; } = new();
+        public (int? Usuario, DateTimeOffset? Desde, DateTimeOffset? Hasta, int Maximo)? Actividades { get; private set; }
+
+        private static TablaReporte Tabla(string titulo, DateTimeOffset ahora) =>
+            new(titulo, "d", new[] { new ColumnaReporte("A") }, Array.Empty<IReadOnlyList<object?>>(), ahora);
+
+        public Task<TablaReporte> ClientesPorZonaAsync(bool porDistrito, DateTimeOffset ahora, CancellationToken ct)
+        { Llamadas.Add(porDistrito ? "clientes-distrito" : "clientes-departamento"); return Task.FromResult(Tabla("c", ahora)); }
+        public Task<TablaReporte> ProductosPorCategoriaAsync(DateTimeOffset ahora, CancellationToken ct) { Llamadas.Add("productos"); return Task.FromResult(Tabla("p", ahora)); }
+        public Task<TablaReporte> UsuariosPorRolAsync(DateTimeOffset ahora, CancellationToken ct) { Llamadas.Add("usuarios"); return Task.FromResult(Tabla("u", ahora)); }
+        public Task<TablaReporte> PermisosPorRolAsync(DateTimeOffset ahora, CancellationToken ct) { Llamadas.Add("permisos"); return Task.FromResult(Tabla("pe", ahora)); }
+        public Task<TablaReporte> ActividadesPorUsuarioAsync(int? usuarioId, DateTimeOffset? desde, DateTimeOffset? hasta, int maximoFilas, DateTimeOffset ahora, CancellationToken ct)
+        { Llamadas.Add("actividades"); Actividades = (usuarioId, desde, hasta, maximoFilas); return Task.FromResult(Tabla("a", ahora)); }
+    }
+
+    private sealed class ExportadorFake : IExportadorDeReportes
+    {
+        public FormatoReporte? Formato { get; private set; }
+        public ArchivoReporte Exportar(TablaReporte tabla, FormatoReporte formato)
+        {
+            Formato = formato;
+            return new ArchivoReporte(new byte[] { 1 }, "x/y", "se-reemplaza");
+        }
+    }
+
+    // 03:30 UTC del 18-nov = 21:30 del 17-nov en El Salvador
+    private static readonly DateTimeOffset Ahora = new(2026, 11, 18, 3, 30, 0, TimeSpan.Zero);
+    private readonly RepoFake _repo = new();
+    private readonly ExportadorFake _exportador = new();
+    private GenerarReporte Caso() => new(_repo, _exportador, new FakeTimeProvider(Ahora));
+
+    [Theory]
+    [InlineData("pdf", FormatoReporte.Pdf)]
+    [InlineData("PDF", FormatoReporte.Pdf)]
+    [InlineData("xlsx", FormatoReporte.Excel)]
+    [InlineData("excel", FormatoReporte.Excel)]
+    [InlineData(" csv ", FormatoReporte.Csv)]
+    public void InterpretarFormato_AceptaPdfXlsxYCsv(string texto, FormatoReporte esperado) =>
+        Assert.Equal(esperado, GenerarReporte.InterpretarFormato(texto));
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("docx")]
+    public async Task FormatoInvalido_EsValidacion_YNoConsultaNada(string? formato)
+    {
+        var r = await Caso().EjecutarAsync(TiposDeReporte.UsuariosPorRol, formato, new FiltrosReporte(), default);
+        Assert.Equal(TipoError.Validacion, r.Error!.Tipo);
+        Assert.Empty(_repo.Llamadas);
+    }
+
+    [Fact]
+    public async Task TipoInexistente_EsNoEncontrado()
+    {
+        var r = await Caso().EjecutarAsync("secretos", "pdf", new FiltrosReporte(), default);
+        Assert.Equal(TipoError.NoEncontrado, r.Error!.Tipo);
+    }
+
+    [Fact]
+    public async Task ClientesPorZona_ElegirDistritoODepartamento_YRechazaOtraCosa()
+    {
+        await Caso().EjecutarAsync(TiposDeReporte.ClientesPorZona, "pdf", new FiltrosReporte(AgruparPor: "distrito"), default);
+        await Caso().EjecutarAsync(TiposDeReporte.ClientesPorZona, "pdf", new FiltrosReporte(AgruparPor: "Departamento"), default);
+        await Caso().EjecutarAsync(TiposDeReporte.ClientesPorZona, "pdf", new FiltrosReporte(), default);   // por defecto: departamento
+        Assert.Equal(new[] { "clientes-distrito", "clientes-departamento", "clientes-departamento" }, _repo.Llamadas);
+
+        var mala = await Caso().EjecutarAsync(TiposDeReporte.ClientesPorZona, "pdf", new FiltrosReporte(AgruparPor: "pais"), default);
+        Assert.Equal(TipoError.Validacion, mala.Error!.Tipo);
+    }
+
+    [Fact]
+    public async Task CadaTipo_LlamaALaConsultaQueLeCorresponde()
+    {
+        foreach (var tipo in new[] { TiposDeReporte.ProductosPorCategoria, TiposDeReporte.UsuariosPorRol, TiposDeReporte.PermisosPorRol, TiposDeReporte.ActividadesPorUsuario })
+            Assert.True((await Caso().EjecutarAsync(tipo, "csv", new FiltrosReporte(), default)).Exito);
+        Assert.Equal(new[] { "productos", "usuarios", "permisos", "actividades" }, _repo.Llamadas);
+        Assert.Equal(FormatoReporte.Csv, _exportador.Formato);
+    }
+
+    [Fact]
+    public async Task Actividades_ElDiaFinalSeIncluyeCompleto_YHayUnMaximoDeFilas()
+    {
+        await Caso().EjecutarAsync(TiposDeReporte.ActividadesPorUsuario, "xlsx",
+            new FiltrosReporte(UsuarioId: 7, Desde: new DateOnly(2026, 11, 1), Hasta: new DateOnly(2026, 11, 10)), default);
+
+        var a = _repo.Actividades!.Value;
+        Assert.Equal(7, a.Usuario);
+        Assert.Equal(new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero), a.Desde);
+        Assert.Equal(new DateTimeOffset(2026, 11, 11, 0, 0, 0, TimeSpan.Zero), a.Hasta);   // el 10 completo = hasta el 11 a las 00:00
+        Assert.Equal(GenerarReporte.MaximoFilasActividades, a.Maximo);
+    }
+
+    [Fact]
+    public async Task FechasInvertidas_SonValidacion()
+    {
+        var r = await Caso().EjecutarAsync(TiposDeReporte.ActividadesPorUsuario, "pdf",
+            new FiltrosReporte(Desde: new DateOnly(2026, 11, 10), Hasta: new DateOnly(2026, 11, 1)), default);
+        Assert.Equal(TipoError.Validacion, r.Error!.Tipo);
+    }
+
+    [Theory]
+    [InlineData("pdf", "pdf")]
+    [InlineData("xlsx", "xlsx")]
+    [InlineData("csv", "csv")]
+    public async Task ElNombreDelArchivoLlevaElTipoLaFechaDeElSalvadorYLaExtension(string formato, string extension)
+    {
+        var r = await Caso().EjecutarAsync(TiposDeReporte.UsuariosPorRol, formato, new FiltrosReporte(), default);
+        Assert.Equal($"reporte-usuarios-por-rol-20261117-2130.{extension}", r.Valor!.NombreArchivo);   // 21:30 del 17-nov en El Salvador
+    }
+}

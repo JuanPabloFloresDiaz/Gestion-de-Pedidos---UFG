@@ -45,6 +45,17 @@ Lo que llena la base con datos realistas para desarrollar y demostrar: categorí
 | Cómo se muestran en pantalla (foto + ícono de respaldo) | [`src/GestionPedidos.Ui/Tienda/VisualProducto.razor`](../../src/GestionPedidos.Ui/Tienda/VisualProducto.razor) |
 | Diseño completo, recuperación si se pierde la base | [`docs/Especificaciones/CatalogoProductos.md`](../Especificaciones/CatalogoProductos.md) §9 |
 
+## 2.5 Reportes (PDF, Excel y CSV)
+
+| Qué | Dónde |
+|---|---|
+| Spec, diseño y **cómo agregar un reporte nuevo** | [`docs/Especificaciones/Reportes.md`](../Especificaciones/Reportes.md) |
+| Tipos de reporte, filtros y caso de uso | [`src/GestionPedidos.Application/Reportes/Reportes.cs`](../../src/GestionPedidos.Application/Reportes/Reportes.cs) |
+| Las consultas (una por reporte) | [`.../Infrastructure/Reportes/ReportesRepository.cs`](../../src/GestionPedidos.Infrastructure/Reportes/ReportesRepository.cs) |
+| Los tres formatos (QuestPDF, ClosedXML, CSV) | [`.../Infrastructure/Reportes/ExportadorDeReportes.cs`](../../src/GestionPedidos.Infrastructure/Reportes/ExportadorDeReportes.cs) |
+| Endpoints y el permiso de cada reporte | [`.../Api/Modulos/Reportes/ReportesEndpoints.cs`](../../src/GestionPedidos.Api/Modulos/Reportes/ReportesEndpoints.cs) |
+| Botón de exportar (kit) y descarga | [`.../Ui/Comun/Componentes/BotonExportar.razor`](../../src/GestionPedidos.Ui/Comun/Componentes/BotonExportar.razor), [`.../Ui/Comun/Reportes/ReportesService.cs`](../../src/GestionPedidos.Ui/Comun/Reportes/ReportesService.cs) y [`wwwroot/js/descarga.js`](../../src/GestionPedidos.Ui/wwwroot/js/descarga.js) |
+
 ## 3. Por capas (dónde va cada tipo de archivo)
 
 | Capa | Carpeta | Qué contiene |

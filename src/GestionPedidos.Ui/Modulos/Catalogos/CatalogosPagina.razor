@@ -3,7 +3,11 @@
 @inject CatalogosViewModel Vm
 
 <PaginaModulo Titulo="Ciudades y departamentos" Error="@Vm.Error">
-    <Acciones><span class="solo-lectura">Solo lectura · @Vm.TotalCiudades ciudades en @Vm.Departamentos.Count departamentos</span></Acciones>
+    <Acciones>
+        <BotonExportar Tipo="clientes-por-zona" Etiqueta="Clientes por departamento" Filtros="CatalogosViewModel.PorDepartamento" />
+        <BotonExportar Tipo="clientes-por-zona" Etiqueta="Clientes por distrito" Filtros="CatalogosViewModel.PorDistrito" />
+        <span class="solo-lectura">Solo lectura · @Vm.TotalCiudades ciudades en @Vm.Departamentos.Count departamentos</span>
+    </Acciones>
     <Filtros>
         <CampoTexto Etiqueta="Buscar" Placeholder="Distrito o municipio" @bind-Valor="Vm.Texto" AlPresionarEnter="Vm.BuscarAsync" />
         <div class="filtros-botones">

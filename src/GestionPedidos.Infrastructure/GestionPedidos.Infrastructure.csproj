@@ -13,6 +13,9 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <!-- Cliente S3 para Garage (almacén de imágenes) -->
     <PackageReference Include="AWSSDK.S3" />
+    <!-- Reportes: PDF (QuestPDF, licencia Community) y Excel (ClosedXML) -->
+    <PackageReference Include="QuestPDF" />
+    <PackageReference Include="ClosedXML" />
   </ItemGroup>
   <ItemGroup>
     <!-- Catálogo geográfico de El Salvador: 14 departamentos y 262 distritos -->

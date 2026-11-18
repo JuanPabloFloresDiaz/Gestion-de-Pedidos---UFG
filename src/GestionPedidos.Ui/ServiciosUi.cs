@@ -38,6 +38,7 @@ public static class ServiciosUi
         servicios.AddScoped<AparienciaService>();
         servicios.AddScoped<IAvisos>(sp => sp.GetRequiredService<AvisosService>());
         servicios.AddScoped<Notificador>();
+        servicios.AddScoped<GestionPedidos.Ui.Comun.Reportes.ReportesService>();
 
         // Módulos: servicio (publicador) + ViewModel por página (Transient: una instancia por pestaña)
         servicios.AddScoped<UsuariosService>();

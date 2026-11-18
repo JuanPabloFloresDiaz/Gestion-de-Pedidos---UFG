@@ -29,7 +29,14 @@ public sealed class HistorialViewModel : ViewModelBase
     /// <summary>Página de resultados.</summary>
     public PaginaDto<ActividadDto>? Pagina { get; private set; }
 
-    /// <summary>Error de validación de las fechas, o <c>null</c>.</summary>
+    /// <summary>Filtros que se envían al exportar el reporte «Actividades por usuario» (el rango de fechas que se está viendo).</summary>
+    public IReadOnlyDictionary<string, string?> FiltrosDeReporte => new Dictionary<string, string?>
+    {
+        ["desde"] = Desde?.ToString("yyyy-MM-dd"),
+        ["hasta"] = Hasta?.ToString("yyyy-MM-dd"),
+    };
+
+    /// <summary>Mensaje de error de las fechas, o <c>null</c> si son válidas.</summary>
     public string? ErrorFechas => Desde is not null && Hasta is not null && Desde > Hasta
         ? "La fecha inicial no puede ser posterior a la final." : null;
 
