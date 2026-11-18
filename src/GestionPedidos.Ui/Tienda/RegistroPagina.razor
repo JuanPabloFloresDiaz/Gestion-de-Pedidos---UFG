@@ -34,7 +34,7 @@
         </div>
         <CampoTexto Etiqueta="Dirección de entrega" @bind-Valor="Vm.Direccion" Error="@Vm.ErrorDe(nameof(Vm.Direccion))" Autocompletar="street-address" />
         <div class="fila-campos">
-            <CampoTexto Etiqueta="Contraseña (mínimo 10 caracteres)" Tipo="password" @bind-Valor="Vm.Clave" Error="@Vm.ErrorDe(nameof(Vm.Clave))" Autocompletar="new-password" />
+            <CampoTexto Etiqueta="Contraseña (mínimo 14 caracteres)" Tipo="password" @bind-Valor="Vm.Clave" Error="@Vm.ErrorDe(nameof(Vm.Clave))" Autocompletar="new-password" />
             <CampoTexto Etiqueta="Repite la contraseña" Tipo="password" @bind-Valor="Vm.RepetirClave" Error="@Vm.ErrorDe(nameof(Vm.RepetirClave))"
                         Autocompletar="new-password" AlPresionarEnter="Registrar" />
         </div>

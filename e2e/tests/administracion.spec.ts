@@ -35,7 +35,7 @@ test('el administrador inicia sesión, cambia la clave obligatoria y entra a la 
     await expect(page.getByRole('alert').first()).toContainText('debe cambiar su contraseña');
     await captura(page, '03-cambio-obligatorio');
     await page.getByLabel('Contraseña actual').fill(CLAVE_INICIAL);
-    await page.getByLabel('Contraseña nueva (mínimo 10 caracteres)').fill(CLAVE_ADMIN);
+    await page.getByLabel('Contraseña nueva (mínimo 14 caracteres)').fill(CLAVE_ADMIN);
     await page.getByLabel('Repita la contraseña nueva').fill(CLAVE_ADMIN);
     await page.getByRole('button', { name: 'Guardar contraseña' }).click();
   }
@@ -61,7 +61,7 @@ test('varios módulos abiertos a la vez (pestañas), alta de usuario con notific
   await page.getByLabel('Nombre de usuario').fill(usuario);
   await page.getByLabel('Nombre completo').fill('Persona de Prueba E2E');
   await page.getByLabel('Correo').fill(`${usuario}@ejemplo.com`);
-  await page.getByLabel('Contraseña inicial (temporal, mínimo 10)').fill('ClaveTemporal_2026');
+  await page.getByLabel('Contraseña inicial (temporal, mínimo 14)').fill('ClaveTemporal_2026');
   await captura(page, '05-usuarios-nuevo');
   await page.getByRole('button', { name: 'Guardar' }).click();
 
@@ -152,7 +152,7 @@ test('un operador solo ve lo que su rol permite', async ({ page, request }) => {
   await entrar(page, operador, 'ClaveTemporal_2026');
   await expect(page.getByRole('heading', { name: 'Cambiar contraseña' })).toBeVisible();
   await page.getByLabel('Contraseña actual').fill('ClaveTemporal_2026');
-  await page.getByLabel('Contraseña nueva (mínimo 10 caracteres)').fill('ClaveOperador_2026');
+  await page.getByLabel('Contraseña nueva (mínimo 14 caracteres)').fill('ClaveOperador_2026');
   await page.getByLabel('Repita la contraseña nueva').fill('ClaveOperador_2026');
   await page.getByRole('button', { name: 'Guardar contraseña' }).click();
 

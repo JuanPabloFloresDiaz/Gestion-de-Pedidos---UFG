@@ -68,7 +68,7 @@
                                Opciones="RolesDelPersonal" />
                 @if (Vm.Original is null)
                 {
-                    <CampoTexto Etiqueta="Contraseña inicial (temporal, mínimo 10)" Tipo="password" @bind-Valor="Vm.ClaveInicial"
+                    <CampoTexto Etiqueta="Contraseña inicial (temporal, mínimo 14)" Tipo="password" @bind-Valor="Vm.ClaveInicial"
                                 Error="@Vm.ErrorDe(nameof(Vm.ClaveInicial))" Autocompletar="new-password" />
                     <small class="nota">La persona deberá cambiarla al ingresar por primera vez.</small>
                 }
