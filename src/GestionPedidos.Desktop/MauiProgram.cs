@@ -23,6 +23,8 @@ public static class MauiProgram
 		builder.Services.AddGestionPedidosUi(new UiOptions
 		{
 			ApiBaseUrl = LeerUrlDeLaApi(),
+			// Sin servidor web propio: las fotos se descargan de la API desde C# (no desde la página, que el WebView bloquearía).
+			ImagenesComoDatos = true,
 #if ANDROID
 			// CELULAR: se comporta como la web (la tienda para el cliente y, con su cuenta, la administración para el personal).
 			EsEscritorio = false,

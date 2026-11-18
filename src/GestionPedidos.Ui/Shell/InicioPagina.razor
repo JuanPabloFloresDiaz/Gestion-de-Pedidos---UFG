@@ -28,7 +28,7 @@
             {
                 <div class="collage-pieza pieza-@i" style="--h:@TiendaVisual.Tono(c.Id)">
                     <Icono Svg="TiendaVisual.Icono(null, c.Nombre)" />
-                    @if (c.ImagenUrl is not null) { <img src="@c.ImagenUrl" alt="" loading="lazy" onerror="this.remove()" /> }
+                    @if (c.ImagenUrl is not null) { <ImagenRemota Ruta="@c.ImagenUrl" alt="" loading="lazy" onerror="this.remove()" /> }
                 </div>
             }
         </div>
@@ -42,7 +42,7 @@
                 <a class="categoria-tarjeta" href="/tienda?categoria=@c.Id" style="--h:@TiendaVisual.Tono(c.Id)">
                     <span class="categoria-imagen" aria-hidden="true">
                         <Icono Svg="TiendaVisual.Icono(null, c.Nombre)" />
-                        @if (c.ImagenUrl is not null) { <img src="@c.ImagenUrl" alt="" loading="lazy" onerror="this.remove()" /> }
+                        @if (c.ImagenUrl is not null) { <ImagenRemota Ruta="@c.ImagenUrl" alt="" loading="lazy" onerror="this.remove()" /> }
                     </span>
                     <strong>@c.Nombre</strong>
                     <small>@c.TotalProductos productos · @c.Subcategorias.Count subcategorías</small>
