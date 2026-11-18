@@ -54,6 +54,24 @@ else
                 }
             </div>
         </div>
+        @* En pantallas pequeñas las categorías van en un menú desplegable (la barra de abajo se oculta con CSS) *@
+        <div class="tienda-categorias-menu">
+            <button class="boton boton-secundario" aria-haspopup="true" aria-expanded="@_categoriasAbiertas" @onclick="() => _categoriasAbiertas = !_categoriasAbiertas">
+                <Icono Svg="Lucide.LayoutGrid" /> Categorías ▾
+            </button>
+            @if (_categoriasAbiertas)
+            {
+                <div class="apariencia-fondo" @onclick="() => _categoriasAbiertas = false"></div>
+                <div class="menu-lista" role="menu">
+                    <button role="menuitem" @onclick="@(() => IrCategoria("/tienda"))">Todo</button>
+                    @foreach (var c in _categorias)
+                    {
+                        var id = c.Id;
+                        <button role="menuitem" @onclick="@(() => IrCategoria($"/tienda?categoria={id}"))"><Icono Svg="TiendaVisual.Icono(null, c.Nombre)" /> @c.Nombre</button>
+                    }
+                </div>
+            }
+        </div>
         <nav class="tienda-categorias" aria-label="Categorías">
             <a href="/tienda" class="@(Activo(null))">Todo</a>
             @foreach (var c in _categorias)
@@ -90,6 +108,7 @@ else
     private IReadOnlyList<GestionPedidos.Contracts.CategoriaTiendaDto> _categorias = Array.Empty<GestionPedidos.Contracts.CategoriaTiendaDto>();
     private string? _texto;
     private bool _menuAbierto;
+    private bool _categoriasAbiertas;
 
     private string PrimerNombre => Sesion.Usuario?.NombreCompleto.Split(' ')[0] ?? "Mi cuenta";
 
@@ -119,6 +138,7 @@ else
     }
 
     private void Buscar() => Nav.NavigateTo(new FiltrosCatalogo(Q: _texto).Url());
+    private void IrCategoria(string ruta) { _categoriasAbiertas = false; Nav.NavigateTo(ruta); }
     private void Ir(string ruta) { _menuAbierto = false; Nav.NavigateTo(ruta); }
     private async Task CerrarSesion() { _menuAbierto = false; await Sesion.CerrarAsync(); Nav.NavigateTo("/"); }
 
