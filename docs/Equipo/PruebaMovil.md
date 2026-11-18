@@ -13,6 +13,9 @@ El proyecto `src/GestionPedidos.Desktop` (MAUI Blazor Hybrid) ahora tiene **dos 
 | `appsettings.android.json` | Dirección de la API **dentro del APK**. Por defecto `http://10.0.2.2:4390` (el equipo visto desde el **emulador**). |
 | `MauiProgram.cs` | En Android la app se comporta como la **web** (tienda para el cliente y administración para el personal), no como el escritorio (solo personal). Lee la API de `appsettings.android.json`. |
 | `GestionPedidos.Ui.csproj` | **Cambio en código compartido:** en lugar de `FrameworkReference Microsoft.AspNetCore.App` (que Android no tiene) se referencia el paquete `Microsoft.AspNetCore.Components.Web`. Sin esto Android no compila (`NETSDK1082`). La interfaz no usa nada más de ASP.NET Core. |
+| `Desktop/wwwroot/index.html` | Enlaza también `tienda.css` (antes solo `tema.css`: en Android la tienda se veía sin estilos). |
+| `UiOptions.ImagenesComoDatos`, `Tienda/ImagenesService.cs`, `Tienda/ImagenRemota.razor` | Las fotos de productos y categorías se descargan de la API desde C# y se muestran como `data:` (la app nativa no tiene el proxy `/imagenes/...` de la web y el WebView bloquea el contenido mixto `https`/`http`). La web no cambia. |
+| `TiendaLayout.razor`, `tienda.css` | En pantallas de hasta 640 px las categorías van en un menú desplegable; el panel de Apariencia ya no se sale de la pantalla; la foto del carrito no se encima con el texto. |
 | `Directory.Packages.props` | `Microsoft.AspNetCore.Components.Web` sube de 8.0.11 a 8.0.29 (lo exige `Blazicons`). |
 
 **Verificado (en Linux/WSL, 2026-11-18):** el destino Android **compila** (`dotnet build -f net8.0-android`) y genera un APK firmado de depuración (150 MB, 4 arquitecturas). Se comprobó dentro del APK: paquete `sv.edu.ufg.gestionpedidos`, nombre «NoviXtore», Android 5.0+, permisos de Internet, la interfaz (`_content/GestionPedidos.Ui/...`) y `appsettings.json` con `10.0.2.2:4390`. Tras el cambio de `Ui`, las pruebas de Domain, Application, Architecture y Ui y la compilación de la web (Docker) siguen en verde.
@@ -91,4 +94,4 @@ Marque cada punto y anote lo que falle (con captura y el mensaje de `adb logcat 
 
 | Fecha | Equipo / emulador | Resultado | Notas |
 |---|---|---|---|
-| | | | |
+| 2026-11-18 | Windows 11 · emulador Android 14 (API 34, x86_64) | Parcial | Windows compila (0 advertencias). Verificado: abre, catálogo con fotos, filtro por categoría, carrito, menú de categorías, panel de Apariencia y acceso a la administración (visible pero no adaptada a celular; sirve en tableta). Sin recorrer aún: registro, pedido, giro de pantalla y reinicio. Detalle: en Debug solo `-t:Run` despliega el código nuevo (`adb install` deja el viejo). |
