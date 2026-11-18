@@ -69,12 +69,12 @@ public class ClientesCasosDeUsoTests
     private CambiarEstadoCliente CambiarEstado(IUnitOfWork? uow = null) => new(_repo, uow ?? _uow, _eventos, _reloj);
 
     private static CrearClienteSolicitud Nuevo(string nombres = "Ana", string apellidos = "López", string telefono = "7123-4567",
-        string direccion = "Calle 1", string? correo = "ana@ejemplo.com", int ciudad = 1) =>
-        new(nombres, apellidos, telefono, direccion, correo, ciudad);
+        string direccion = "Calle 1", string? correo = "ana@ejemplo.com", int ciudad = 1, string? telefonoSecundario = null) =>
+        new(nombres, apellidos, telefono, telefonoSecundario, direccion, correo, ciudad);
 
     private static ActualizarClienteSolicitud Edicion(string nombres = "Ana María", string? correo = "ana@ejemplo.com", string? version = VersionValida,
-        string telefono = "7123-4567", int ciudad = 1) =>
-        new(nombres, "López", telefono, "Calle 2", correo, ciudad, version);
+        string telefono = "7123-4567", int ciudad = 1, string? telefonoSecundario = null) =>
+        new(nombres, "López", telefono, telefonoSecundario, "Calle 2", correo, ciudad, version);
 
     private Cliente Existente(int id = 1, string correo = "ana@ejemplo.com", bool activo = true)
     {

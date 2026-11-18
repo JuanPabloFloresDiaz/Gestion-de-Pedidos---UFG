@@ -18,8 +18,11 @@ public class Cliente : IAuditable
     /// <summary>Apellidos (1–100 caracteres).</summary>
     public string Apellidos { get; set; } = "";
 
-    /// <summary>Teléfono (8–20 caracteres, dígitos, espacios, + y -).</summary>
+    /// <summary>Teléfono principal (8–20 caracteres, dígitos, espacios, + y -).</summary>
     public string Telefono { get; set; } = "";
+
+    /// <summary>Teléfono secundario o de respaldo (opcional, 8–20 caracteres si se indica).</summary>
+    public string? TelefonoSecundario { get; set; }
 
     /// <summary>Dirección de entrega (1–250 caracteres).</summary>
     public string Direccion { get; set; } = "";
@@ -59,11 +62,12 @@ public class Cliente : IAuditable
 
     /// <summary>Crea un cliente nuevo y activo.</summary>
     public static Cliente Crear(string nombres, string apellidos, string telefono, string direccion,
-        string? correo, int ciudadId) => new()
+        string? correo, int ciudadId, string? telefonoSecundario = null) => new()
     {
         Nombres = nombres.Trim(),
         Apellidos = apellidos.Trim(),
         Telefono = telefono.Trim(),
+        TelefonoSecundario = string.IsNullOrWhiteSpace(telefonoSecundario) ? null : telefonoSecundario.Trim(),
         Direccion = direccion.Trim(),
         Correo = string.IsNullOrWhiteSpace(correo) ? null : correo.Trim().ToLowerInvariant(),
         CiudadId = ciudadId,
@@ -72,11 +76,12 @@ public class Cliente : IAuditable
 
     /// <summary>Actualiza los datos editables del cliente.</summary>
     public void Actualizar(string nombres, string apellidos, string telefono, string direccion,
-        string? correo, int ciudadId)
+        string? correo, int ciudadId, string? telefonoSecundario = null)
     {
         Nombres = nombres.Trim();
         Apellidos = apellidos.Trim();
         Telefono = telefono.Trim();
+        TelefonoSecundario = string.IsNullOrWhiteSpace(telefonoSecundario) ? null : telefonoSecundario.Trim();
         Direccion = direccion.Trim();
         Correo = string.IsNullOrWhiteSpace(correo) ? null : correo.Trim().ToLowerInvariant();
         CiudadId = ciudadId;

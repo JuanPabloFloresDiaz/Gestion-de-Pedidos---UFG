@@ -9,7 +9,7 @@ namespace GestionPedidos.Ui.Tests;
 public class ClientesTests
 {
     private static ClienteDto Cliente(int id, bool activo = true, string version = "AAAA") =>
-        new(id, "Ana", "López", "Ana López", "7123-4567", "Calle 1", "ana@e.com", 10, "San Salvador", 1, "San Salvador", false, activo,
+        new(id, "Ana", "López", "Ana López", "7123-4567", null, "Calle 1", "ana@e.com", 10, "San Salvador", 1, "San Salvador", false, activo,
             activo ? null : DateTimeOffset.UtcNow, version);
 
     /// <summary>Entorno con una API simulada. <paramref name="alActualizar"/> permite programar la respuesta del PUT.</summary>
@@ -44,8 +44,8 @@ public class ClientesTests
         var tipos = new List<TipoCambio>();
         servicio.EntidadCambiada += (_, ev) => { tipos.Add(ev.Tipo); Assert.Equal(TipoEntidad.Cliente, ev.Entidad); };
 
-        await servicio.CrearAsync(new CrearClienteSolicitud("A", "B", "71234567", "d", null, 10), default);
-        await servicio.ActualizarAsync(1, new ActualizarClienteSolicitud("A", "B", "71234567", "d", null, 10, "AAAA"), default);
+        await servicio.CrearAsync(new CrearClienteSolicitud("A", "B", "71234567", null, "d", null, 10), default);
+        await servicio.ActualizarAsync(1, new ActualizarClienteSolicitud("A", "B", "71234567", null, "d", null, 10, "AAAA"), default);
         await servicio.CambiarEstadoAsync(1, false, default);
 
         Assert.Equal(new[] { TipoCambio.Registrada, TipoCambio.Actualizada, TipoCambio.EstadoCambiado }, tipos);

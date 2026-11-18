@@ -43,7 +43,13 @@
             </Encabezado>
             <Fila Context="c">
                 <td><strong>@c.NombreCompleto</strong></td>
-                <td>@c.Telefono</td>
+                <td>
+                    <div>@c.Telefono</div>
+                    @if (!string.IsNullOrWhiteSpace(c.TelefonoSecundario))
+                    {
+                        <div class="nota">Sec: @c.TelefonoSecundario</div>
+                    }
+                </td>
                 <td>@(c.Correo ?? "—")</td>
                 <td>@c.Ciudad</td>
                 <td>@c.Departamento</td>
@@ -90,7 +96,8 @@
 
                 <CampoTexto Etiqueta="Nombres" @bind-Valor="Vm.Nombres" Error="@Vm.ErrorDe(nameof(Vm.Nombres))" />
                 <CampoTexto Etiqueta="Apellidos" @bind-Valor="Vm.Apellidos" Error="@Vm.ErrorDe(nameof(Vm.Apellidos))" />
-                <CampoTexto Etiqueta="Teléfono (ej. 7123-4567)" @bind-Valor="Vm.Telefono" Error="@Vm.ErrorDe(nameof(Vm.Telefono))" />
+                <CampoTexto Etiqueta="Teléfono principal (ej. 7123-4567)" @bind-Valor="Vm.Telefono" Error="@Vm.ErrorDe(nameof(Vm.Telefono))" />
+                <CampoTexto Etiqueta="Teléfono secundario (opcional)" @bind-Valor="Vm.TelefonoSecundario" Error="@Vm.ErrorDe(nameof(Vm.TelefonoSecundario))" />
                 <CampoTexto Etiqueta="Dirección" @bind-Valor="Vm.Direccion" Error="@Vm.ErrorDe(nameof(Vm.Direccion))" />
                 <CampoTexto Etiqueta="Correo (opcional)" Tipo="email" @bind-Valor="Vm.Correo" Error="@Vm.ErrorDe(nameof(Vm.Correo))" />
 

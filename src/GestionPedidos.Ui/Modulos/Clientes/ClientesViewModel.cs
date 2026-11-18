@@ -75,11 +75,19 @@ public sealed class ClientesViewModel : ViewModelBase
     }
 
     private string _telefono = "";
-    /// <summary>Campo: teléfono.</summary>
+    /// <summary>Campo: teléfono principal.</summary>
     public string Telefono
     {
         get => _telefono;
         set { _telefono = value; ErroresCampos.Remove(nameof(Telefono)); }
+    }
+
+    private string? _telefonoSecundario;
+    /// <summary>Campo: teléfono secundario u opcional.</summary>
+    public string? TelefonoSecundario
+    {
+        get => _telefonoSecundario;
+        set { _telefonoSecundario = value; ErroresCampos.Remove(nameof(TelefonoSecundario)); }
     }
 
     private string _direccion = "";
@@ -179,6 +187,7 @@ public sealed class ClientesViewModel : ViewModelBase
         Error = null;
         ErroresCampos.Clear();
         Nombres = Apellidos = Telefono = Direccion = "";
+        TelefonoSecundario = null;
         Correo = null;
         DepartamentoId = null;
         CiudadId = null;
@@ -196,6 +205,7 @@ public sealed class ClientesViewModel : ViewModelBase
         Nombres = cliente.Nombres;
         Apellidos = cliente.Apellidos;
         Telefono = cliente.Telefono;
+        TelefonoSecundario = cliente.TelefonoSecundario;
         Direccion = cliente.Direccion;
         Correo = cliente.Correo;
         DepartamentoId = cliente.DepartamentoId;
@@ -229,13 +239,17 @@ public sealed class ClientesViewModel : ViewModelBase
             if (Original is null)
             {
                 await _clientes.CrearAsync(new CrearClienteSolicitud(
-                    Nombres.Trim(), Apellidos.Trim(), Telefono.Trim(), Direccion.Trim(),
+                    Nombres.Trim(), Apellidos.Trim(), Telefono.Trim(),
+                    string.IsNullOrWhiteSpace(TelefonoSecundario) ? null : TelefonoSecundario.Trim(),
+                    Direccion.Trim(),
                     string.IsNullOrWhiteSpace(Correo) ? null : Correo.Trim(), CiudadId!.Value), ct);
             }
             else
             {
                 await _clientes.ActualizarAsync(Original.Id, new ActualizarClienteSolicitud(
-                    Nombres.Trim(), Apellidos.Trim(), Telefono.Trim(), Direccion.Trim(),
+                    Nombres.Trim(), Apellidos.Trim(), Telefono.Trim(),
+                    string.IsNullOrWhiteSpace(TelefonoSecundario) ? null : TelefonoSecundario.Trim(),
+                    Direccion.Trim(),
                     string.IsNullOrWhiteSpace(Correo) ? null : Correo.Trim(), CiudadId!.Value, Original.RowVersion), ct);
             }
         }, cancelarAnterior: false);
@@ -336,6 +350,9 @@ public sealed class ClientesViewModel : ViewModelBase
 
         if (!EsTelefonoValido(Telefono))
             ErroresCampos[nameof(Telefono)] = "Teléfono de 8 a 20 caracteres, con al menos 8 números (también se aceptan espacios, + y -).";
+
+        if (!string.IsNullOrWhiteSpace(TelefonoSecundario) && !EsTelefonoValido(TelefonoSecundario))
+            ErroresCampos[nameof(TelefonoSecundario)] = "Teléfono secundario de 8 a 20 caracteres, con al menos 8 números (también se aceptan espacios, + y -).";
 
         Regla(nameof(Direccion), Validacion.Primero(Direccion, Validacion.Texto("La dirección", 250)));
 

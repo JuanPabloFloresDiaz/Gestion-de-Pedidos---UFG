@@ -8,9 +8,10 @@ namespace GestionPedidos.Application.Clientes;
 internal static class ValidacionesCliente
 {
     /// <summary>
-    /// Valida nombres, apellidos, dirección, teléfono y correo. Devuelve el primer error (400) o <c>null</c> si todo es válido.
+    /// Valida nombres, apellidos, dirección, teléfonos y correo. Devuelve el primer error (400) o <c>null</c> si todo es válido.
     /// </summary>
-    public static Resultado<ClienteDto>? Campos(string? nombres, string? apellidos, string? telefono, string? direccion, string? correo)
+    public static Resultado<ClienteDto>? Campos(string? nombres, string? apellidos, string? telefono, string? direccion,
+        string? correo, string? telefonoSecundario = null)
     {
         var error = Validaciones.Texto(nombres, "Los nombres", 100)
             ?? Validaciones.Texto(apellidos, "Los apellidos", 100)
@@ -18,6 +19,9 @@ internal static class ValidacionesCliente
 
         if (error is null && !Cliente.EsTelefonoValido(telefono))
             error = "El teléfono debe tener entre 8 y 20 caracteres, al menos 8 números, y solo números, espacios, + o -.";
+
+        if (error is null && !string.IsNullOrWhiteSpace(telefonoSecundario) && !Cliente.EsTelefonoValido(telefonoSecundario))
+            error = "El teléfono secundario debe tener entre 8 y 20 caracteres, al menos 8 números, y solo números, espacios, + o -.";
 
         if (error is null && !string.IsNullOrWhiteSpace(correo) && !Validaciones.EsCorreo(correo))
             error = "El correo no tiene un formato válido.";

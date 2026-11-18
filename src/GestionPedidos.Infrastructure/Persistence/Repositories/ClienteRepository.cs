@@ -39,6 +39,7 @@ public sealed class ClienteRepository : IClienteRepository
                     EF.Functions.Collate(c.Nombres, "Latin1_General_CI_AI").Contains(p)
                     || EF.Functions.Collate(c.Apellidos, "Latin1_General_CI_AI").Contains(p)
                     || EF.Functions.Collate(c.Telefono, "Latin1_General_CI_AI").Contains(p)
+                    || (c.TelefonoSecundario != null && EF.Functions.Collate(c.TelefonoSecundario, "Latin1_General_CI_AI").Contains(p))
                     || (c.Correo != null && EF.Functions.Collate(c.Correo, "Latin1_General_CI_AI").Contains(p)));
             }
         }

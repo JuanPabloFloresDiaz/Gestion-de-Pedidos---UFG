@@ -32,8 +32,8 @@ public class ClientesApiTests
         return (await c.GetFromJsonAsync<List<CiudadDto>>($"/api/v1/departamentos/{deptos[0].Id}/ciudades"))![0].Id;
     }
 
-    private static CrearClienteSolicitud Nuevo(int ciudad, string? apellidos = null, string? correo = null, string telefono = "7123-4567") =>
-        new("Ana", apellidos ?? "Prueba" + Sufijo(), telefono, "Calle 1", correo, ciudad);
+    private static CrearClienteSolicitud Nuevo(int ciudad, string? apellidos = null, string? correo = null, string telefono = "7123-4567", string? telefonoSecundario = null) =>
+        new("Ana", apellidos ?? "Prueba" + Sufijo(), telefono, telefonoSecundario, "Calle 1", correo, ciudad);
 
     private static async Task<ClienteDto> CrearAsync(HttpClient c, CrearClienteSolicitud s)
     {
@@ -42,8 +42,8 @@ public class ClientesApiTests
         return (await r.Content.ReadFromJsonAsync<ClienteDto>())!;
     }
 
-    private static ActualizarClienteSolicitud Edicion(ClienteDto c, string? version, string nombres = "Ana María") =>
-        new(nombres, c.Apellidos, c.Telefono, c.Direccion, c.Correo, c.CiudadId, version);
+    private static ActualizarClienteSolicitud Edicion(ClienteDto c, string? version, string nombres = "Ana María", string? telefonoSecundario = null) =>
+        new(nombres, c.Apellidos, c.Telefono, telefonoSecundario ?? c.TelefonoSecundario, c.Direccion, c.Correo, c.CiudadId, version);
 
     // ===================== Permisos =====================
 
