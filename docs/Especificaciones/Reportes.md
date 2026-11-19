@@ -11,6 +11,7 @@ Pedido del ingeniero (corrección del 26/11/2026): cada apartado administrativo 
 | `usuarios-por-rol` | Usuarios | Usuarios agrupados por rol: usuario, nombre, correo y estado. **Nunca** la clave ni su hash | `usuarios.ver` |
 | `permisos-por-rol` | Roles y permisos | Cada permiso (código y descripción) que tiene cada rol | `roles.ver` |
 | `actividades-por-usuario` | Historial de actividades | Acciones del historial agrupadas por usuario (más reciente primero), con filtros `usuarioId`, `desde` y `hasta` (el botón envía el rango de fechas que se está viendo). **Máximo 5 000 filas**: si hay más, el reporte lo avisa al pie | `historial.ver` |
+| `pedidos-por-estado` | Pedidos | Cantidad de pedidos agrupados por estado (Entregado, Cancelado, Pendiente), con detalle de activos e inactivos y monto total | `pedidos.ver` |
 
 **Sin permisos nuevos**: cada reporte exige el mismo permiso que la pantalla de donde sale (quien puede ver los datos puede exportarlos), así que no hay migración ni cambio en los roles.
 

@@ -13,13 +13,13 @@ public class ReportesApiTests
     public ReportesApiTests(ApiFixture api) => _api = api;
 
     private static readonly string[] Tipos =
-        { "clientes-por-zona", "productos-por-categoria", "usuarios-por-rol", "permisos-por-rol", "actividades-por-usuario" };
+        { "clientes-por-zona", "productos-por-categoria", "usuarios-por-rol", "permisos-por-rol", "actividades-por-usuario", "pedidos-por-estado" };
 
     [Theory]
     [InlineData("pdf", "application/pdf", "%PDF-")]
     [InlineData("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "PK")]
     [InlineData("csv", "text/csv", "﻿")]   // el CSV empieza con la marca BOM (EF BB BF) para que Excel lea bien las tildes
-    public async Task ElAdministrador_DescargaLosCincoReportes_EnElFormatoPedido(string formato, string tipoContenido, string inicio)
+    public async Task ElAdministrador_DescargaLosReportes_EnElFormatoPedido(string formato, string tipoContenido, string inicio)
     {
         var admin = await _api.AdminAsync();
         foreach (var tipo in Tipos)

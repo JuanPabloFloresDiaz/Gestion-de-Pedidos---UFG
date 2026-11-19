@@ -21,6 +21,7 @@ public static class ReportesEndpoints
         Mapear(g, TiposDeReporte.UsuariosPorRol, CatalogoPermisos.UsuariosVer);
         Mapear(g, TiposDeReporte.PermisosPorRol, CatalogoPermisos.RolesVer);
         Mapear(g, TiposDeReporte.ActividadesPorUsuario, CatalogoPermisos.HistorialVer);
+        Mapear(g, TiposDeReporte.PedidosPorEstado, CatalogoPermisos.PedidosVer);
         return app;
     }
 

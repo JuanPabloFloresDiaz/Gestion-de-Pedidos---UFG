@@ -6,6 +6,7 @@
 
 <PaginaModulo Titulo="Pedidos" Error="@Vm.Error" PanelVisible="Vm.Editando">
     <Acciones>
+        <BotonExportar Tipo="pedidos-por-estado" Etiqueta="Pedidos por estado" />
         @if (Sesion.TienePermiso(Permisos.PedidosCrear))
         {
             <Boton Variante="Primario" AlHacerClic="Vm.Nuevo">

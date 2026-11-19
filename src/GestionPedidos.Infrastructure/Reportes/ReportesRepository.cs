@@ -95,4 +95,46 @@ public sealed class ReportesRepository : IReportesRepository
             filas.Select(x => F(x.Usuario, x.Fecha.ToOffset(TimeSpan.FromHours(-6)).ToString("dd/MM/yyyy HH:mm:ss"), x.Accion,
                 x.EntidadId is null ? x.Entidad : $"{x.Entidad} #{x.EntidadId}", x.Detalle)).ToList(), ahora, nota);
     }
+
+    /// <inheritdoc/>
+    public async Task<TablaReporte> PedidosPorEstadoAsync(DateTimeOffset? desde, DateTimeOffset? hasta, DateTimeOffset ahora, CancellationToken ct)
+    {
+        var consulta = _db.Pedidos.AsNoTracking().AsQueryable();
+        if (desde is { } d) consulta = consulta.Where(p => p.FechaPedido >= d);
+        if (hasta is { } h) consulta = consulta.Where(p => p.FechaPedido < h);
+
+        var grupos = await consulta
+            .GroupBy(p => p.Estado)
+            .Select(g => new
+            {
+                Estado = g.Key,
+                Total = g.Count(),
+                Activos = g.Count(p => p.Activo),
+                Inactivos = g.Count(p => !p.Activo),
+                Monto = g.Sum(p => p.Total)
+            })
+            .ToListAsync(ct);
+
+        var mapa = grupos.ToDictionary(g => g.Estado);
+        var estadosCanonicos = new[] { Domain.Pedidos.EstadoPedido.Pendiente, Domain.Pedidos.EstadoPedido.Entregado, Domain.Pedidos.EstadoPedido.Cancelado };
+
+        var filas = new List<IReadOnlyList<object?>>();
+        foreach (var est in estadosCanonicos)
+        {
+            if (mapa.TryGetValue(est, out var info))
+                filas.Add(F(est, info.Total, info.Activos, info.Inactivos, info.Monto));
+            else
+                filas.Add(F(est, 0, 0, 0, 0.00m));
+        }
+
+        foreach (var g in grupos.Where(g => !estadosCanonicos.Contains(g.Estado)).OrderBy(g => g.Estado))
+            filas.Add(F(g.Estado, g.Total, g.Activos, g.Inactivos, g.Monto));
+
+        return new TablaReporte(
+            "Pedidos por estado",
+            "Cantidad de pedidos registrados según su estado (Pendiente, Entregado, Cancelado), con detalle de activos e inactivos y monto total.",
+            new[] { T("Estado"), N("Pedidos"), N("Activos"), N("Inactivos"), N("Monto Total ($)") },
+            filas,
+            ahora);
+    }
 }

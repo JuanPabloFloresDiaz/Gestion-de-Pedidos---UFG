@@ -27,6 +27,8 @@ public static class TiposDeReporte
     public const string PermisosPorRol = "permisos-por-rol";
     /// <summary>Historial de actividades, agrupado por usuario.</summary>
     public const string ActividadesPorUsuario = "actividades-por-usuario";
+    /// <summary>Pedidos del sistema agrupados por su estado (Entregado, Cancelado, Pendiente).</summary>
+    public const string PedidosPorEstado = "pedidos-por-estado";
 }
 
 /// <summary>Una columna del reporte.</summary>
@@ -73,6 +75,8 @@ public interface IReportesRepository
     Task<TablaReporte> PermisosPorRolAsync(DateTimeOffset ahora, CancellationToken ct);
     /// <summary>Actividades por usuario, de más reciente a más antigua, hasta <paramref name="maximoFilas"/> filas.</summary>
     Task<TablaReporte> ActividadesPorUsuarioAsync(int? usuarioId, DateTimeOffset? desde, DateTimeOffset? hasta, int maximoFilas, DateTimeOffset ahora, CancellationToken ct);
+    /// <summary>Pedidos agrupados por estado (Entregado, Cancelado, Pendiente), con conteo de activos, inactivos y total.</summary>
+    Task<TablaReporte> PedidosPorEstadoAsync(DateTimeOffset? desde, DateTimeOffset? hasta, DateTimeOffset ahora, CancellationToken ct);
 }
 
 /// <summary>Convierte un reporte calculado en un archivo.</summary>
@@ -148,6 +152,12 @@ public sealed class GenerarReporte
                 var h = filtros.Hasta?.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
                 tabla = await _repo.ActividadesPorUsuarioAsync(filtros.UsuarioId, d is null ? null : new DateTimeOffset(d.Value),
                     h is null ? null : new DateTimeOffset(h.Value), MaximoFilasActividades, ahora, ct);
+                break;
+            case TiposDeReporte.PedidosPorEstado:
+                var dPed = filtros.Desde?.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+                var hPed = filtros.Hasta?.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+                tabla = await _repo.PedidosPorEstadoAsync(dPed is null ? null : new DateTimeOffset(dPed.Value),
+                    hPed is null ? null : new DateTimeOffset(hPed.Value), ahora, ct);
                 break;
             default:
                 return Resultado<ArchivoReporte>.Falla(TipoError.NoEncontrado, CodigosError.NoEncontrado, "Ese reporte no existe.");

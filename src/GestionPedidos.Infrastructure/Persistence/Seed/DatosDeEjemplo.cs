@@ -201,7 +201,8 @@ public sealed class DatosDeEjemplo
                          .Concat(productos.Select(p => (TipoImagen.Producto, p.Codigo, (Action<string>)(k => p.ImagenClave = k)))))
             {
                 var clave = ClavesDeImagen.Clave(tipo, codigo, "jpg");
-                await using var flujo = typeof(DatosDeEjemplo).Assembly.GetManifestResourceStream(clave);   // el nombre del recurso es la clave
+                await using var flujo = typeof(DatosDeEjemplo).Assembly.GetManifestResourceStream(clave)
+                    ?? typeof(DatosDeEjemplo).Assembly.GetManifestResourceStream(clave.Replace('/', '\\'));   // el nombre del recurso es la clave (o con separador de Windows)
                 if (flujo is null) continue;   // sin foto para ese código: la tienda muestra el ícono de su categoría
                 await _almacen.GuardarAsync(clave, flujo, "image/jpeg", ct);
                 asignar(clave);

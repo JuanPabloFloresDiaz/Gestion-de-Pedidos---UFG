@@ -108,7 +108,7 @@ public class ReportesPersistenciaTests
     private static decimal Suma(TablaReporte t, int columna) => t.Filas.Sum(f => Convert.ToDecimal(f[columna]));
 
     [Fact]
-    public async Task LosCincoReportes_CuadranConLasTablas()
+    public async Task LosReportes_CuadranConLasTablas()
     {
         await using var db = _bd.Contexto(await BaseSembradaAsync("ReportesCuadran"));
         var repo = new ReportesRepository(db);
@@ -133,6 +133,11 @@ public class ReportesPersistenciaTests
         var permisos = await repo.PermisosPorRolAsync(ahora, default);
         Assert.Equal(await db.RolesPermisos.CountAsync(), permisos.Filas.Count);
         Assert.Contains(permisos.Filas, f => (string?)f[0] == "Administrador");
+
+        var pedidos = await repo.PedidosPorEstadoAsync(null, null, ahora, default);
+        Assert.True(pedidos.Filas.Count >= 3);
+        Assert.Equal(await db.Pedidos.CountAsync(), Suma(pedidos, 1));
+        Assert.All(pedidos.Filas, f => Assert.Equal(Convert.ToInt32(f[1]), Convert.ToInt32(f[2]) + Convert.ToInt32(f[3])));
     }
 
     [Fact]
