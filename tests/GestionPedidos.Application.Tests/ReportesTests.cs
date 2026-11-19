@@ -27,6 +27,7 @@ public class ReportesTests
         public Task<TablaReporte> PermisosPorRolAsync(DateTimeOffset ahora, CancellationToken ct) { Llamadas.Add("permisos"); return Task.FromResult(Tabla("pe", ahora)); }
         public Task<TablaReporte?> ActividadesPorUsuarioAsync(int? usuarioId, DateTimeOffset? desde, DateTimeOffset? hasta, int maximoFilas, DateTimeOffset ahora, CancellationToken ct)
         { Llamadas.Add("actividades"); Actividades = (usuarioId, desde, hasta, maximoFilas); return Task.FromResult<TablaReporte?>(NoExiste ? null : Tabla("a", ahora)); }
+        public Task<TablaReporte> ProductosMasVendidosAsync(DateTimeOffset ahora, CancellationToken ct) { Llamadas.Add("vendidos"); return Task.FromResult(Tabla("v", ahora)); }
         public Task<TablaReporte> PedidosPorEstadoAsync(DateTimeOffset? desde, DateTimeOffset? hasta, DateTimeOffset ahora, CancellationToken ct)
         { Llamadas.Add("pedidos"); return Task.FromResult(Tabla("ped", ahora)); }
     }
@@ -99,9 +100,9 @@ public class ReportesTests
     [Fact]
     public async Task CadaTipo_LlamaALaConsultaQueLeCorresponde()
     {
-        foreach (var tipo in new[] { TiposDeReporte.ProductosPorCategoria, TiposDeReporte.UsuariosPorRol, TiposDeReporte.PermisosPorRol, TiposDeReporte.ActividadesPorUsuario, TiposDeReporte.PedidosPorEstado })
+        foreach (var tipo in new[] { TiposDeReporte.ProductosPorCategoria, TiposDeReporte.UsuariosPorRol, TiposDeReporte.PermisosPorRol, TiposDeReporte.ActividadesPorUsuario, TiposDeReporte.PedidosPorEstado, TiposDeReporte.ProductosMasVendidos })
             Assert.True((await Caso().EjecutarAsync(tipo, "csv", new FiltrosReporte(), default)).Exito);
-        Assert.Equal(new[] { "productos", "usuarios", "permisos", "actividades", "pedidos" }, _repo.Llamadas);
+        Assert.Equal(new[] { "productos", "usuarios", "permisos", "actividades", "pedidos", "vendidos" }, _repo.Llamadas);
         Assert.Equal(FormatoReporte.Csv, _exportador.Formato);
     }
 

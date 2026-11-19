@@ -21,6 +21,8 @@ public static class TiposDeReporte
     public const string ClientesPorZona = "clientes-por-zona";
     /// <summary>Productos agrupados por categoría y subcategoría.</summary>
     public const string ProductosPorCategoria = "productos-por-categoria";
+    /// <summary>Productos más vendidos, con unidades vendidas, cantidad de pedidos y total facturado.</summary>
+    public const string ProductosMasVendidos = "productos-mas-vendidos";
     /// <summary>Usuarios del sistema agrupados por rol.</summary>
     public const string UsuariosPorRol = "usuarios-por-rol";
     /// <summary>Permisos que tiene cada rol.</summary>
@@ -101,6 +103,8 @@ public interface IReportesRepository
     /// Con <paramref name="categoriaId"/> solo esa categoría, con sus subcategorías y los filtros de cada una; <c>null</c> si no existe.
     /// </summary>
     Task<TablaReporte?> ProductosPorCategoriaAsync(int? categoriaId, DateTimeOffset ahora, CancellationToken ct);
+    /// <summary>Productos más vendidos (excluye pedidos cancelados o inactivos), ordenados por unidades vendidas.</summary>
+    Task<TablaReporte> ProductosMasVendidosAsync(DateTimeOffset ahora, CancellationToken ct);
     /// <summary>Usuarios agrupados por rol.</summary>
     Task<TablaReporte> UsuariosPorRolAsync(DateTimeOffset ahora, CancellationToken ct);
     /// <summary>Cada rol con el listado de sus permisos.</summary>
@@ -207,6 +211,9 @@ public sealed class GenerarReporte
                 tabla = await _repo.ProductosPorCategoriaAsync(filtros.CategoriaId, ahora, ct);
                 if (tabla is null)
                     return Resultado<ArchivoReporte>.Falla(TipoError.NoEncontrado, CodigosError.NoEncontrado, "La categoría no existe.");
+                break;
+            case TiposDeReporte.ProductosMasVendidos:
+                tabla = await _repo.ProductosMasVendidosAsync(ahora, ct);
                 break;
             case TiposDeReporte.UsuariosPorRol:
                 tabla = await _repo.UsuariosPorRolAsync(ahora, ct);

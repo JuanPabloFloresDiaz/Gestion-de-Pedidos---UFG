@@ -256,6 +256,39 @@ public class ReportesPersistenciaTests
     }
 
     [Fact]
+    public async Task ProductosMasVendidos_CuadraConLosPedidos_ExcluyeCanceladosYDaDeBajaYOrdenaPorUnidades()
+    {
+        await using var db = _bd.Contexto(await BaseSembradaAsync("ReportesMasVendidos"));
+        var repo = new ReportesRepository(db);
+
+        var t = await repo.ProductosMasVendidosAsync(DateTimeOffset.UtcNow, default);
+
+        // Las unidades del reporte son las de las líneas de pedidos activos y no cancelados.
+        var esperadas = await db.Pedidos.Where(p => p.Activo && p.Estado != GestionPedidos.Domain.Pedidos.EstadoPedido.Cancelado)
+            .SelectMany(p => p.Detalles).SumAsync(d => d.Cantidad);
+        Assert.True(esperadas > 0);
+        Assert.Equal(esperadas, t.Filas.Sum(f => Convert.ToInt32(f[4])));
+        Assert.Equal(Enumerable.Range(1, t.Filas.Count), t.Filas.Select(f => Convert.ToInt32(f[0])));   // ranking 1, 2, 3…
+        var unidades = t.Filas.Select(f => Convert.ToInt32(f[4])).ToList();
+        Assert.Equal(unidades.OrderByDescending(x => x), unidades);                                    // de más a menos vendido
+        Assert.InRange(t.Filas.Sum(f => Convert.ToDecimal(f[5])), 99.5m, 100.5m);                        // la participación suma ~100 %
+
+        // El bloque por categoría suma lo mismo que la tabla principal.
+        var porCategoria = t.Secciones!.Single(b => b.Titulo == "Ventas por categoría");
+        Assert.Equal(esperadas, porCategoria.Filas.Sum(f => Convert.ToInt32(f[2])));
+        Assert.Equal(t.Filas.Sum(f => Convert.ToDecimal(f[7])), porCategoria.Filas.Sum(f => Convert.ToDecimal(f[3])));
+        Assert.Contains(t.Indicadores!, d => d.Etiqueta == "Productos vendidos" && d.Valor == t.Filas.Count.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("es-SV")));
+
+        // Un pedido cancelado no suma: se cancela uno y las unidades bajan.
+        var pedido = await db.Pedidos.Include(p => p.Detalles).FirstAsync(p => p.Activo && p.Estado != GestionPedidos.Domain.Pedidos.EstadoPedido.Cancelado && p.Detalles.Any());
+        var unidadesDelPedido = pedido.Detalles.Sum(d => d.Cantidad);
+        pedido.Estado = GestionPedidos.Domain.Pedidos.EstadoPedido.Cancelado;
+        await db.SaveChangesAsync();
+        var despues = await repo.ProductosMasVendidosAsync(DateTimeOffset.UtcNow, default);
+        Assert.Equal(esperadas - unidadesDelPedido, despues.Filas.Sum(f => Convert.ToInt32(f[4])));
+    }
+
+    [Fact]
     public async Task Actividades_FiltraPorUsuarioYFecha_YRecortaAlMaximo()
     {
         // Base solo migrada (sin datos de ejemplo): esta prueba crea las actividades que necesita y así es más liviana.

@@ -13,7 +13,7 @@ public class ReportesApiTests
     public ReportesApiTests(ApiFixture api) => _api = api;
 
     private static readonly string[] Tipos =
-        { "clientes-por-zona", "productos-por-categoria", "usuarios-por-rol", "permisos-por-rol", "actividades-por-usuario", "pedidos-por-estado" };
+        { "clientes-por-zona", "productos-por-categoria", "usuarios-por-rol", "permisos-por-rol", "actividades-por-usuario", "pedidos-por-estado", "productos-mas-vendidos" };
 
     [Theory]
     [InlineData("pdf", "application/pdf", "%PDF-")]

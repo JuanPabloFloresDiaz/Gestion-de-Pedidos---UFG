@@ -1,6 +1,7 @@
 using System.Globalization;
 using GestionPedidos.Application.Reportes;
 using GestionPedidos.Contracts;
+using GestionPedidos.Domain.Pedidos;
 using Microsoft.EntityFrameworkCore;
 
 namespace GestionPedidos.Infrastructure.Reportes;
@@ -215,6 +216,68 @@ public sealed class ReportesRepository : IReportesRepository, IOpcionesDeReporte
                 Dato("Existencias", totales.Values.Sum(t => t.Stock)), Dato("Valor del inventario ($)", totales.Values.Sum(t => t.Valor)),
             },
             Secciones = secciones,
+        };
+    }
+
+    /// <inheritdoc/>
+    public async Task<TablaReporte> ProductosMasVendidosAsync(DateTimeOffset ahora, CancellationToken ct)
+    {
+        var filas = await _db.Pedidos.AsNoTracking()
+            .Where(p => p.Activo && p.Estado != EstadoPedido.Cancelado)
+            .SelectMany(p => p.Detalles)
+            .GroupBy(d => new
+            {
+                d.ProductoId,
+                Codigo = d.Producto!.Codigo,
+                Nombre = d.Producto!.Nombre,
+                Categoria = d.Producto!.Subcategoria == null ? "Sin clasificar" : d.Producto.Subcategoria.Categoria!.Nombre,
+            })
+            .Select(g => new
+            {
+                g.Key.Codigo,
+                g.Key.Nombre,
+                g.Key.Categoria,
+                UnidadesVendidas = g.Sum(d => d.Cantidad),
+                Pedidos = g.Select(d => d.PedidoId).Distinct().Count(),
+                TotalVendido = g.Sum(d => d.Subtotal),
+            })
+            .OrderByDescending(x => x.UnidadesVendidas)
+            .ThenByDescending(x => x.TotalVendido)
+            .ThenBy(x => x.Nombre)
+            .ToListAsync(ct);
+
+        // Pedidos distintos que aportan ventas (un pedido con varios productos se cuenta una sola vez).
+        var pedidosConVentas = await _db.Pedidos.AsNoTracking()
+            .CountAsync(p => p.Activo && p.Estado != EstadoPedido.Cancelado && p.Detalles.Any(), ct);
+        var unidades = filas.Sum(x => x.UnidadesVendidas);
+        var facturado = filas.Sum(x => x.TotalVendido);
+
+        // La participación de cada producto en las unidades vendidas, con dos decimales (la suma da 100 salvo por redondeo).
+        decimal Participacion(int u) => unidades == 0 ? 0m : Math.Round(u * 100m / unidades, 2);
+
+        // Segundo bloque: lo mismo agrupado por categoría, para ver de dónde vienen las ventas.
+        var porCategoria = filas.GroupBy(x => x.Categoria)
+            .Select(g => new { Categoria = g.Key, Productos = g.Count(), Unidades = g.Sum(x => x.UnidadesVendidas), Total = g.Sum(x => x.TotalVendido) })
+            .OrderByDescending(x => x.Unidades).ThenBy(x => x.Categoria).ToList();
+
+        return new TablaReporte(
+            "Productos más vendidos",
+            "Productos ordenados por unidades vendidas en pedidos activos (pendientes o entregados); los pedidos cancelados o dados de baja no cuentan.",
+            new[] { N("N.º"), T("Código"), T("Producto"), T("Categoría"), N("Unidades vendidas"), N("Participación (%)"), N("Pedidos"), N("Total vendido ($)") },
+            filas.Select((x, i) => F(i + 1, x.Codigo, x.Nombre, x.Categoria, x.UnidadesVendidas, Participacion(x.UnidadesVendidas), x.Pedidos, x.TotalVendido)).ToList(),
+            ahora)
+        {
+            Indicadores = new[]
+            {
+                Dato("Productos vendidos", filas.Count), Dato("Unidades vendidas", unidades),
+                Dato("Pedidos con ventas", pedidosConVentas), Dato("Total vendido ($)", facturado),
+            },
+            Secciones = new[]
+            {
+                new SeccionReporte("Ventas por categoría", $"{Plural(porCategoria.Count, "categoría", "categorías")} con ventas",
+                    new[] { T("Categoría"), N("Productos"), N("Unidades vendidas"), N("Total vendido ($)") },
+                    porCategoria.Select(x => F(x.Categoria, x.Productos, x.Unidades, x.Total)).ToList(), "Todavía no hay ventas."),
+            },
         };
     }
 
