@@ -13,6 +13,7 @@ public static class MapeosCliente
         c.Apellidos,
         c.NombreCompleto,
         c.Telefono,
+        c.TelefonoSecundario,
         c.Direccion,
         c.Correo,
         c.CiudadId,

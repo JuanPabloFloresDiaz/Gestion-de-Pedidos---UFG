@@ -17,6 +17,7 @@ public sealed class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
         b.Property(x => x.Nombres).HasMaxLength(100).IsRequired();
         b.Property(x => x.Apellidos).HasMaxLength(100).IsRequired();
         b.Property(x => x.Telefono).HasMaxLength(20).IsRequired();
+        b.Property(x => x.TelefonoSecundario).HasMaxLength(20);
         b.Property(x => x.Direccion).HasMaxLength(250).IsRequired();
         b.Property(x => x.Correo).HasMaxLength(150);
         b.Property(x => x.Activo).HasDefaultValue(true);

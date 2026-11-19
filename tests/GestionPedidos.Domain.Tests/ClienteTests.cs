@@ -10,12 +10,13 @@ public class ClienteTests
     [Fact]
     public void Crear_NormalizaCampos_YNaceActivo()
     {
-        var c = Cliente.Crear(" Juan Carlos ", " Pérez López ", " 7123-4567 ", " Colonia Médica ", " JUAN@Correo.COM ", 1);
+        var c = Cliente.Crear(" Juan Carlos ", " Pérez López ", " 7123-4567 ", " Colonia Médica ", " JUAN@Correo.COM ", 1, " 2255-0000 ");
 
         Assert.Equal("Juan Carlos", c.Nombres);
         Assert.Equal("Pérez López", c.Apellidos);
         Assert.Equal("Juan Carlos Pérez López", c.NombreCompleto);
         Assert.Equal("7123-4567", c.Telefono);
+        Assert.Equal("2255-0000", c.TelefonoSecundario);
         Assert.Equal("Colonia Médica", c.Direccion);
         Assert.Equal("juan@correo.com", c.Correo);
         Assert.Equal(1, c.CiudadId);
@@ -34,11 +35,12 @@ public class ClienteTests
     public void Actualizar_ModificaCamposCorrectamente()
     {
         var c = Cliente.Crear("Ana", "López", "7000-0000", "Calle 1", null, 1);
-        c.Actualizar(" Ana María ", " López Rivas ", " 2255-7788 ", " Av. Los Próceres ", " ana@empresa.com ", 5);
+        c.Actualizar(" Ana María ", " López Rivas ", " 2255-7788 ", " Av. Los Próceres ", " ana@empresa.com ", 5, " 7890-1122 ");
 
         Assert.Equal("Ana María", c.Nombres);
         Assert.Equal("López Rivas", c.Apellidos);
         Assert.Equal("2255-7788", c.Telefono);
+        Assert.Equal("7890-1122", c.TelefonoSecundario);
         Assert.Equal("Av. Los Próceres", c.Direccion);
         Assert.Equal("ana@empresa.com", c.Correo);
         Assert.Equal(5, c.CiudadId);

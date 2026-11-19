@@ -23,7 +23,7 @@ public sealed class RegistrarCliente
     /// <summary>Registra el cliente tras validar todas las reglas de negocio.</summary>
     public async Task<Resultado<ClienteDto>> EjecutarAsync(CrearClienteSolicitud s, int actorId, CancellationToken ct)
     {
-        var invalido = ValidacionesCliente.Campos(s.Nombres, s.Apellidos, s.Telefono, s.Direccion, s.Correo);
+        var invalido = ValidacionesCliente.Campos(s.Nombres, s.Apellidos, s.Telefono, s.Direccion, s.Correo, s.TelefonoSecundario);
         if (invalido is not null) return invalido;
 
         if (!await _clientes.ExisteCiudadAsync(s.CiudadId, ct))
@@ -32,7 +32,7 @@ public sealed class RegistrarCliente
         if (!string.IsNullOrWhiteSpace(s.Correo) && await _clientes.ExisteCorreoAsync(s.Correo.Trim(), null, ct))
             return Resultado<ClienteDto>.Falla(TipoError.Conflicto, CodigosError.Conflicto, "Ya existe un cliente con ese correo electrónico.");
 
-        var cliente = Cliente.Crear(s.Nombres, s.Apellidos, s.Telefono, s.Direccion, s.Correo, s.CiudadId);
+        var cliente = Cliente.Crear(s.Nombres, s.Apellidos, s.Telefono, s.Direccion, s.Correo, s.CiudadId, s.TelefonoSecundario);
         _clientes.Agregar(cliente);
         await _uow.GuardarAsync(ct);
 

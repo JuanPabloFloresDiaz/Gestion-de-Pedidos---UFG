@@ -315,6 +315,10 @@ namespace GestionPedidos.Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<string>("TelefonoSecundario")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<int?>("UsuarioId")
                         .HasColumnType("int");
 
