@@ -1,4 +1,5 @@
 using GestionPedidos.Application.Reportes;
+using GestionPedidos.Domain.Pedidos;
 using Microsoft.EntityFrameworkCore;
 
 namespace GestionPedidos.Infrastructure.Reportes;
@@ -52,6 +53,41 @@ public sealed class ReportesRepository : IReportesRepository
         return new TablaReporte("Productos por categoría", "Productos de cada categoría y subcategoría, con sus existencias y el valor del inventario a precio de venta.",
             new[] { T("Categoría"), T("Subcategoría"), N("Productos"), N("Activos"), N("Existencias"), N("Valor del inventario ($)") },
             filas.Select(x => F(x.Categoria, x.Subcategoria, x.Productos, x.Activos, x.Stock, x.Valor)).ToList(), ahora);
+    }
+
+    /// <inheritdoc/>
+    public async Task<TablaReporte> ProductosMasVendidosAsync(DateTimeOffset ahora, CancellationToken ct)
+    {
+        var filas = await _db.Pedidos.AsNoTracking()
+            .Where(p => p.Activo && p.Estado != EstadoPedido.Cancelado)
+            .SelectMany(p => p.Detalles)
+            .GroupBy(d => new
+            {
+                d.ProductoId,
+                Codigo = d.Producto!.Codigo,
+                Nombre = d.Producto!.Nombre,
+                Categoria = d.Producto!.Subcategoria == null ? "Sin clasificar" : d.Producto.Subcategoria.Categoria!.Nombre,
+            })
+            .Select(g => new
+            {
+                g.Key.Codigo,
+                g.Key.Nombre,
+                g.Key.Categoria,
+                UnidadesVendidas = g.Sum(d => d.Cantidad),
+                Pedidos = g.Select(d => d.PedidoId).Distinct().Count(),
+                TotalVendido = g.Sum(d => d.Subtotal),
+            })
+            .OrderByDescending(x => x.UnidadesVendidas)
+            .ThenByDescending(x => x.TotalVendido)
+            .ThenBy(x => x.Nombre)
+            .ToListAsync(ct);
+
+        return new TablaReporte(
+            "Productos más vendidos",
+            "Productos ordenados por unidades vendidas en pedidos activos (pendientes o entregados).",
+            new[] { T("Código"), T("Producto"), T("Categoría"), N("Unidades vendidas"), N("Pedidos"), N("Total vendido ($)") },
+            filas.Select(x => F(x.Codigo, x.Nombre, x.Categoria, x.UnidadesVendidas, x.Pedidos, x.TotalVendido)).ToList(),
+            ahora);
     }
 
     /// <inheritdoc/>

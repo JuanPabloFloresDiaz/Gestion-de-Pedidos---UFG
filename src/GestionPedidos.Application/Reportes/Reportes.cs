@@ -21,6 +21,8 @@ public static class TiposDeReporte
     public const string ClientesPorZona = "clientes-por-zona";
     /// <summary>Productos agrupados por categoría y subcategoría.</summary>
     public const string ProductosPorCategoria = "productos-por-categoria";
+    /// <summary>Productos más vendidos, con unidades vendidas, cantidad de pedidos y total facturado.</summary>
+    public const string ProductosMasVendidos = "productos-mas-vendidos";
     /// <summary>Usuarios del sistema agrupados por rol.</summary>
     public const string UsuariosPorRol = "usuarios-por-rol";
     /// <summary>Permisos que tiene cada rol.</summary>
@@ -67,6 +69,8 @@ public interface IReportesRepository
     Task<TablaReporte> ClientesPorZonaAsync(bool porDistrito, DateTimeOffset ahora, CancellationToken ct);
     /// <summary>Productos por categoría y subcategoría, con existencias y valor del inventario.</summary>
     Task<TablaReporte> ProductosPorCategoriaAsync(DateTimeOffset ahora, CancellationToken ct);
+    /// <summary>Productos más vendidos (excluye pedidos cancelados o inactivos), ordenados por unidades vendidas.</summary>
+    Task<TablaReporte> ProductosMasVendidosAsync(DateTimeOffset ahora, CancellationToken ct);
     /// <summary>Usuarios agrupados por rol.</summary>
     Task<TablaReporte> UsuariosPorRolAsync(DateTimeOffset ahora, CancellationToken ct);
     /// <summary>Permisos de cada rol.</summary>
@@ -135,6 +139,9 @@ public sealed class GenerarReporte
                 break;
             case TiposDeReporte.ProductosPorCategoria:
                 tabla = await _repo.ProductosPorCategoriaAsync(ahora, ct);
+                break;
+            case TiposDeReporte.ProductosMasVendidos:
+                tabla = await _repo.ProductosMasVendidosAsync(ahora, ct);
                 break;
             case TiposDeReporte.UsuariosPorRol:
                 tabla = await _repo.UsuariosPorRolAsync(ahora, ct);
