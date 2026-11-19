@@ -23,7 +23,7 @@ public sealed class ActualizarCliente
     /// <summary>Actualiza el cliente si está activo y cumple las reglas de negocio.</summary>
     public async Task<Resultado<ClienteDto>> EjecutarAsync(int id, ActualizarClienteSolicitud s, int actorId, CancellationToken ct)
     {
-        var invalido = ValidacionesCliente.Campos(s.Nombres, s.Apellidos, s.Telefono, s.Direccion, s.Correo);
+        var invalido = ValidacionesCliente.Campos(s.Nombres, s.Apellidos, s.Telefono, s.Direccion, s.Correo, s.TelefonoSecundario);
         if (invalido is not null) return invalido;
 
         invalido = ValidacionesCliente.Version(s.RowVersion, out var version);
@@ -44,7 +44,7 @@ public sealed class ActualizarCliente
 
         _clientes.FijarVersionOriginal(cliente, version);
 
-        cliente.Actualizar(s.Nombres, s.Apellidos, s.Telefono, s.Direccion, s.Correo, s.CiudadId);
+        cliente.Actualizar(s.Nombres, s.Apellidos, s.Telefono, s.Direccion, s.Correo, s.CiudadId, s.TelefonoSecundario);
 
         try
         {

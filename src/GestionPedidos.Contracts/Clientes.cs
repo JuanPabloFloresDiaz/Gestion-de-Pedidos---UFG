@@ -6,6 +6,7 @@ namespace GestionPedidos.Contracts;
 /// <param name="Apellidos">Apellidos.</param>
 /// <param name="NombreCompleto">Nombre completo.</param>
 /// <param name="Telefono">Teléfono.</param>
+/// <param name="TelefonoSecundario">Teléfono secundario u opcional.</param>
 /// <param name="Direccion">Dirección.</param>
 /// <param name="Correo">Correo electrónico (opcional).</param>
 /// <param name="CiudadId">Identificador de la ciudad (distrito).</param>
@@ -17,26 +18,28 @@ namespace GestionPedidos.Contracts;
 /// <param name="EliminadoEn">Cuándo se dio de baja; <c>null</c> si está activo.</param>
 /// <param name="RowVersion">Versión (base64) para concurrencia optimista.</param>
 public sealed record ClienteDto(int Id, string Nombres, string Apellidos, string NombreCompleto, string Telefono,
-    string Direccion, string? Correo, int CiudadId, string Ciudad, int DepartamentoId, string Departamento,
-    bool TieneCuentaWeb, bool Activo, DateTimeOffset? EliminadoEn, string RowVersion);
+    string? TelefonoSecundario, string Direccion, string? Correo, int CiudadId, string Ciudad, int DepartamentoId,
+    string Departamento, bool TieneCuentaWeb, bool Activo, DateTimeOffset? EliminadoEn, string RowVersion);
 
 /// <summary>Alta de un cliente desde la administración.</summary>
 /// <param name="Nombres">Nombres del cliente (1–100).</param>
 /// <param name="Apellidos">Apellidos del cliente (1–100).</param>
 /// <param name="Telefono">Teléfono (8–20 caracteres, formato salvadoreño).</param>
+/// <param name="TelefonoSecundario">Teléfono secundario opcional (8–20 caracteres si se indica).</param>
 /// <param name="Direccion">Dirección de entrega (1–250).</param>
 /// <param name="Correo">Correo electrónico opcional (único si se indica).</param>
 /// <param name="CiudadId">Ciudad donde reside.</param>
-public sealed record CrearClienteSolicitud(string Nombres, string Apellidos, string Telefono, string Direccion,
-    string? Correo, int CiudadId);
+public sealed record CrearClienteSolicitud(string Nombres, string Apellidos, string Telefono, string? TelefonoSecundario,
+    string Direccion, string? Correo, int CiudadId);
 
 /// <summary>Edición de un cliente existente.</summary>
 /// <param name="Nombres">Nombres del cliente (1–100).</param>
 /// <param name="Apellidos">Apellidos del cliente (1–100).</param>
 /// <param name="Telefono">Teléfono (8–20 caracteres, formato salvadoreño).</param>
+/// <param name="TelefonoSecundario">Teléfono secundario opcional (8–20 caracteres si se indica).</param>
 /// <param name="Direccion">Dirección de entrega (1–250).</param>
 /// <param name="Correo">Correo electrónico opcional (único si se indica).</param>
 /// <param name="CiudadId">Ciudad donde reside.</param>
 /// <param name="RowVersion">Versión (base64) para control de concurrencia optimista.</param>
-public sealed record ActualizarClienteSolicitud(string Nombres, string Apellidos, string Telefono, string Direccion,
-    string? Correo, int CiudadId, string? RowVersion);
+public sealed record ActualizarClienteSolicitud(string Nombres, string Apellidos, string Telefono, string? TelefonoSecundario,
+    string Direccion, string? Correo, int CiudadId, string? RowVersion);

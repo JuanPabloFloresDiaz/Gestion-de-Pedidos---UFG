@@ -13,6 +13,7 @@ Registrar y mantener los clientes dueños de los pedidos, con **notificación** 
 | Nombres | Obligatorio, 1–100, sin espacios sobrantes |
 | Apellidos | Obligatorio, 1–100 |
 | Teléfono | Obligatorio; solo dígitos, espacios, `+` y `-`; 8–20 caracteres (formato salvadoreño de 8 dígitos aceptado con o sin código `+503`) |
+| Teléfono secundario | Opcional; mismas reglas de formato que el principal (8–20 caracteres) si se indica |
 | Dirección | Obligatoria, 1–250 |
 | Correo | **Opcional**; formato de correo válido, ≤ 150, único entre clientes. Lo usa la web para enlazar la cuenta |
 | Departamento | Obligatorio (se elige primero); determina las ciudades disponibles |
