@@ -20,6 +20,7 @@
   <ItemGroup>
     <!-- Catálogo geográfico de El Salvador: 14 departamentos y 262 distritos -->
     <EmbeddedResource Include="..\..\seed\el-salvador-geo.json" LogicalName="el-salvador-geo.json" />
+    <EmbeddedResource Include="Reportes\Recursos\logo-reporte.png" LogicalName="logo-reporte.png" />
     <!-- Imágenes de ejemplo: se llaman como el CÓDIGO del producto o de la categoría (productos/ROP-CAM-001.jpg; el nombre del recurso es la misma clave que se usa en el almacén) -->
     <EmbeddedResource Include="..\..\seed\imagenes\**\*.jpg" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>

@@ -17,21 +17,30 @@ public static class ReportesEndpoints
         var g = app.MapGroup("/api/v1/reportes").WithTags("Reportes");
 
         Mapear(g, TiposDeReporte.ClientesPorZona, CatalogoPermisos.ClientesVer);
-        Mapear(g, TiposDeReporte.ProductosPorCategoria, CatalogoPermisos.CategoriasVer);
+        Mapear(g, TiposDeReporte.ProductosPorCategoria, CatalogoPermisos.CategoriasVer, conOpciones: true);
         Mapear(g, TiposDeReporte.UsuariosPorRol, CatalogoPermisos.UsuariosVer);
         Mapear(g, TiposDeReporte.PermisosPorRol, CatalogoPermisos.RolesVer);
-        Mapear(g, TiposDeReporte.ActividadesPorUsuario, CatalogoPermisos.HistorialVer);
+        Mapear(g, TiposDeReporte.ActividadesPorUsuario, CatalogoPermisos.HistorialVer, conOpciones: true);
         Mapear(g, TiposDeReporte.PedidosPorEstado, CatalogoPermisos.PedidosVer);
         return app;
     }
 
-    private static void Mapear(RouteGroupBuilder g, string tipo, string permiso) =>
+    private static void Mapear(RouteGroupBuilder g, string tipo, string permiso, bool conOpciones = false)
+    {
+        // Los reportes que se pueden acotar (a un usuario o a una categoría) ofrecen la lista de opciones para elegir,
+        // con el mismo permiso que el reporte: quien puede exportarlo puede ver a quién o a qué lo puede acotar.
+        if (conOpciones)
+            g.MapGet("/" + tipo + "/opciones", async (GenerarReporte caso, CancellationToken ct) =>
+                    (await caso.OpcionesAsync(tipo, ct)).AHttp(Results.Ok))
+                .RequierePermiso(permiso);
+
         g.MapGet("/" + tipo, async (string? formato, string? agruparPor, int? usuarioId, DateOnly? desde, DateOnly? hasta,
-                GenerarReporte caso, CancellationToken ct) =>
+                int? categoriaId, string? acento, GenerarReporte caso, CancellationToken ct) =>
             {
-                var r = await caso.EjecutarAsync(tipo, formato, new FiltrosReporte(agruparPor, usuarioId, desde, hasta), ct);
+                var r = await caso.EjecutarAsync(tipo, formato, new FiltrosReporte(agruparPor, usuarioId, desde, hasta, categoriaId, acento), ct);
                 // Content-Disposition con el nombre sugerido; el archivo nunca se cachea (puede traer datos personales).
                 return r.AHttp(a => Results.File(a.Contenido, a.TipoContenido, a.NombreArchivo));
             })
             .RequierePermiso(permiso);
+    }
 }

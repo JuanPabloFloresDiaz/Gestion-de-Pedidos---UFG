@@ -9,7 +9,8 @@
     <header class="modulo-cabecera">
         <h1>Categorías y filtros</h1>
         <div class="modulo-acciones">
-            <BotonExportar Tipo="productos-por-categoria" Etiqueta="Productos por categoría" />
+            <BotonExportar Tipo="productos-por-categoria" Etiqueta="Reporte de productos" ParametroOpcion="categoriaId"
+                           EtiquetaOpcion="Categoría" TextoTodas="Todas las categorías" />
             <Casilla Etiqueta="Mostrar inactivas" Valor="Vm.IncluirInactivas" ValorChanged="v => Vm.AlternarInactivasAsync(v)" />
             @if (Puede(Permisos.CategoriasCrear))
             {

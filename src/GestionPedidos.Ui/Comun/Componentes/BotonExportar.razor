@@ -1,12 +1,20 @@
 @* Botón de exportar del kit: ofrece descargar un reporte en PDF, Excel o CSV. Muestra el indicador de carga del formato que se
-   está generando, un aviso al terminar y el error (si la API lo rechaza) sin romper la pantalla. *@
+   está generando, un aviso al terminar y el error (si la API lo rechaza) sin romper la pantalla. El reporte sale con el color de
+   acento que la persona tiene elegido en «Apariencia». Si el reporte se puede acotar (a un usuario o a una categoría), muestra
+   antes de los botones la lista para elegir (la lista la da la API, con el permiso del propio reporte). *@
 @using GestionPedidos.Ui.Comun.Reportes
 @using GestionPedidos.Ui.Comun.Api
+@using GestionPedidos.Ui.Comun.Apariencia
 @inject ReportesService Reportes
+@inject AparienciaService Apariencia
 @inject IAvisos Avisos
 
 <div class="exportar" role="group" aria-label="@(Etiqueta)">
     <span class="exportar-etiqueta"><Icono Svg="Lucide.Download" /> @Etiqueta</span>
+    @if (ParametroOpcion is not null && _opciones.Count > 0)
+    {
+        <CampoSelector Etiqueta="@EtiquetaOpcion" TextoVacio="@TextoTodas" @bind-Valor="_elegida" Opciones="_opciones" />
+    }
     <Boton Cargando="_formato == FormatosDeReporte.Pdf" Deshabilitado="_formato is not null" AlHacerClic="() => ExportarAsync(FormatosDeReporte.Pdf)">PDF</Boton>
     <Boton Cargando="_formato == FormatosDeReporte.Excel" Deshabilitado="_formato is not null" AlHacerClic="() => ExportarAsync(FormatosDeReporte.Excel)">Excel</Boton>
     <Boton Cargando="_formato == FormatosDeReporte.Csv" Deshabilitado="_formato is not null" AlHacerClic="() => ExportarAsync(FormatosDeReporte.Csv)">CSV</Boton>
@@ -14,6 +22,8 @@
 
 @code {
     private string? _formato;
+    private int? _elegida;
+    private List<(int Valor, string Texto)> _opciones = new();
 
     /// <summary>Identificador del reporte en la API (por ejemplo <c>usuarios-por-rol</c>).</summary>
     [Parameter, EditorRequired] public string Tipo { get; set; } = "";
@@ -21,13 +31,33 @@
     [Parameter] public string Etiqueta { get; set; } = "Exportar reporte";
     /// <summary>Filtros que se envían a la API (los valores vacíos se omiten).</summary>
     [Parameter] public IReadOnlyDictionary<string, string?>? Filtros { get; set; }
+    /// <summary>
+    /// Nombre del filtro que lleva la opción elegida (<c>usuarioId</c> o <c>categoriaId</c>). Si se indica, se muestra la lista para
+    /// elegir; si no, el botón exporta el reporte completo.
+    /// </summary>
+    [Parameter] public string? ParametroOpcion { get; set; }
+    /// <summary>Etiqueta de la lista para elegir.</summary>
+    [Parameter] public string EtiquetaOpcion { get; set; } = "Elegir";
+    /// <summary>Texto de la opción que no acota nada (todas).</summary>
+    [Parameter] public string TextoTodas { get; set; } = "Todas";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ParametroOpcion is null) return;
+        try
+        {
+            var lista = await Reportes.OpcionesAsync(Tipo);
+            _opciones = lista.Select(o => (o.Id, o.Texto)).ToList();
+        }
+        catch (ApiException) { /* sin lista: el botón sigue exportando el reporte completo */ }
+    }
 
     private async Task ExportarAsync(string formato)
     {
         _formato = formato;
         try
         {
-            var nombre = await Reportes.DescargarAsync(Tipo, formato, Filtros);
+            var nombre = await Reportes.DescargarAsync(Tipo, formato, ReportesService.FiltrosDelBoton(Filtros, ParametroOpcion, _elegida, Apariencia.Acento));
             Avisos.Exito($"Reporte descargado: {nombre}");
         }
         catch (ApiException ex) { Avisos.Error(ex.Message); }

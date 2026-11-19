@@ -36,25 +36,54 @@ public static class TiposDeReporte
 /// <param name="Numerica">Si contiene números (se alinean a la derecha y en Excel quedan como número, no como texto).</param>
 public sealed record ColumnaReporte(string Titulo, bool Numerica = false);
 
+/// <summary>Un dato de la ficha o un indicador del reporte: una etiqueta con su valor (por ejemplo «Rol» / «Administrador»).</summary>
+/// <param name="Etiqueta">Nombre del dato.</param>
+/// <param name="Valor">Valor ya formateado como texto.</param>
+public sealed record DatoReporte(string Etiqueta, string Valor);
+
+/// <summary>Un bloque del reporte con su propio título y su propia tabla (por ejemplo, un rol con sus permisos).</summary>
+/// <param name="Titulo">Título del bloque.</param>
+/// <param name="Subtitulo">Texto de apoyo bajo el título (por ejemplo, la cantidad de elementos).</param>
+/// <param name="Columnas">Columnas de la tabla del bloque.</param>
+/// <param name="Filas">Filas del bloque.</param>
+/// <param name="TextoVacio">Qué decir si el bloque no tiene filas.</param>
+public sealed record SeccionReporte(string Titulo, string? Subtitulo, IReadOnlyList<ColumnaReporte> Columnas,
+    IReadOnlyList<IReadOnlyList<object?>> Filas, string TextoVacio = "Sin elementos.");
+
 /// <summary>
 /// Un reporte ya calculado, independiente del formato: lo arman los repositorios y lo convierten en PDF, Excel o CSV los exportadores.
-/// Cada celda es texto, número (<c>int</c>/<c>decimal</c>) o <c>null</c>.
+/// Cada celda es texto, número (<c>int</c>/<c>decimal</c>) o <c>null</c>. Un reporte puede traer, además de la tabla principal,
+/// una <see cref="Ficha"/> (datos de lo que se está reportando), <see cref="Indicadores"/> (cifras clave) y <see cref="Secciones"/> (bloques
+/// con su propia tabla); todo es opcional y la <see cref="Columnas"/> puede ir vacía si el reporte es solo de secciones.
 /// </summary>
 /// <param name="Titulo">Título del reporte.</param>
 /// <param name="Descripcion">Qué muestra y con qué filtros se generó.</param>
-/// <param name="Columnas">Columnas, en orden.</param>
-/// <param name="Filas">Filas; cada una tiene tantas celdas como columnas.</param>
+/// <param name="Columnas">Columnas de la tabla principal, en orden (vacío si no hay tabla principal).</param>
+/// <param name="Filas">Filas de la tabla principal; cada una tiene tantas celdas como columnas.</param>
 /// <param name="GeneradoEn">Cuándo se generó (UTC).</param>
 /// <param name="Nota">Aviso al pie (por ejemplo, que se recortó por exceder el máximo de filas).</param>
 public sealed record TablaReporte(string Titulo, string Descripcion, IReadOnlyList<ColumnaReporte> Columnas,
-    IReadOnlyList<IReadOnlyList<object?>> Filas, DateTimeOffset GeneradoEn, string? Nota = null);
+    IReadOnlyList<IReadOnlyList<object?>> Filas, DateTimeOffset GeneradoEn, string? Nota = null)
+{
+    /// <summary>Datos de lo que se reporta (por ejemplo, el usuario o la categoría elegidos), en pares etiqueta y valor.</summary>
+    public IReadOnlyList<DatoReporte>? Ficha { get; init; }
+
+    /// <summary>Cifras clave del reporte (totales), que el PDF muestra como tarjetas.</summary>
+    public IReadOnlyList<DatoReporte>? Indicadores { get; init; }
+
+    /// <summary>Bloques adicionales, cada uno con su título y su tabla, que van después de la tabla principal.</summary>
+    public IReadOnlyList<SeccionReporte>? Secciones { get; init; }
+}
 
 /// <summary>Filtros opcionales de los reportes (cada reporte usa solo los que le corresponden).</summary>
 /// <param name="AgruparPor"><c>departamento</c> o <c>distrito</c> (reporte de clientes).</param>
-/// <param name="UsuarioId">Solo las actividades de este usuario.</param>
-/// <param name="Desde">Fecha inicial de las actividades (incluida).</param>
-/// <param name="Hasta">Fecha final de las actividades (incluida).</param>
-public sealed record FiltrosReporte(string? AgruparPor = null, int? UsuarioId = null, DateOnly? Desde = null, DateOnly? Hasta = null);
+/// <param name="UsuarioId">Solo las actividades de este usuario (si falta, las de todos agrupadas por usuario).</param>
+/// <param name="Desde">Fecha inicial de las actividades o los pedidos (incluida).</param>
+/// <param name="Hasta">Fecha final de las actividades o los pedidos (incluida).</param>
+/// <param name="CategoriaId">Solo esta categoría (reporte de productos); si falta, todas.</param>
+/// <param name="Acento">Color del reporte (uno de <see cref="AcentosDeReporte"/>); si falta, el de por defecto.</param>
+public sealed record FiltrosReporte(string? AgruparPor = null, int? UsuarioId = null, DateOnly? Desde = null, DateOnly? Hasta = null,
+    int? CategoriaId = null, string? Acento = null);
 
 /// <summary>Un archivo listo para descargar.</summary>
 /// <param name="Contenido">Bytes del archivo.</param>
@@ -67,16 +96,31 @@ public interface IReportesRepository
 {
     /// <summary>Clientes por departamento o distrito, con activos e inactivos.</summary>
     Task<TablaReporte> ClientesPorZonaAsync(bool porDistrito, DateTimeOffset ahora, CancellationToken ct);
-    /// <summary>Productos por categoría y subcategoría, con existencias y valor del inventario.</summary>
-    Task<TablaReporte> ProductosPorCategoriaAsync(DateTimeOffset ahora, CancellationToken ct);
+    /// <summary>
+    /// Productos por categoría y subcategoría, con existencias y valor del inventario y, debajo, los productos de cada categoría.
+    /// Con <paramref name="categoriaId"/> solo esa categoría, con sus subcategorías y los filtros de cada una; <c>null</c> si no existe.
+    /// </summary>
+    Task<TablaReporte?> ProductosPorCategoriaAsync(int? categoriaId, DateTimeOffset ahora, CancellationToken ct);
     /// <summary>Usuarios agrupados por rol.</summary>
     Task<TablaReporte> UsuariosPorRolAsync(DateTimeOffset ahora, CancellationToken ct);
-    /// <summary>Permisos de cada rol.</summary>
+    /// <summary>Cada rol con el listado de sus permisos.</summary>
     Task<TablaReporte> PermisosPorRolAsync(DateTimeOffset ahora, CancellationToken ct);
-    /// <summary>Actividades por usuario, de más reciente a más antigua, hasta <paramref name="maximoFilas"/> filas.</summary>
-    Task<TablaReporte> ActividadesPorUsuarioAsync(int? usuarioId, DateTimeOffset? desde, DateTimeOffset? hasta, int maximoFilas, DateTimeOffset ahora, CancellationToken ct);
+    /// <summary>
+    /// Actividades de un usuario (con su ficha y un resumen por acción) o, sin <paramref name="usuarioId"/>, de todos agrupadas por usuario;
+    /// de más reciente a más antigua, hasta <paramref name="maximoFilas"/> filas. <c>null</c> si el usuario pedido no existe.
+    /// </summary>
+    Task<TablaReporte?> ActividadesPorUsuarioAsync(int? usuarioId, DateTimeOffset? desde, DateTimeOffset? hasta, int maximoFilas, DateTimeOffset ahora, CancellationToken ct);
     /// <summary>Pedidos agrupados por estado (Entregado, Cancelado, Pendiente), con conteo de activos, inactivos y total.</summary>
     Task<TablaReporte> PedidosPorEstadoAsync(DateTimeOffset? desde, DateTimeOffset? hasta, DateTimeOffset ahora, CancellationToken ct);
+}
+
+/// <summary>Opciones para elegir en los reportes que se pueden acotar (usuarios y categorías).</summary>
+public interface IOpcionesDeReporte
+{
+    /// <summary>Usuarios del sistema, ordenados por nombre.</summary>
+    Task<IReadOnlyList<OpcionReporteDto>> UsuariosAsync(CancellationToken ct);
+    /// <summary>Categorías del catálogo, ordenadas por nombre.</summary>
+    Task<IReadOnlyList<OpcionReporteDto>> CategoriasAsync(CancellationToken ct);
 }
 
 /// <summary>Convierte un reporte calculado en un archivo.</summary>
@@ -85,7 +129,8 @@ public interface IExportadorDeReportes
     /// <summary>Genera el archivo del reporte en el formato pedido.</summary>
     /// <param name="tabla">Reporte ya calculado.</param>
     /// <param name="formato">PDF, Excel o CSV.</param>
-    ArchivoReporte Exportar(TablaReporte tabla, FormatoReporte formato);
+    /// <param name="acento">Color del reporte (uno de <see cref="AcentosDeReporte"/>); en CSV no se usa.</param>
+    ArchivoReporte Exportar(TablaReporte tabla, FormatoReporte formato, string? acento = null);
 }
 
 /// <summary>
@@ -99,12 +144,26 @@ public sealed class GenerarReporte
     private readonly IReportesRepository _repo;
     private readonly IExportadorDeReportes _exportador;
     private readonly TimeProvider _reloj;
+    private readonly IOpcionesDeReporte _opciones;
 
     /// <summary>Crea el caso de uso.</summary>
-    public GenerarReporte(IReportesRepository repo, IExportadorDeReportes exportador, TimeProvider reloj)
+    public GenerarReporte(IReportesRepository repo, IExportadorDeReportes exportador, TimeProvider reloj, IOpcionesDeReporte opciones)
     {
-        _repo = repo; _exportador = exportador; _reloj = reloj;
+        _repo = repo; _exportador = exportador; _reloj = reloj; _opciones = opciones;
     }
+
+    /// <summary>
+    /// Opciones que la persona puede elegir para acotar un reporte: los usuarios (actividades) o las categorías (productos).
+    /// Los demás reportes no tienen opciones y devuelven «no encontrado».
+    /// </summary>
+    /// <param name="tipo">Uno de <see cref="TiposDeReporte"/>.</param>
+    /// <param name="ct">Cancelación.</param>
+    public async Task<Resultado<IReadOnlyList<OpcionReporteDto>>> OpcionesAsync(string tipo, CancellationToken ct) => tipo switch
+    {
+        TiposDeReporte.ActividadesPorUsuario => Resultado<IReadOnlyList<OpcionReporteDto>>.Ok(await _opciones.UsuariosAsync(ct)),
+        TiposDeReporte.ProductosPorCategoria => Resultado<IReadOnlyList<OpcionReporteDto>>.Ok(await _opciones.CategoriasAsync(ct)),
+        _ => Resultado<IReadOnlyList<OpcionReporteDto>>.Falla(TipoError.NoEncontrado, CodigosError.NoEncontrado, "Ese reporte no tiene opciones para elegir."),
+    };
 
     /// <summary>Convierte el texto de la dirección (<c>pdf</c>, <c>xlsx</c>, <c>csv</c>) en un formato; <c>null</c> si no existe.</summary>
     public static FormatoReporte? InterpretarFormato(string? texto) => texto?.Trim().ToLowerInvariant() switch
@@ -127,8 +186,15 @@ public sealed class GenerarReporte
         if (filtros.Desde is not null && filtros.Hasta is not null && filtros.Desde > filtros.Hasta)
             return Resultado<ArchivoReporte>.Falla(TipoError.Validacion, CodigosError.Validacion, "La fecha inicial no puede ser posterior a la final.");
 
+        if (!AcentosDeReporte.EsValido(filtros.Acento))
+            return Resultado<ArchivoReporte>.Falla(TipoError.Validacion, CodigosError.Validacion, "El color debe ser uno de: " + string.Join(", ", AcentosDeReporte.Ids) + ".");
+        if (filtros.CategoriaId is <= 0)
+            return Resultado<ArchivoReporte>.Falla(TipoError.Validacion, CodigosError.Validacion, "La categoría indicada no es válida.");
+        if (filtros.UsuarioId is <= 0)
+            return Resultado<ArchivoReporte>.Falla(TipoError.Validacion, CodigosError.Validacion, "El usuario indicado no es válido.");
+
         var ahora = _reloj.GetUtcNow();
-        TablaReporte tabla;
+        TablaReporte? tabla;
         switch (tipo)
         {
             case TiposDeReporte.ClientesPorZona:
@@ -138,7 +204,9 @@ public sealed class GenerarReporte
                 tabla = await _repo.ClientesPorZonaAsync(agrupar == "distrito", ahora, ct);
                 break;
             case TiposDeReporte.ProductosPorCategoria:
-                tabla = await _repo.ProductosPorCategoriaAsync(ahora, ct);
+                tabla = await _repo.ProductosPorCategoriaAsync(filtros.CategoriaId, ahora, ct);
+                if (tabla is null)
+                    return Resultado<ArchivoReporte>.Falla(TipoError.NoEncontrado, CodigosError.NoEncontrado, "La categoría no existe.");
                 break;
             case TiposDeReporte.UsuariosPorRol:
                 tabla = await _repo.UsuariosPorRolAsync(ahora, ct);
@@ -152,6 +220,8 @@ public sealed class GenerarReporte
                 var h = filtros.Hasta?.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
                 tabla = await _repo.ActividadesPorUsuarioAsync(filtros.UsuarioId, d is null ? null : new DateTimeOffset(d.Value),
                     h is null ? null : new DateTimeOffset(h.Value), MaximoFilasActividades, ahora, ct);
+                if (tabla is null)
+                    return Resultado<ArchivoReporte>.Falla(TipoError.NoEncontrado, CodigosError.NoEncontrado, "El usuario no existe.");
                 break;
             case TiposDeReporte.PedidosPorEstado:
                 var dPed = filtros.Desde?.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
@@ -162,7 +232,7 @@ public sealed class GenerarReporte
             default:
                 return Resultado<ArchivoReporte>.Falla(TipoError.NoEncontrado, CodigosError.NoEncontrado, "Ese reporte no existe.");
         }
-        return Resultado<ArchivoReporte>.Ok(_exportador.Exportar(tabla, fmt) with { NombreArchivo = NombreDeArchivo(tipo, fmt, ahora) });
+        return Resultado<ArchivoReporte>.Ok(_exportador.Exportar(tabla, fmt, filtros.Acento) with { NombreArchivo = NombreDeArchivo(tipo, fmt, ahora) });
     }
 
     private static string NombreDeArchivo(string tipo, FormatoReporte formato, DateTimeOffset ahora)
