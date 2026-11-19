@@ -147,4 +147,57 @@ public class ReportesTests
         Assert.Equal("departamento", CatalogosViewModel.PorDepartamento["agruparPor"]);
         Assert.Equal("distrito", CatalogosViewModel.PorDistrito["agruparPor"]);
     }
+
+    // ---------- Color, opción elegida y lista de opciones ----------
+
+    [Fact]
+    public void FiltrosDelBoton_AgregaElColorDeLaAplicacion_YLaOpcionElegida_SinPerderLosFiltrosDeLaPantalla()
+    {
+        var pantalla = new Dictionary<string, string?> { ["desde"] = "2026-11-01", ["hasta"] = null };
+
+        var filtros = ReportesService.FiltrosDelBoton(pantalla, "usuarioId", 7, "rosa");
+
+        Assert.Equal("7", filtros["usuarioId"]);
+        Assert.Equal("rosa", filtros["acento"]);
+        Assert.Equal("2026-11-01", filtros["desde"]);
+        Assert.Single(pantalla, p => p.Key == "desde" && p.Value == "2026-11-01");   // no modifica el diccionario de la pantalla
+        Assert.DoesNotContain("acento", pantalla.Keys);
+        Assert.Equal("/api/v1/reportes/actividades-por-usuario?formato=pdf&desde=2026-11-01&usuarioId=7&acento=rosa",
+            ReportesService.Ruta("actividades-por-usuario", "pdf", filtros));   // «hasta» vacío se omite
+    }
+
+    [Fact]
+    public void FiltrosDelBoton_SinOpcionElegida_NoEnviaElFiltro_PeroSiElColor()
+    {
+        var filtros = ReportesService.FiltrosDelBoton(null, "categoriaId", null, "azul");
+        Assert.DoesNotContain("categoriaId", filtros.Keys);   // «todas»: el reporte completo
+        Assert.Equal("azul", filtros["acento"]);
+        Assert.DoesNotContain("categoriaId", ReportesService.FiltrosDelBoton(null, null, 5, "azul").Keys);   // sin lista, ninguna opción
+    }
+
+    [Fact]
+    public async Task Opciones_SePidenALaApiDelReporte_YSeLeen()
+    {
+        var e = new Entorno();
+        var handler = new OpcionesHandler();
+        var servicio = new ReportesService(new ApiClient(new HttpClient(handler) { BaseAddress = new Uri("http://api.test/") }, e.Sesion), new JsFalso());
+        await e.Sesion.IniciarAsync(Entorno.SesionDe("Administrador", new[] { "categorias.ver" }, e.Reloj.GetUtcNow().AddHours(1)));
+
+        var opciones = await servicio.OpcionesAsync("productos-por-categoria");
+
+        Assert.Equal("/api/v1/reportes/productos-por-categoria/opciones", handler.Ruta);
+        Assert.Equal(new[] { "Ropa", "Hogar" }, opciones.Select(o => o.Texto));
+        Assert.Equal(new[] { 1, 2 }, opciones.Select(o => o.Id));
+    }
+
+    private sealed class OpcionesHandler : HttpMessageHandler
+    {
+        public string? Ruta { get; private set; }
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            Ruta = request.RequestUri!.AbsolutePath;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            { Content = new StringContent("[{\"id\":1,\"texto\":\"Ropa\"},{\"id\":2,\"texto\":\"Hogar\"}]", Encoding.UTF8, "application/json") });
+        }
+    }
 }

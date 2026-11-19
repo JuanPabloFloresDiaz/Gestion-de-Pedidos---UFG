@@ -1,3 +1,4 @@
+using GestionPedidos.Contracts;
 using GestionPedidos.Ui.Comun.Api;
 using Microsoft.JSInterop;
 
@@ -42,6 +43,29 @@ public sealed class ReportesService
                 .Select(f => $"{Uri.EscapeDataString(f.Key)}={Uri.EscapeDataString(f.Value!)}"));
         return $"/api/v1/reportes/{Uri.EscapeDataString(tipo)}?" + string.Join('&', partes);
     }
+
+    /// <summary>
+    /// Arma los filtros que envía el botón de exportar: los de la pantalla, más la opción elegida (usuario o categoría) y el color de
+    /// acento de la aplicación, para que el reporte salga con el mismo color que la persona está viendo.
+    /// </summary>
+    /// <param name="filtrosDePantalla">Filtros propios de la pantalla (fechas, agrupación…); puede ser <c>null</c>.</param>
+    /// <param name="parametroOpcion">Nombre del filtro de la opción elegida (<c>usuarioId</c>, <c>categoriaId</c>); <c>null</c> si no hay lista.</param>
+    /// <param name="opcionElegida">Identificador elegido; <c>null</c> = todas (no se envía nada).</param>
+    /// <param name="acento">Acento de la aplicación (<c>azul</c>, <c>verde</c>…).</param>
+    public static IReadOnlyDictionary<string, string?> FiltrosDelBoton(IReadOnlyDictionary<string, string?>? filtrosDePantalla,
+        string? parametroOpcion, int? opcionElegida, string acento)
+    {
+        var filtros = new Dictionary<string, string?>(filtrosDePantalla ?? new Dictionary<string, string?>());
+        if (parametroOpcion is not null && opcionElegida is { } id) filtros[parametroOpcion] = id.ToString();
+        filtros["acento"] = acento;
+        return filtros;
+    }
+
+    /// <summary>Opciones que se pueden elegir para acotar un reporte (usuarios o categorías); la lista la da la API.</summary>
+    /// <param name="tipo">Identificador del reporte.</param>
+    /// <param name="ct">Cancelación.</param>
+    public Task<List<OpcionReporteDto>> OpcionesAsync(string tipo, CancellationToken ct = default) =>
+        _api.GetAsync<List<OpcionReporteDto>>($"/api/v1/reportes/{Uri.EscapeDataString(tipo)}/opciones", ct);
 
     /// <summary>Descarga el reporte y se lo entrega al navegador o a la ventana de escritorio como archivo.</summary>
     /// <param name="tipo">Identificador del reporte.</param>

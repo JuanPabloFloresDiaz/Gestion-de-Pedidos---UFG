@@ -94,6 +94,7 @@ public static class DependencyInjection
         servicios.AddScoped<ObtenerPedido>();
         servicios.AddScoped<BuscarPedidos>();
         servicios.AddScoped<IReportesRepository, ReportesRepository>();
+        servicios.AddScoped<IOpcionesDeReporte>(sp => (ReportesRepository)sp.GetRequiredService<IReportesRepository>());   // el mismo objeto atiende las dos interfaces
         servicios.AddSingleton<IExportadorDeReportes, ExportadorDeReportes>();
         servicios.AddScoped<GenerarReporte>();
         servicios.AddScoped<ObtenerArbolDeCatalogo>();

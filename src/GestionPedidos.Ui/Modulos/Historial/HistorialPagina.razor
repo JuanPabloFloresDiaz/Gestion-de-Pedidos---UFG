@@ -4,7 +4,8 @@
 
 <PaginaModulo Titulo="Historial de actividades" Error="@Vm.Error">
     <Acciones>
-        <BotonExportar Tipo="actividades-por-usuario" Etiqueta="Actividades por usuario" Filtros="Vm.FiltrosDeReporte" />
+        <BotonExportar Tipo="actividades-por-usuario" Etiqueta="Reporte de actividades" Filtros="Vm.FiltrosDeReporte"
+                       ParametroOpcion="usuarioId" EtiquetaOpcion="Usuario" TextoTodas="Todos los usuarios" />
         <span class="solo-lectura">Solo lectura</span>
         <Boton Cargando="Vm.Cargando" AlHacerClic="Vm.RecargarAsync"><Icono Svg="Lucide.RefreshCw" /> Actualizar</Boton>
     </Acciones>

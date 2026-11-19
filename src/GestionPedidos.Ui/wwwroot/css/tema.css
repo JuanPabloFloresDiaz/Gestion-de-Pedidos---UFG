@@ -358,6 +358,9 @@ a { color: var(--color-primario); }
 /* Botones de exportar un reporte (PDF, Excel, CSV): solo la disposición; los botones son los del kit */
 .exportar { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .exportar-etiqueta { display: inline-flex; align-items: center; gap: 4px; color: var(--color-texto-suave); font-size: .875rem; }
+/* La lista para elegir a quién o a qué acotar el reporte: ancho razonable (no se estira) y alineada con los botones */
+.exportar .campo { min-width: 190px; max-width: 260px; flex: 0 1 240px; }
+.exportar { align-items: flex-end; }
 .modulo-acciones { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
 
 /* ---- Tonos pastel de la tienda (fondos de categorías y productos): claro por defecto, más apagados en modo oscuro ---- */

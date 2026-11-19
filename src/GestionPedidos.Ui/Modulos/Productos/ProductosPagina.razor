@@ -6,10 +6,13 @@
 
 <PaginaModulo Titulo="Productos" Error="@Vm.Error" PanelVisible="Vm.Editando">
     <Acciones>
-        @if (Sesion.TienePermiso(Permisos.ProductosCrear))
-        {
-            <Boton Variante="Primario" AlHacerClic="Vm.Nuevo">+ Nuevo producto</Boton>
-        }
+        <div class="modulo-acciones">
+            <BotonExportar Tipo="productos-mas-vendidos" Etiqueta="Productos más vendidos" />
+            @if (Sesion.TienePermiso(Permisos.ProductosCrear))
+            {
+                <Boton Variante="Primario" AlHacerClic="Vm.Nuevo">+ Nuevo producto</Boton>
+            }
+        </div>
     </Acciones>
 
     <Filtros>
