@@ -53,7 +53,7 @@ Las versiones exactas se confirman al ejecutar (`dotnet list package --outdated`
 5. **Swashbuckle** a 10.x. Compilar; abrir `/swagger` y comprobar que sigue mostrando el esquema de seguridad Bearer.
 6. **Paquetes de terceros** (AWSSDK.S3, QuestPDF, ClosedXML, Blazicons, Testcontainers, Respawn): subir uno por uno solo si hace falta o si hay aviso de vulnerabilidad (`dotnet list package --vulnerable`).
 7. **Pruebas**: `TimeProvider.Testing`, bUnit y xUnit; toda la batería en verde.
-8. **EF**: `has-pending-model-changes`, regenerar `scripts/sql/GestionPedidos_esquema.sql` y comparar con el actual (debe ser idéntico).
+8. **EF**: `has-pending-model-changes`, regenerar `scripts/sql/GestionPedidos_esquema.sql` y comparar con el actual (debe ser equivalente).
 9. **Docker y E2E**: `./scripts/up.sh`, humo manual (login, catálogo, tienda, un reporte PDF/Excel, imágenes desde Garage) y `./scripts/e2e-docker.sh`.
 10. **Documentación**: actualizar README, `Tecnologia.md`, `Infraestructura.md`, `AGENTS.md` y `Principios.md` (menciones a .NET 8) y marcar este plan como ejecutado.
 11. **Desktop (manual en Windows)**: compilar `net10.0-windows10.0.19041.0` y abrir la app contra la API. Registrar el resultado aparte.
@@ -63,7 +63,7 @@ Las versiones exactas se confirman al ejecutar (`dotnet list package --outdated`
 * `./scripts/test-docker.sh`: **mismo número de pruebas** que la línea base y todas en verde, sin advertencias.
 * `./scripts/e2e-docker.sh`: 11/11 en verde.
 * `dotnet list package --vulnerable --include-transitive` sin resultados.
-* El script SQL del esquema es idéntico al de .NET 8 (ninguna tabla cambia).
+* El esquema es el mismo que con .NET 8 (`has-pending-model-changes` sin cambios y script SQL equivalente: solo cambian el formato que genera EF 10 y la versión de producto).
 * Las imágenes Docker finales arrancan con `aspnet:10.0` como usuario no root, como hoy.
 * Ninguna mención a `net8.0` / `.NET 8` fuera del historial (`grep -rn "net8\|\.NET 8\|:8\.0"`), salvo la nota histórica de este documento.
 
@@ -97,3 +97,23 @@ Los 2 fallos iniciales de E2E **ya existían antes de migrar** (las pruebas esta
 Nota de entorno: el E2E depende de una base limpia (`./scripts/up.sh --limpio`); con un volumen de ejecuciones anteriores fallan 4 en vez de 2.
 
 Mejoras de buenas prácticas: ver [Auditoria-BuenasPracticas-NET10.md](Auditoria-BuenasPracticas-NET10.md). Advertencias vistas en los registros de la API: `QuerySplittingBehavior` sin configurar en consultas con varias colecciones, y claves de Data Protection sin persistir fuera del contenedor.
+
+## 10. Avance (23/11/2026, solo la parte web)
+
+| Paso | Estado | Notas |
+|---|---|---|
+| 1 Línea base | Hecho | 690 + 11/11 |
+| 2 Toolchain | Hecho | SDK 10.0.404, `dotnet-ef` 10.0.15, imágenes 10.0 |
+| 3 Framework | Hecho | `net10.0`; `LangVersion` ya no se fija (C# 14 por defecto) |
+| 4 Paquetes Microsoft | Hecho | 10.0.15; **Testcontainers.MsSql 3.10 → 4.17** (SSH.NET vulnerable) y 3 pruebas adaptadas |
+| 5 Swashbuckle | Pendiente | 6.9 funciona tal cual en .NET 10; subir a 10.x es opcional |
+| 6 Terceros | Pendiente | Solo si hay avisos; `dotnet list package --vulnerable` por correr |
+| 7 Pruebas (bUnit, xUnit) | Parcial | Compilan y pasan con las versiones actuales; bUnit 2.x es opcional |
+| 8 EF | Hecho | Modelo sin cambios; script SQL regenerado (equivalente) e incluye la migración `TelefonoSecundarioCliente`, que faltaba |
+| 9 Docker + E2E | Hecho | API en ASP.NET Core 10.0.15; **690 pruebas y E2E 11/11**; Swagger (62 rutas, esquema Bearer), imágenes de Garage, reportes PDF/Excel y correos (MailHog) verificados a mano |
+| 10 Documentación | Pendiente | README, `Tecnologia.md`, `Infraestructura.md`, `AGENTS.md`, `Principios.md` |
+| 11 Desktop (Windows) | Pendiente | Se prueba luego, en Windows |
+
+**Dos cambios de comportamiento de .NET 10 que no cubrían las pruebas unitarias** (solo el E2E los detectó):
+1. `_framework/blazor.web.js` ya no lo sirve `UseStaticFiles()`: hay que usar `MapStaticAssets()`.
+2. Un `dotnet restore` hecho solo con los `.csproj` (capa de caché del Dockerfile) no incluye los activos de Blazor del SDK 10; el `publish` de la Web no puede llevar `--no-restore`.
