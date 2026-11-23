@@ -122,3 +122,7 @@ Mejoras de buenas prácticas: ver [Auditoria-BuenasPracticas-NET10.md](Auditoria
 * Vulnerables (directos y transitivos): ninguno. El `Desktop` no entra en el escaneo (MAUI no restaura en Linux); se escanea en Windows.
 * Obsoletos: `xunit` 2.9.2 (marcado *Legacy*, alternativa `xunit.v3`) en `Ui.Tests` y `Architecture.Tests`. Sin urgencia.
 * Desactualizados: los paquetes de Microsoft tienen 11.0.0 disponible (.NET 11, soporte corto): **se queda en 10.0.x a propósito**. Menores sin aplicar: `AWSSDK.S3` 4.x (salto de versión mayor), `Blazicons.Lucide` 3.2.13, `Microsoft.NET.Test.Sdk` 18.x, `xunit.runner.visualstudio` 4.x, `Swashbuckle` 11.x (la 6.9 funciona).
+
+## 11. Puntos A de la auditoría (aplicados en la misma rama)
+
+S1 (rehash de contraseñas), S2 (IP real tras un proxy), S3 (claves de Data Protection), D1 (SplitQuery), P2 (política de NuGetAudit) y P3 (analizadores) están hechos; el detalle y una limitación de S2 en [Auditoria-BuenasPracticas-NET10.md](Auditoria-BuenasPracticas-NET10.md). Resultado: **702 pruebas** (12 nuevas) en verde, build sin advertencias, **E2E 11/11** con el stack reconstruido desde cero, sin advertencias de EF.

@@ -63,6 +63,20 @@ Prioridad: **A** = conviene hacerlo con la migración · **B** = después de mig
 | U1 | B | **`async void` en 6 manejadores de eventos.** Cuatro ViewModels lo documentan y capturan errores en `EjecutarAsync`; las dos páginas de tienda (`PedidoPagina`, `MisPedidosPagina`: `Sesion_Restaurada`) no lo documentan y no se vio protección contra excepciones: una excepción ahí tumbaría el circuito. | `PedidoPagina.razor:83`, `MisPedidosPagina.razor:94` | Envolver en `try/catch` con registro o delegar en un método `Task` protegido. |
 | U2 | C | Las páginas de tienda tienen lógica en el `@code`, contrario a la regla "Páginas sin lógica" de las pautas del propio proyecto. | mismas páginas | Moverla a un ViewModel cuando se toquen por los módulos nuevos (Favoritos, Comentarios). |
 
+## 1.1 Estado de los puntos A (23/11/2026, rama `chore/net10`)
+
+| # | Estado | Cómo quedó |
+|---|---|---|
+| S1 | Hecho | `Verificar` devuelve `ResultadoVerificacion`; el login vuelve a guardar el hash si es obsoleto y conserva `DebeCambiarClave`. Pruebas con el hasher real y con el fake. |
+| S2 | Hecho en la API, con una limitación | `ForwardedHeaders:Habilitado` (`PROXY_CONFIABLE`, apagado por defecto) y `RedesConfiables` (por defecto solo redes privadas). **Limitación:** en la web, el login lo hace el *servidor Blazor* contra la API, por lo que la API ve la IP del contenedor Web y no la de la persona; el límite de la API protege contra abuso directo (escritorio, móvil, scripts), no por persona en la web. Reenviar la IP real desde la Web queda como mejora pendiente. |
+| S3 | Hecho | `DataProtection:Ruta=/keys` en volúmenes `api-keys` y `web-keys`; misma clave tras recrear el contenedor. Las claves quedan **sin cifrar en el volumen** (advertencia `XmlKeyManager[35]`, aceptable en este alcance; cifrarlas exige un certificado). |
+| D1 | Hecho | `UseQuerySplittingBehavior(SplitQuery)`; prueba que fija la configuración; desaparece la advertencia 20504. |
+| P1 | Hecho | `MapStaticAssets()` (necesario en .NET 10). |
+| P2 | Hecho | `NuGetAuditMode=all`; NU1903/NU1904 (alta, crítica) rompen la compilación; NU1901/NU1902 solo avisan. |
+| P3 | Hecho | `AnalysisLevel=latest`, `AnalysisMode=Recommended`, `EnforceCodeStyleInBuild`. Medido: 74 advertencias en `src` (más ~700 en pruebas, casi todas CA1707 por los nombres de prueba). Se corrigieron las de corrección (cultura, `ThrowIfNull`, MD5→SHA256, `SearchValues`…) y 8 reglas de rendimiento/nombres pasaron a `suggestion`, cada una con su motivo en el `.editorconfig`. Las pruebas usan el modo `Default`. |
+
+Hallazgo adicional durante P3: los Dockerfiles no copiaban `.editorconfig`, por lo que dentro de Docker no regían sus reglas; ahora sí.
+
 ## 2. Qué entra con la migración y qué no
 
 **Con la migración (rama `chore/net10`, un commit por punto):** S1, S2, S3, D1, P1, P2, P3 (medición primero), y los cambios de versión del plan.
