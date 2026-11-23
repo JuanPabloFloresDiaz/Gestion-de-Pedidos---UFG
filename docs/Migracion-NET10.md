@@ -107,13 +107,18 @@ Mejoras de buenas prácticas: ver [Auditoria-BuenasPracticas-NET10.md](Auditoria
 | 3 Framework | Hecho | `net10.0`; `LangVersion` ya no se fija (C# 14 por defecto) |
 | 4 Paquetes Microsoft | Hecho | 10.0.15; **Testcontainers.MsSql 3.10 → 4.17** (SSH.NET vulnerable) y 3 pruebas adaptadas |
 | 5 Swashbuckle | Pendiente | 6.9 funciona tal cual en .NET 10; subir a 10.x es opcional |
-| 6 Terceros | Pendiente | Solo si hay avisos; `dotnet list package --vulnerable` por correr |
+| 6 Terceros | Hecho (sin cambios) | `dotnet list package --vulnerable --include-transitive`: **0 vulnerables** en los 13 proyectos de `GestionPedidos.Linux.slnf` (23/11/2026). No se subió nada más |
 | 7 Pruebas (bUnit, xUnit) | Parcial | Compilan y pasan con las versiones actuales; bUnit 2.x es opcional |
 | 8 EF | Hecho | Modelo sin cambios; script SQL regenerado (equivalente) e incluye la migración `TelefonoSecundarioCliente`, que faltaba |
 | 9 Docker + E2E | Hecho | API en ASP.NET Core 10.0.15; **690 pruebas y E2E 11/11**; Swagger (62 rutas, esquema Bearer), imágenes de Garage, reportes PDF/Excel y correos (MailHog) verificados a mano |
-| 10 Documentación | Pendiente | README, `Tecnologia.md`, `Infraestructura.md`, `AGENTS.md`, `Principios.md` |
+| 10 Documentación | Hecho | README, `AGENTS.md`, `Tecnologia.md` (§5 reescrito), `Infraestructura.md`, `Analisis.md`, guías de `Equipo/`. Lo histórico de .NET 8 queda marcado; escritorio y móvil, anotados como pendientes de validar |
 | 11 Desktop (Windows) | Pendiente | Se prueba luego, en Windows |
 
 **Dos cambios de comportamiento de .NET 10 que no cubrían las pruebas unitarias** (solo el E2E los detectó):
 1. `_framework/blazor.web.js` ya no lo sirve `UseStaticFiles()`: hay que usar `MapStaticAssets()`.
 2. Un `dotnet restore` hecho solo con los `.csproj` (capa de caché del Dockerfile) no incluye los activos de Blazor del SDK 10; el `publish` de la Web no puede llevar `--no-restore`.
+
+**Escaneo de paquetes (23/11/2026):**
+* Vulnerables (directos y transitivos): ninguno. El `Desktop` no entra en el escaneo (MAUI no restaura en Linux); se escanea en Windows.
+* Obsoletos: `xunit` 2.9.2 (marcado *Legacy*, alternativa `xunit.v3`) en `Ui.Tests` y `Architecture.Tests`. Sin urgencia.
+* Desactualizados: los paquetes de Microsoft tienen 11.0.0 disponible (.NET 11, soporte corto): **se queda en 10.0.x a propósito**. Menores sin aplicar: `AWSSDK.S3` 4.x (salto de versión mayor), `Blazicons.Lucide` 3.2.13, `Microsoft.NET.Test.Sdk` 18.x, `xunit.runner.visualstudio` 4.x, `Swashbuckle` 11.x (la 6.9 funciona).
