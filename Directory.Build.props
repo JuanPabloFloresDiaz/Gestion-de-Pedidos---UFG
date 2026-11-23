@@ -9,6 +9,17 @@
     <!-- Comentarios XML obligatorios (requisito de la materia): un público sin comentar es error CS1591 -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Deterministic>true</Deterministic>
+    <!-- Analizadores de calidad: nivel "recomendado" del SDK actual, y el estilo del .editorconfig se exige al compilar.
+         Las reglas que solo sugieren rendimiento o nombres están bajadas a 'suggestion' en el .editorconfig (con su motivo). -->
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Auditoría de NuGet, incluidas las dependencias transitivas. Política: los avisos de severidad ALTA y CRÍTICA (NU1903, NU1904)
+         rompen la compilación; los de severidad baja y moderada (NU1901, NU1902) se muestran como advertencia, sin romperla. -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902</WarningsNotAsErrors>
     <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
 </Project>

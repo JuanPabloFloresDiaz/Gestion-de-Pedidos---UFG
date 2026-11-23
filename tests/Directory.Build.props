@@ -2,6 +2,9 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <PropertyGroup>
     <IsPackable>false</IsPackable>
+    <!-- En las pruebas solo rige el conjunto predeterminado de analizadores: las reglas "recomendadas" piden, por ejemplo, evitar guiones
+         bajos en los nombres (CA1707), y aquí los nombres de las pruebas los llevan a propósito. -->
+    <AnalysisMode>Default</AnalysisMode>
     <!-- Las pruebas no exigen comentarios XML -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
