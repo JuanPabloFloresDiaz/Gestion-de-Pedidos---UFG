@@ -37,7 +37,10 @@ public static class DependencyInjection
     public static IServiceCollection AddGestionPedidos(this IServiceCollection servicios, string conexion)
     {
         servicios.TryAddSingleton(TimeProvider.System);
-        servicios.AddDbContext<GestionPedidosDbContext>(o => o.UseSqlServer(conexion, sql => sql.EnableRetryOnFailure()));
+        // SplitQuery: una consulta que carga varias colecciones (producto→opciones, pedido→detalles, catálogo→subcategorías→filtros…) se divide en una
+        // consulta por colección en vez de un JOIN gigante (explosión cartesiana). Es el comportamiento recomendado por EF Core y evita su advertencia 20504.
+        servicios.AddDbContext<GestionPedidosDbContext>(o => o.UseSqlServer(conexion,
+            sql => sql.EnableRetryOnFailure().UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
         servicios.AddScoped<IUnitOfWork, UnitOfWork>();
         servicios.AddScoped<IUsuarioRepository, UsuarioRepository>();
