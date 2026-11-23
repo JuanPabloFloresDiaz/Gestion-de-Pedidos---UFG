@@ -4,7 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -e DOTNET_CLI_HOME=/tmp -e DOTNET_NOLOGO=1 \
-  -v "$PWD":/repo -w /repo mcr.microsoft.com/dotnet/sdk:8.0 bash -c '
+  -v "$PWD":/repo -w /repo mcr.microsoft.com/dotnet/sdk:10.0 bash -c '
     dotnet tool restore >/dev/null &&
     dotnet ef migrations script --idempotent \
       --project src/GestionPedidos.Infrastructure --startup-project src/GestionPedidos.Infrastructure \
