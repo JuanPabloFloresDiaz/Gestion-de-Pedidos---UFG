@@ -92,6 +92,7 @@ builder.Services.AddRateLimiter(o =>
         _ => new FixedWindowRateLimiterOptions { PermitLimit = registro, Window = TimeSpan.FromHours(1) }));
 });
 
+builder.Services.AddProxyConfiable(config);   // IP real detrás de un proxy (ver ConfiguracionProxy)
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
@@ -108,6 +109,9 @@ builder.Services.AddSwaggerGen(o =>
 var app = builder.Build();
 
 // --- Pipeline -------------------------------------------------------------------------------
+// Primero: así el límite de tasa, los registros y el resto ven la IP real de quien llama, no la del proxy.
+if (ConfiguracionProxy.Habilitado(config)) app.UseForwardedHeaders();
+
 app.UseExceptionHandler(errores => errores.Run(async ctx =>
 {
     var ex = ctx.Features.Get<IExceptionHandlerFeature>()?.Error;

@@ -90,6 +90,8 @@ services:
       Database__MigrarAlIniciar: "true"
       Database__SembrarDatosDeEjemplo: ${SEMBRAR_DATOS_EJEMPLO:-true}   # catálogo, clientes y pedidos de ejemplo (idempotente); false = base vacía
       Swagger__Habilitado: ${SWAGGER_HABILITADO:-true}
+      # Detrás de un proxy inverso (Traefik/Dokploy): true para leer la IP real de X-Forwarded-For (solo desde redes privadas).
+      ForwardedHeaders__Habilitado: ${PROXY_CONFIABLE:-false}
       Almacen__Endpoint: http://garage:3900
       Almacen__Bucket: ${GARAGE_BUCKET:-gp-imagenes}
       Almacen__AccessKey: ${GARAGE_ACCESS_KEY:-GK6a1f0c3e9b27d84a5e10c9f3}
