@@ -69,7 +69,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.15" />
     <ProjectReference Include="..\GestionPedidos.Ui\GestionPedidos.Ui.csproj" />
   </ItemGroup>
 </Project>

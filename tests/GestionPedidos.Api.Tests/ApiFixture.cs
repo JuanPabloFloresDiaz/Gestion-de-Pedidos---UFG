@@ -17,8 +17,7 @@ public sealed class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
     public const string ClaveAdminInicial = "Admin_Inicial_Pruebas_1";
     public const string ClaveAdmin = "Admin_Segura_Pruebas_2026";
 
-    private readonly MsSqlContainer _bd = new MsSqlBuilder()
-        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+    private readonly MsSqlContainer _bd = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest")
         .WithPassword("Pruebas_Password_123!")
         .Build();
 
