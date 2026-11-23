@@ -19,8 +19,11 @@ builder.Services.AddScoped<ISesionAlmacen, SesionAlmacenWeb>();
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment()) app.UseExceptionHandler("/error");
-app.UseStaticFiles();
 app.UseAntiforgery();
+
+// .NET 10: el script de Blazor (_framework/blazor.web.js) y los archivos estáticos de la Ui salen de MapStaticAssets (con compresión y caché);
+// UseStaticFiles ya no sirve _framework/blazor.web.js y la página quedaba sin interactividad.
+app.MapStaticAssets();
 
 app.MapGet("/health", () => Results.Ok(new { estado = "vivo" }));
 
