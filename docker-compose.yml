@@ -92,6 +92,7 @@ services:
       Swagger__Habilitado: ${SWAGGER_HABILITADO:-true}
       # Detrás de un proxy inverso (Traefik/Dokploy): true para leer la IP real de X-Forwarded-For (solo desde redes privadas).
       ForwardedHeaders__Habilitado: ${PROXY_CONFIABLE:-false}
+      DataProtection__Ruta: /keys   # claves de Data Protection en un volumen (sobreviven a los redespliegues)
       Almacen__Endpoint: http://garage:3900
       Almacen__Bucket: ${GARAGE_BUCKET:-gp-imagenes}
       Almacen__AccessKey: ${GARAGE_ACCESS_KEY:-GK6a1f0c3e9b27d84a5e10c9f3}
@@ -107,6 +108,8 @@ services:
       Correo__Remitente: ${CORREO_REMITENTE:-no-responder@novixtore.local}
       Correo__NombreRemitente: ${CORREO_NOMBRE_REMITENTE:-NoviXtore}
       Correo__UrlSitio: ${CORREO_URL_SITIO:-http://localhost:4392}   # dirección pública de la web: los correos enlazan a «Mis pedidos»
+    volumes:
+      - api-keys:/keys
     ports:
       - "${API_PORT:-4390}:8080"
     healthcheck:
@@ -127,6 +130,9 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       Api__BaseUrl: http://api:8080   # la web llama a la API por la red interna de Docker
+      DataProtection__Ruta: /keys   # sin esto, cada redespliegue cierra la sesión de todas las personas
+    volumes:
+      - web-keys:/keys
     ports:
       - "${WEB_PORT:-4392}:8080"
     healthcheck:
@@ -139,3 +145,5 @@ services:
 volumes:
   garage-data:
   sqlserver-data:
+  api-keys:
+  web-keys:

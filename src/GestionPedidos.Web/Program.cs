@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using GestionPedidos.Ui;
 using GestionPedidos.Ui.Comun.Sesion;
 using GestionPedidos.Web;
@@ -15,6 +16,11 @@ builder.Services.AddGestionPedidosUi(new UiOptions
     RequiereAdminAcceso = false,
 });
 builder.Services.AddScoped<ISesionAlmacen, SesionAlmacenWeb>();
+
+// Claves de Data Protection en una carpeta persistente (en Docker, un volumen): sin esto cada redespliegue las pierde y se invalida
+// lo que protegieron (en la web, la sesión guardada en ProtectedSessionStorage) y no se podrían usar varias réplicas.
+if (builder.Configuration["DataProtection:Ruta"] is { Length: > 0 } rutaClaves)
+    builder.Services.AddDataProtection().SetApplicationName("GestionPedidos.Web").PersistKeysToFileSystem(new DirectoryInfo(rutaClaves));
 
 var app = builder.Build();
 

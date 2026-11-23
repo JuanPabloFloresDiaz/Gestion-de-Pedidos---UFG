@@ -21,6 +21,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /app .
 ENV ASPNETCORE_HTTP_PORTS=8080
+# Carpeta de las claves de Data Protection (se monta como volumen: ver docker-compose.yml). Debe pertenecer al usuario 'app'.
+RUN mkdir -p /keys && chown app:app /keys
 USER app
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "GestionPedidos.Api.dll"]
