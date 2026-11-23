@@ -29,7 +29,7 @@ public sealed class CambiarClave
         if (usuario is null || !usuario.Activo)
             return Resultado.Falla(TipoError.NoAutenticado, CodigosError.CredencialesInvalidas, "Sesión no válida.");
 
-        if (!_hasher.Verificar(usuario.ClaveHash, solicitud.ClaveActual ?? ""))
+        if (_hasher.Verificar(usuario.ClaveHash, solicitud.ClaveActual ?? "") == ResultadoVerificacion.Incorrecta)
             return Resultado.Falla(TipoError.Validacion, CodigosError.ClaveInvalida, "La contraseña actual no es correcta.");
 
         var error = PoliticaClave.Validar(solicitud.ClaveNueva, usuario.NombreUsuario, usuario.Correo);

@@ -60,13 +60,24 @@ public interface IRegistroClienteRepository
     void Agregar(Cliente cliente);
 }
 
+/// <summary>Resultado de comprobar una contraseña contra su hash.</summary>
+public enum ResultadoVerificacion
+{
+    /// <summary>La contraseña no corresponde al hash.</summary>
+    Incorrecta,
+    /// <summary>La contraseña es correcta y el hash está al día.</summary>
+    Correcta,
+    /// <summary>La contraseña es correcta, pero el hash usa parámetros antiguos: conviene guardarlo de nuevo.</summary>
+    CorrectaConHashObsoleto,
+}
+
 /// <summary>Hash y verificación de contraseñas.</summary>
 public interface IHasherClave
 {
     /// <summary>Calcula el hash de una contraseña.</summary>
     string Hashear(string clave);
-    /// <summary>Verifica una contraseña contra su hash.</summary>
-    bool Verificar(string hash, string clave);
+    /// <summary>Verifica una contraseña contra su hash e indica si el hash debe actualizarse.</summary>
+    ResultadoVerificacion Verificar(string hash, string clave);
     /// <summary>Gasta el mismo tiempo que una verificación real (evita enumerar usuarios por tiempos).</summary>
     void GastarTiempo();
 }
