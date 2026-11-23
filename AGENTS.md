@@ -9,7 +9,7 @@ Reglas cortas para cualquier agente de IA que trabaje en este repositorio. La fu
 3. `docs/Arquitectura.md` y `docs/Estructura.md` (capas y dónde va cada archivo).
 
 ## Reglas
-- Stack: **.NET 8** (la migración a .NET 10 está prevista en `docs/Tecnologia.md §5`; no la hagas sin que se pida), **una única interfaz Blazor** (`GestionPedidos.Ui`, Razor Class Library) hospedada en **.NET MAUI Blazor Hybrid** (escritorio) y **Blazor Web App** (web) + API ASP.NET Core + EF Core + SQL Server. API, web y base de datos corren en **Docker** (usa `scripts/*-docker.sh`); el escritorio se compila y ejecuta en Windows. Editor: VS Code.
+- Stack: **.NET 10 (LTS)** (migración hecha; ver `docs/Migracion-NET10.md`; no subas de versión mayor sin que se pida), **una única interfaz Blazor** (`GestionPedidos.Ui`, Razor Class Library) hospedada en **.NET MAUI Blazor Hybrid** (escritorio) y **Blazor Web App** (web) + API ASP.NET Core + EF Core + SQL Server. API, web y base de datos corren en **Docker** (usa `scripts/*-docker.sh`); el escritorio se compila y ejecuta en Windows. Editor: VS Code.
 - **Nada exclusivo de un hospedaje dentro de `Ui`** (ni `HttpContext` ni APIs de MAUI); estilo solo con el tema y el kit de `Comun/Componentes`, sin colores, fuentes ni CSS sueltos.
 - Páginas `.razor` **sin lógica** (Página + ViewModel con evento `Cambiado`). Eventos con delegado `XEventHandler` + `XEventArgs` + `OnX` con `?.Invoke`, disparados **solo después** de confirmar la operación; todo `+=` con su `-=` en `Dispose`; repintar con `InvokeAsync(StateHasChanged)`.
 - **Comentarios XML en español** en todo tipo o miembro público; comentarios de "cómo/por qué" en lo no obvio (requisito de la materia).

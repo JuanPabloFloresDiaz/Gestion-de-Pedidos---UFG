@@ -15,7 +15,7 @@ Sistema de gestión de pedidos para la materia **Programación Orientada a Event
 
 ## Stack
 
-C# 12 / **.NET 8** · Blazor (Razor Class Library) · .NET MAUI Blazor Hybrid (escritorio) · Blazor Web App (web) · ASP.NET Core · Entity Framework Core · SQL Server 2022 · JWT · Docker · Playwright · VS Code.
+C# 14 / **.NET 10 (LTS)** · Blazor (Razor Class Library) · .NET MAUI Blazor Hybrid (escritorio) · Blazor Web App (web) · ASP.NET Core · Entity Framework Core · SQL Server 2022 · JWT · Docker · Playwright · VS Code.
 
 ## Documentación (`docs/`)
 
@@ -53,6 +53,6 @@ Reglas para agentes de IA: [AGENTS.md](AGENTS.md).
 | SQL Server | `localhost,4391` |
 | Administrador inicial | `admin` / `ADMIN_INITIAL_PASSWORD` de `.env` (pide cambiarla al ingresar) |
 
-**Escritorio** (Windows, no corre en Docker): con **Visual Studio 2022** sigan el [paso a paso](docs/Equipo/PrimerosPasos.md#41-paso-a-paso-con-visual-studio-2022-o-2026); desde consola: `dotnet run -f net8.0-windows10.0.19041.0 --project src/GestionPedidos.Desktop`. **Base de datos**: [cómo conectarse](docs/Equipo/PrimerosPasos.md#21-conectarse-a-la-base-de-datos-dbeaver-azure-data-studio-ssms).
+**Escritorio** (Windows, no corre en Docker): con **Visual Studio 2022** sigan el [paso a paso](docs/Equipo/PrimerosPasos.md#41-paso-a-paso-con-visual-studio-2022-o-2026); desde consola: `dotnet run -f net10.0-windows10.0.19041.0 --project src/GestionPedidos.Desktop`. **Base de datos**: [cómo conectarse](docs/Equipo/PrimerosPasos.md#21-conectarse-a-la-base-de-datos-dbeaver-azure-data-studio-ssms).
 
 **Script SQL con todas las tablas**: [`scripts/sql/GestionPedidos_esquema.sql`](scripts/sql/GestionPedidos_esquema.sql).

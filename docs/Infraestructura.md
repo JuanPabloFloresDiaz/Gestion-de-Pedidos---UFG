@@ -2,7 +2,7 @@
 
 ## 1. Principio: API, Web y Base de Datos en Docker
 
-La **API, la web y SQL Server** corren en contenedores; el único requisito para ellos es **Docker (Desktop o Engine) con Compose v2**. El **hospedaje de escritorio (.NET MAUI Blazor Hybrid)** se desarrolla y ejecuta en **Windows** con VS Code, el SDK de .NET 8 y la carga de trabajo `maui` (§5), porque MAUI para Windows no se compila en contenedores Linux.
+La **API, la web y SQL Server** corren en contenedores; el único requisito para ellos es **Docker (Desktop o Engine) con Compose v2**. El **hospedaje de escritorio (.NET MAUI Blazor Hybrid)** se desarrolla y ejecuta en **Windows** con VS Code, el SDK de .NET 10 y la carga de trabajo `maui` (§5), porque MAUI para Windows no se compila en contenedores Linux.
 
 ## 2. Topología Local (`docker-compose.yml`)
 
@@ -19,7 +19,7 @@ La **API, la web y SQL Server** corren en contenedores; el único requisito para
 |---|---|---|---|
 | `sqlserver` | `mcr.microsoft.com/mssql/server:2022-latest` | `127.0.0.1:4391 → 1433` | Volumen nombrado, `healthcheck` con `sqlcmd`, `ACCEPT_EULA=Y`, `MSSQL_PID` y `MSSQL_MEMORY_LIMIT_MB` (1536 por defecto) |
 | `db-init` | misma imagen de SQL Server | — | **Un solo uso**: crea la base `GestionPedidos` y los usuarios `pedidos_migrator` y `pedidos_app` ([BaseDatos.md §7](BaseDatos.md)) |
-| `api` | `src/GestionPedidos.Api/Dockerfile` (`sdk:8.0` → `aspnet:8.0`) | `4390 → 8080` | Espera a `db-init`; al arrancar aplica las migraciones con `pedidos_migrator` y siembra al administrador; conecta con `pedidos_app` |
+| `api` | `src/GestionPedidos.Api/Dockerfile` (`sdk:10.0` → `aspnet:10.0`) | `4390 → 8080` | Espera a `db-init`; al arrancar aplica las migraciones con `pedidos_migrator` y siembra al administrador; conecta con `pedidos_app` |
 | `garage` | `dxflrs/garage:v2.5.0` | `127.0.0.1:4393 → 3900` (API S3) | Almacén de objetos compatible con S3 para las imágenes de productos y categorías; un solo nodo; volumen `garage-data`; crea solo el bucket y la llave (`--default-bucket`); *healthcheck* con `/garage status`. La `api` espera a que esté sano ([CatalogoProductos.md §9](Especificaciones/CatalogoProductos.md)) |
 | `mailhog` | `mailhog/mailhog:v1.0.1` | `127.0.0.1:4394 → 8025` (bandeja web) | Servidor SMTP de pruebas: atrapa los correos de la API (SMTP interno `mailhog:1025`) y los muestra en <http://localhost:4394>; **ninguno sale a Internet**. Para enviar correos reales se cambian las variables `CORREO_*` ([Correos.md](Especificaciones/Correos.md)) |
 | `web` | `src/GestionPedidos.Web/Dockerfile` | `4392 → 8080` | Blazor Web App con la `Ui`; llama a `api` por la red interna (`http://api:8080`) |
@@ -36,7 +36,7 @@ La **API, la web y SQL Server** corren en contenedores; el único requisito para
 |---|---|
 | `scripts/up.sh [--limpio]` | Crea `.env` si falta, avisa si un puerto está ocupado, levanta SQL Server + API + web y espera a que estén sanos; `--limpio` borra antes los datos |
 | `scripts/down.sh [--datos]` | Apaga el entorno; `--datos` también borra la base |
-| `scripts/dotnet-docker.sh <args>` | `dotnet <args>` en el SDK 8 en Docker con caché de NuGet (ej. `build GestionPedidos.Linux.slnf`) |
+| `scripts/dotnet-docker.sh <args>` | `dotnet <args>` en el SDK 10 en Docker con caché de NuGet (ej. `build GestionPedidos.Linux.slnf`) |
 | `scripts/ef-docker.sh <args>` | Comandos de EF Core en Docker (ej. `migrations add NombreDeLaMigracion`) |
 | `scripts/test-docker.sh` | Todas las pruebas (unitarias, integración con SQL Server real, arquitectura) |
 | `scripts/e2e-docker.sh` | Pruebas de extremo a extremo con Playwright; guarda capturas en `e2e/capturas/` |
@@ -64,12 +64,12 @@ La **API, la web y SQL Server** corren en contenedores; el único requisito para
 ### 4.4 Otros puntos
 * **Respaldos**: `BACKUP DATABASE` y prueba de restauración ([RespaldoYEntrega.md](Especificaciones/RespaldoYEntrega.md)).
 * **Licencia**: la edición *Developer* no es para producción ([BaseLegal.md](BaseLegal.md)).
-* **Soporte de .NET 8** termina el 10/11/2026 ([Tecnologia.md](Tecnologia.md)).
+* **Soporte de .NET 10 (LTS)**: hasta noviembre de 2028 ([Tecnologia.md](Tecnologia.md)). El soporte de .NET 8 terminó el 10/11/2026.
 
 ## 5. Hospedaje de Escritorio (MAUI Blazor Hybrid)
 
-* Se desarrolla y ejecuta en **Windows 10/11** con **VS Code** (C# Dev Kit + extensión .NET MAUI), el **SDK de .NET 8** y `dotnet workload install maui`: `dotnet build -f net8.0-windows10.0.19041.0 src/GestionPedidos.Desktop` y `dotnet run -f net8.0-windows10.0.19041.0 --project src/GestionPedidos.Desktop`. **La experiencia completa con VS Code se valida en la Fase 0** ([Tecnologia.md §3.1](Tecnologia.md)).
-* Para generar el ejecutable: `dotnet publish -f net8.0-windows10.0.19041.0 -c Release` en Windows (con empaquetado según elija el equipo en la Fase 5).
+* Se desarrolla y ejecuta en **Windows 10/11** con **VS Code** (C# Dev Kit + extensión .NET MAUI), el **SDK de .NET 10** y `dotnet workload install maui` (**pendiente de validar en Windows tras la migración**): `dotnet build -f net10.0-windows10.0.19041.0 src/GestionPedidos.Desktop` y `dotnet run -f net10.0-windows10.0.19041.0 --project src/GestionPedidos.Desktop`. **La experiencia completa con VS Code se valida en la Fase 0** ([Tecnologia.md §3.1](Tecnologia.md)).
+* Para generar el ejecutable: `dotnet publish -f net10.0-windows10.0.19041.0 -c Release` en Windows (con empaquetado según elija el equipo en la Fase 5).
 * Configura la URL de la API en `appsettings.json` (`http://localhost:4390` en local). **Nunca** se conecta a SQL Server directamente.
 * Como la `Ui` es la misma, casi todo se desarrolla y se prueba en el navegador con el hospedaje web (Docker); el escritorio se verifica antes de cada entrega.
 * **Defensa (12/11/2026)**: todo **local** —API, web y base de datos en Docker, y el `.exe` en la misma máquina Windows—, sin depender de internet. Se ensaya el recorrido completo con antelación.

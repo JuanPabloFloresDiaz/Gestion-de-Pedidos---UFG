@@ -19,6 +19,8 @@
 
 ## 2. Fases
 
+> Nota: terminada la materia, el proyecto migró a **.NET 10** ([Migracion-NET10.md](Migracion-NET10.md)). Las menciones a .NET 8 dentro de las fases describen el estado de esa época.
+
 ### Fase 0 — Esqueleto, Docker, interfaz y pruebas ✅
 - [x] Solución `.sln` (+ filtro `GestionPedidos.Linux.slnf` sin `Desktop`), `global.json` (SDK 8.0), `Directory.Build.props` (nullable, advertencias como errores, **XML docs obligatorios**), `Directory.Packages.props`, `.editorconfig`.
 - [x] Proyectos por capa con las referencias de [Arquitectura.md §2](Arquitectura.md), verificadas por `Architecture.Tests`.

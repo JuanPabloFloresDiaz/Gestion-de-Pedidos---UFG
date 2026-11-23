@@ -1,6 +1,6 @@
 <Project>
   <!-- Propiedades comunes de TODOS los proyectos. La versión de .NET vive solo aquí y en global.json
-       (así migrar a .NET 10 es cambiar estos archivos; ver docs/Tecnologia.md §5). -->
+       (así migrar de versión es cambiar estos archivos; ver docs/Migracion-NET10.md). -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>

@@ -89,12 +89,12 @@ El enunciado es breve; estas interpretaciones fueron **confirmadas por el equipo
 
 | # | Restricción | Origen |
 |---|---|---|
-| RT-01 | Plataforma **.NET 8** (C# 12) como **máximo**: el ingeniero no permite .NET 9 ni .NET 10 | Decisión del ingeniero |
+| RT-01 | Plataforma **.NET 8** (C# 12) como **máximo**: el ingeniero no permite .NET 9 ni .NET 10. *(Requisito de la materia, histórico: terminada la materia el proyecto se migró a .NET 10, ver [Migracion-NET10.md](Migracion-NET10.md).)* | Decisión del ingeniero |
 | RT-02 | **Interfaz Blazor única** (`Ui`) hospedada en **.NET MAUI Blazor Hybrid** (escritorio, Windows) y en **Blazor Web App** (web); administración con **pestañas de documentos** (interfaz de múltiples documentos) | El ingeniero aceptó tecnología libre de la familia .NET; decisión del equipo |
 | RT-10 | **Delegados y eventos de C#** para las notificaciones, además de los eventos propios de Blazor | Material del ingeniero |
 | RT-03 | **API .NET** con **Entity Framework Core** entre el cliente y la base de datos (permite alojarla en un servidor y reutilizar el backend) | Decisión del equipo, **aprobada por el ingeniero** (la única condición es que sean tecnologías de la familia .NET) |
 | RT-04 | Base de datos **SQL Server** | Enunciado |
-| RT-05 | **API y base de datos en Docker**; el cliente de escritorio se desarrolla y ejecuta en Windows con VS Code y el SDK de .NET 8 ([Infraestructura.md](Infraestructura.md)) | Decisión del equipo |
+| RT-05 | **API y base de datos en Docker**; el cliente de escritorio se desarrolla y ejecuta en Windows con VS Code y el SDK de .NET (8 durante la materia, hoy 10) ([Infraestructura.md](Infraestructura.md)) | Decisión del equipo |
 | RT-06 | **Delegados y eventos** como mecanismo de notificación | Enunciado y material de apoyo |
 | RT-07 | Código limpio y principios de diseño ([Principios.md](Principios.md)) | Decisión del equipo |
 | RT-08 | **Spec Driven Documentation**: se especifica antes de implementar | Convención del ecosistema |
