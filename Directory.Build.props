@@ -2,8 +2,7 @@
   <!-- Propiedades comunes de TODOS los proyectos. La versión de .NET vive solo aquí y en global.json
        (así migrar a .NET 10 es cambiar estos archivos; ver docs/Tecnologia.md §5). -->
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>12.0</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

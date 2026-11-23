@@ -2,16 +2,16 @@
   <!--
     Hospedaje NATIVO: .NET MAUI Blazor Hybrid. Es una capa delgada: un BlazorWebView que carga la interfaz compartida
     (GestionPedidos.Ui). Tiene dos destinos:
-      * ESCRITORIO (Windows):  dotnet build -f net8.0-windows10.0.19041.0   |   dotnet run -f net8.0-windows10.0.19041.0
-      * CELULAR (Android):     dotnet build -f net8.0-android -t:Run        (ver docs/Equipo/PruebaMovil.md)
+      * ESCRITORIO (Windows):  dotnet build -f net10.0-windows10.0.19041.0   |   dotnet run -f net10.0-windows10.0.19041.0
+      * CELULAR (Android):     dotnet build -f net10.0-android -t:Run        (ver docs/Equipo/PruebaMovil.md)
     Windows solo se ofrece cuando se compila en Windows. Requisitos: SDK de .NET 8 y la carga de trabajo de MAUI
     (dotnet workload install maui, o maui-android si solo se quiere el celular). No corre en Docker.
   -->
   <PropertyGroup>
     <!-- Sustituyen al TargetFramework común de Directory.Build.props: se vacía el singular para que valga la lista -->
     <TargetFramework></TargetFramework>
-    <TargetFrameworks>net8.0-android</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks>net10.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>GestionPedidos.Desktop</RootNamespace>
     <UseMaui>true</UseMaui>
