@@ -1,3 +1,4 @@
+using System.Globalization;
 using GestionPedidos.Contracts;
 using GestionPedidos.Ui.Comun.Api;
 using Microsoft.JSInterop;
@@ -56,7 +57,7 @@ public sealed class ReportesService
         string? parametroOpcion, int? opcionElegida, string acento)
     {
         var filtros = new Dictionary<string, string?>(filtrosDePantalla ?? new Dictionary<string, string?>());
-        if (parametroOpcion is not null && opcionElegida is { } id) filtros[parametroOpcion] = id.ToString();
+        if (parametroOpcion is not null && opcionElegida is { } id) filtros[parametroOpcion] = id.ToString(CultureInfo.InvariantCulture);
         filtros["acento"] = acento;
         return filtros;
     }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using GestionPedidos.Contracts;
 using GestionPedidos.Ui.Comun;
 
@@ -32,8 +33,8 @@ public sealed class HistorialViewModel : ViewModelBase
     /// <summary>Filtros que se envían al exportar el reporte «Actividades por usuario» (el rango de fechas que se está viendo).</summary>
     public IReadOnlyDictionary<string, string?> FiltrosDeReporte => new Dictionary<string, string?>
     {
-        ["desde"] = Desde?.ToString("yyyy-MM-dd"),
-        ["hasta"] = Hasta?.ToString("yyyy-MM-dd"),
+        ["desde"] = Desde?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+        ["hasta"] = Hasta?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
     };
 
     /// <summary>Mensaje de error de las fechas, o <c>null</c> si son válidas.</summary>

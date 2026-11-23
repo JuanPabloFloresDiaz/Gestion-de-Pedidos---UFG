@@ -25,7 +25,7 @@ public sealed class AlmacenImagenesEnMemoria : IAlmacenImagenes
     /// <inheritdoc/>
     public Task<ImagenAlmacenada?> ObtenerAsync(string clave, CancellationToken ct) =>
         Task.FromResult(_objetos.TryGetValue(clave, out var o)
-            ? new ImagenAlmacenada(new MemoryStream(o.Datos), o.Tipo, o.Datos.Length, Convert.ToHexString(System.Security.Cryptography.MD5.HashData(o.Datos)), o.Fecha)
+            ? new ImagenAlmacenada(new MemoryStream(o.Datos), o.Tipo, o.Datos.Length, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(o.Datos)), o.Fecha)
             : null);
 
     /// <inheritdoc/>

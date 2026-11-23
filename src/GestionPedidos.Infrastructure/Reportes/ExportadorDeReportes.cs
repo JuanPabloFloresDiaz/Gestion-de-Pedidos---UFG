@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
@@ -16,6 +17,7 @@ namespace GestionPedidos.Infrastructure.Reportes;
 public sealed class ExportadorDeReportes : IExportadorDeReportes
 {
     private static readonly CultureInfo Cultura = CultureInfo.GetCultureInfo("es-SV");
+    private static readonly SearchValues<char> CaracteresQueExigenComillas = SearchValues.Create(",\"\n\r");   // un valor CSV con alguno va entre comillas
     private static readonly Lazy<byte[]> Logo = new(CargarLogo);   // se lee del ensamblado una sola vez
 
     static ExportadorDeReportes() => QuestPDF.Settings.License = LicenseType.Community;   // licencia gratuita para uso educativo y proyectos pequeños
@@ -113,7 +115,7 @@ public sealed class ExportadorDeReportes : IExportadorDeReportes
     private static string Campo(string valor, bool numerico)
     {
         if (!numerico && valor.Length > 0 && "=+-@\t\r".Contains(valor[0])) valor = "'" + valor;
-        return valor.IndexOfAny(new[] { ',', '"', '\n', '\r' }) >= 0 ? "\"" + valor.Replace("\"", "\"\"") + "\"" : valor;
+        return valor.AsSpan().IndexOfAny(CaracteresQueExigenComillas) >= 0 ? "\"" + valor.Replace("\"", "\"\"") + "\"" : valor;
     }
 
     // ---------------- Excel ----------------
