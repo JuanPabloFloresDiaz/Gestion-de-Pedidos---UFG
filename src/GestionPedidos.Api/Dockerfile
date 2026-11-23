@@ -2,7 +2,7 @@
 #   docker build -f src/GestionPedidos.Api/Dockerfile .
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-COPY global.json Directory.Build.props Directory.Packages.props ./
+COPY global.json Directory.Build.props Directory.Packages.props .editorconfig ./
 COPY seed ./seed
 COPY src/GestionPedidos.Domain/*.csproj src/GestionPedidos.Domain/
 COPY src/GestionPedidos.Contracts/*.csproj src/GestionPedidos.Contracts/

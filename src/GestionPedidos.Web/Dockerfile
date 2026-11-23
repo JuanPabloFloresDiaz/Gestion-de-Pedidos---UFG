@@ -2,7 +2,7 @@
 #   docker build -f src/GestionPedidos.Web/Dockerfile .
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-COPY global.json Directory.Build.props Directory.Packages.props ./
+COPY global.json Directory.Build.props Directory.Packages.props .editorconfig ./
 COPY src/GestionPedidos.Contracts/*.csproj src/GestionPedidos.Contracts/
 COPY src/GestionPedidos.Ui/*.csproj src/GestionPedidos.Ui/
 COPY src/GestionPedidos.Web/*.csproj src/GestionPedidos.Web/
