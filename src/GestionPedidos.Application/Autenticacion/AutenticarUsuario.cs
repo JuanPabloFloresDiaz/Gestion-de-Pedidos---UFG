@@ -54,7 +54,8 @@ public sealed class AutenticarUsuario
             return Fallo();
         }
 
-        if (!_hasher.Verificar(usuario.ClaveHash, solicitud.Clave ?? ""))
+        var verificacion = _hasher.Verificar(usuario.ClaveHash, solicitud.Clave ?? "");
+        if (verificacion == ResultadoVerificacion.Incorrecta)
         {
             usuario.RegistrarFalloAcceso(ahora);
             await _uow.GuardarAsync(ct);
@@ -64,6 +65,10 @@ public sealed class AutenticarUsuario
         }
 
         usuario.RegistrarAccesoExitoso(ahora);
+        // Si el hash se calculó con parámetros antiguos, se vuelve a guardar con los vigentes (ya conocemos la clave en claro).
+        // Se conserva la obligación de cambiarla: aquí no se cambia la contraseña, solo su hash.
+        if (verificacion == ResultadoVerificacion.CorrectaConHashObsoleto)
+            usuario.CambiarClave(_hasher.Hashear(solicitud.Clave!), usuario.DebeCambiarClave);
         await _uow.GuardarAsync(ct);
 
         var permisos = await _roles.CodigosPermisosAsync(usuario.RolId, ct);

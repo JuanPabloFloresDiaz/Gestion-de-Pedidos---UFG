@@ -113,7 +113,12 @@ internal sealed class HasherFake : IHasherClave
 {
     public int TiemposGastados { get; private set; }
     public string Hashear(string clave) => "hash:" + clave;
-    public bool Verificar(string hash, string clave) => hash == "hash:" + clave;
+    /// <summary>Un hash que empieza por este prefijo se considera correcto pero obsoleto (como uno con menos iteraciones).</summary>
+    public const string PrefijoObsoleto = "viejo:";
+    public ResultadoVerificacion Verificar(string hash, string clave) =>
+        hash == "hash:" + clave ? ResultadoVerificacion.Correcta
+        : hash == PrefijoObsoleto + clave ? ResultadoVerificacion.CorrectaConHashObsoleto
+        : ResultadoVerificacion.Incorrecta;
     public void GastarTiempo() => TiemposGastados++;
 }
 

@@ -21,8 +21,6 @@ END;
 GO
 
 BEGIN TRANSACTION;
-GO
-
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
     WHERE [MigrationId] = N'20261025225147_CrearEsquemaInicial'
@@ -35,7 +33,6 @@ BEGIN
         CONSTRAINT [PK_Departamentos] PRIMARY KEY ([Id])
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -49,7 +46,6 @@ BEGIN
         CONSTRAINT [PK_Permisos] PRIMARY KEY ([Id])
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -73,7 +69,6 @@ BEGIN
         CONSTRAINT [CK_Productos_PrecioVenta] CHECK ([PrecioVenta] >= 0)
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -87,7 +82,6 @@ BEGIN
         CONSTRAINT [PK_Roles] PRIMARY KEY ([Id])
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -103,7 +97,6 @@ BEGIN
         CONSTRAINT [FK_Ciudades_Departamentos_DepartamentoId] FOREIGN KEY ([DepartamentoId]) REFERENCES [Departamentos] ([Id]) ON DELETE NO ACTION
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -118,7 +111,6 @@ BEGIN
         CONSTRAINT [FK_RolesPermisos_Roles_RolId] FOREIGN KEY ([RolId]) REFERENCES [Roles] ([Id]) ON DELETE CASCADE
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -144,7 +136,6 @@ BEGIN
         CONSTRAINT [FK_Usuarios_Roles_RolId] FOREIGN KEY ([RolId]) REFERENCES [Roles] ([Id]) ON DELETE NO ACTION
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -163,7 +154,6 @@ BEGIN
         CONSTRAINT [FK_Actividades_Usuarios_UsuarioId] FOREIGN KEY ([UsuarioId]) REFERENCES [Usuarios] ([Id]) ON DELETE NO ACTION
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -188,7 +178,6 @@ BEGIN
         CONSTRAINT [FK_Clientes_Usuarios_UsuarioId] FOREIGN KEY ([UsuarioId]) REFERENCES [Usuarios] ([Id]) ON DELETE NO ACTION
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -215,7 +204,6 @@ BEGIN
         CONSTRAINT [FK_Pedidos_Usuarios_UsuarioId] FOREIGN KEY ([UsuarioId]) REFERENCES [Usuarios] ([Id]) ON DELETE NO ACTION
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -236,7 +224,6 @@ BEGIN
         CONSTRAINT [FK_DetallesPedido_Productos_ProductoId] FOREIGN KEY ([ProductoId]) REFERENCES [Productos] ([Id]) ON DELETE NO ACTION
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -263,7 +250,6 @@ BEGIN
     IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Codigo', N'Nombre') AND [object_id] = OBJECT_ID(N'[Departamentos]'))
         SET IDENTITY_INSERT [Departamentos] OFF;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -301,7 +287,6 @@ BEGIN
     IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Codigo', N'Descripcion') AND [object_id] = OBJECT_ID(N'[Permisos]'))
         SET IDENTITY_INSERT [Permisos] OFF;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -317,7 +302,6 @@ BEGIN
     IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Descripcion', N'Nombre') AND [object_id] = OBJECT_ID(N'[Roles]'))
         SET IDENTITY_INSERT [Roles] OFF;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -598,7 +582,6 @@ BEGIN
     IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'DepartamentoId', N'Municipio', N'Nombre') AND [object_id] = OBJECT_ID(N'[Ciudades]'))
         SET IDENTITY_INSERT [Ciudades] OFF;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -647,7 +630,6 @@ BEGIN
     IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'PermisoId', N'RolId') AND [object_id] = OBJECT_ID(N'[RolesPermisos]'))
         SET IDENTITY_INSERT [RolesPermisos] OFF;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -656,7 +638,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_Actividades_Fecha] ON [Actividades] ([Fecha]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -665,7 +646,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_Actividades_UsuarioId] ON [Actividades] ([UsuarioId]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -674,7 +654,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX [IX_Ciudades_DepartamentoId_Nombre] ON [Ciudades] ([DepartamentoId], [Nombre]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -683,7 +662,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_Clientes_Activo] ON [Clientes] ([Activo]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -692,7 +670,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_Clientes_Apellidos_Nombres] ON [Clientes] ([Apellidos], [Nombres]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -701,7 +678,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_Clientes_CiudadId] ON [Clientes] ([CiudadId]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -710,7 +686,6 @@ IF NOT EXISTS (
 BEGIN
     EXEC(N'CREATE UNIQUE INDEX [IX_Clientes_Correo] ON [Clientes] ([Correo]) WHERE [Correo] IS NOT NULL');
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -719,7 +694,6 @@ IF NOT EXISTS (
 BEGIN
     EXEC(N'CREATE UNIQUE INDEX [IX_Clientes_UsuarioId] ON [Clientes] ([UsuarioId]) WHERE [UsuarioId] IS NOT NULL');
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -728,7 +702,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX [IX_Departamentos_Codigo] ON [Departamentos] ([Codigo]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -737,7 +710,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX [IX_Departamentos_Nombre] ON [Departamentos] ([Nombre]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -746,7 +718,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX [IX_DetallesPedido_PedidoId_ProductoId] ON [DetallesPedido] ([PedidoId], [ProductoId]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -755,7 +726,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_DetallesPedido_ProductoId] ON [DetallesPedido] ([ProductoId]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -764,7 +734,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_Pedidos_ClienteId] ON [Pedidos] ([ClienteId]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -773,7 +742,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_Pedidos_Estado_FechaPedido] ON [Pedidos] ([Estado], [FechaPedido]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -782,7 +750,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_Pedidos_FechaEntrega] ON [Pedidos] ([FechaEntrega]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -791,7 +758,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_Pedidos_UsuarioId] ON [Pedidos] ([UsuarioId]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -800,7 +766,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX [IX_Permisos_Codigo] ON [Permisos] ([Codigo]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -809,7 +774,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_Productos_Activo] ON [Productos] ([Activo]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -818,7 +782,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_Productos_Nombre] ON [Productos] ([Nombre]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -827,7 +790,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_Productos_PrecioVenta] ON [Productos] ([PrecioVenta]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -836,7 +798,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX [IX_Roles_Nombre] ON [Roles] ([Nombre]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -845,7 +806,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_RolesPermisos_PermisoId] ON [RolesPermisos] ([PermisoId]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -854,7 +814,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX [IX_Usuarios_Correo] ON [Usuarios] ([Correo]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -863,7 +822,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX [IX_Usuarios_NombreUsuario] ON [Usuarios] ([NombreUsuario]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -872,7 +830,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_Usuarios_RolId] ON [Usuarios] ([RolId]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -880,16 +837,13 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261025225147_CrearEsquemaInicial', N'8.0.11');
+    VALUES (N'20261025225147_CrearEsquemaInicial', N'10.0.15');
 END;
-GO
 
 COMMIT;
 GO
 
 BEGIN TRANSACTION;
-GO
-
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
     WHERE [MigrationId] = N'20261025225217_AgregarBusquedaDePedidosYPermisosDeBD'
@@ -907,7 +861,6 @@ BEGIN
     JOIN dbo.Clientes c ON c.Id = p.ClienteId
     JOIN dbo.Usuarios u ON u.Id = p.UsuarioId;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -963,7 +916,6 @@ BEGIN
         OFFSET (@Pagina - 1) * @TamanoPagina ROWS FETCH NEXT @TamanoPagina ROWS ONLY;
     END;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -979,7 +931,6 @@ BEGIN
         DENY UPDATE, DELETE ON OBJECT::dbo.Actividades TO pedidos_app;
     END
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -987,16 +938,13 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261025225217_AgregarBusquedaDePedidosYPermisosDeBD', N'8.0.11');
+    VALUES (N'20261025225217_AgregarBusquedaDePedidosYPermisosDeBD', N'10.0.15');
 END;
-GO
 
 COMMIT;
 GO
 
 BEGIN TRANSACTION;
-GO
-
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
     WHERE [MigrationId] = N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion'
@@ -1004,7 +952,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Actividades] DROP CONSTRAINT [FK_Actividades_Usuarios_UsuarioId];
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1013,7 +960,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Clientes] DROP CONSTRAINT [FK_Clientes_Usuarios_UsuarioId];
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1022,7 +968,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Usuarios] ADD [EliminadoEn] datetimeoffset(0) NULL;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1031,7 +976,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Productos] ADD [EliminadoEn] datetimeoffset(0) NULL;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1040,7 +984,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Pedidos] ADD [EliminadoEn] datetimeoffset(0) NULL;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1049,7 +992,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Clientes] ADD [EliminadoEn] datetimeoffset(0) NULL;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1065,7 +1007,6 @@ BEGIN
     IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Codigo', N'Descripcion') AND [object_id] = OBJECT_ID(N'[Permisos]'))
         SET IDENTITY_INSERT [Permisos] OFF;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1082,7 +1023,6 @@ BEGIN
     IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'PermisoId', N'RolId') AND [object_id] = OBJECT_ID(N'[RolesPermisos]'))
         SET IDENTITY_INSERT [RolesPermisos] OFF;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1091,7 +1031,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Actividades] ADD CONSTRAINT [FK_Actividades_Usuarios_UsuarioId] FOREIGN KEY ([UsuarioId]) REFERENCES [Usuarios] ([Id]) ON DELETE SET NULL;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1100,7 +1039,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Clientes] ADD CONSTRAINT [FK_Clientes_Usuarios_UsuarioId] FOREIGN KEY ([UsuarioId]) REFERENCES [Usuarios] ([Id]) ON DELETE SET NULL;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1108,16 +1046,13 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion', N'8.0.11');
+    VALUES (N'20261026043346_AgregarEliminadoEnYPermisosDeAdministracion', N'10.0.15');
 END;
-GO
 
 COMMIT;
 GO
 
 BEGIN TRANSACTION;
-GO
-
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
     WHERE [MigrationId] = N'20261026142622_AgregarCatalogoDeProductos'
@@ -1125,7 +1060,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Productos] ADD [SubcategoriaId] int NULL;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1144,7 +1078,6 @@ BEGIN
         CONSTRAINT [PK_Categorias] PRIMARY KEY ([Id])
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1165,7 +1098,6 @@ BEGIN
         CONSTRAINT [FK_Subcategorias_Categorias_CategoriaId] FOREIGN KEY ([CategoriaId]) REFERENCES [Categorias] ([Id]) ON DELETE NO ACTION
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1185,7 +1117,6 @@ BEGIN
         CONSTRAINT [FK_Filtros_Subcategorias_SubcategoriaId] FOREIGN KEY ([SubcategoriaId]) REFERENCES [Subcategorias] ([Id]) ON DELETE NO ACTION
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1206,7 +1137,6 @@ BEGIN
         CONSTRAINT [FK_OpcionesFiltro_Filtros_FiltroId] FOREIGN KEY ([FiltroId]) REFERENCES [Filtros] ([Id]) ON DELETE NO ACTION
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1223,7 +1153,6 @@ BEGIN
         CONSTRAINT [FK_ProductosOpciones_Productos_ProductoId] FOREIGN KEY ([ProductoId]) REFERENCES [Productos] ([Id]) ON DELETE CASCADE
     );
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1241,7 +1170,6 @@ BEGIN
     IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Codigo', N'Descripcion') AND [object_id] = OBJECT_ID(N'[Permisos]'))
         SET IDENTITY_INSERT [Permisos] OFF;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1260,7 +1188,6 @@ BEGIN
     IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'PermisoId', N'RolId') AND [object_id] = OBJECT_ID(N'[RolesPermisos]'))
         SET IDENTITY_INSERT [RolesPermisos] OFF;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1269,7 +1196,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_Productos_SubcategoriaId] ON [Productos] ([SubcategoriaId]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1278,7 +1204,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX [IX_Categorias_Nombre] ON [Categorias] ([Nombre]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1287,7 +1212,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX [IX_Filtros_SubcategoriaId_Nombre] ON [Filtros] ([SubcategoriaId], [Nombre]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1296,7 +1220,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX [IX_OpcionesFiltro_FiltroId_Valor] ON [OpcionesFiltro] ([FiltroId], [Valor]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1305,7 +1228,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_ProductosOpciones_FiltroId] ON [ProductosOpciones] ([FiltroId]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1314,7 +1236,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_ProductosOpciones_OpcionFiltroId] ON [ProductosOpciones] ([OpcionFiltroId]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1323,7 +1244,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX [IX_ProductosOpciones_OpcionFiltroId_FiltroId] ON [ProductosOpciones] ([OpcionFiltroId], [FiltroId]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1332,7 +1252,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX [IX_Subcategorias_CategoriaId_Nombre] ON [Subcategorias] ([CategoriaId], [Nombre]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1341,7 +1260,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Productos] ADD CONSTRAINT [FK_Productos_Subcategorias_SubcategoriaId] FOREIGN KEY ([SubcategoriaId]) REFERENCES [Subcategorias] ([Id]) ON DELETE NO ACTION;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1349,33 +1267,28 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261026142622_AgregarCatalogoDeProductos', N'8.0.11');
+    VALUES (N'20261026142622_AgregarCatalogoDeProductos', N'10.0.15');
 END;
-GO
 
 COMMIT;
 GO
 
 BEGIN TRANSACTION;
-GO
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
+)
+BEGIN
+    CREATE SEQUENCE [SecuenciaCategorias] AS int START WITH 1000 INCREMENT BY 1 NO CYCLE;
+END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
     WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
 )
 BEGIN
-    CREATE SEQUENCE [SecuenciaCategorias] AS int START WITH 1000 INCREMENT BY 1 NO MINVALUE NO MAXVALUE NO CYCLE;
+    CREATE SEQUENCE [SecuenciaProductos] AS int START WITH 1000 INCREMENT BY 1 NO CYCLE;
 END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
-)
-BEGIN
-    CREATE SEQUENCE [SecuenciaProductos] AS int START WITH 1000 INCREMENT BY 1 NO MINVALUE NO MAXVALUE NO CYCLE;
-END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1384,7 +1297,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Productos] ADD [Codigo] nvarchar(30) NULL;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1393,24 +1305,22 @@ IF NOT EXISTS (
 BEGIN
     UPDATE dbo.Productos SET Codigo = 'PRD-' + RIGHT('000000' + CAST(Id AS varchar(10)), 6)
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
     WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
 )
 BEGIN
-    DECLARE @var0 sysname;
-    SELECT @var0 = [d].[name]
+    DECLARE @var nvarchar(max);
+    SELECT @var = QUOTENAME([d].[name])
     FROM [sys].[default_constraints] [d]
     INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
     WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Productos]') AND [c].[name] = N'Codigo');
-    IF @var0 IS NOT NULL EXEC(N'ALTER TABLE [Productos] DROP CONSTRAINT [' + @var0 + '];');
+    IF @var IS NOT NULL EXEC(N'ALTER TABLE [Productos] DROP CONSTRAINT ' + @var + ';');
     EXEC(N'UPDATE [Productos] SET [Codigo] = ''PRD-'' + RIGHT(''000000'' + CAST(NEXT VALUE FOR dbo.SecuenciaProductos AS varchar(10)), 6) WHERE [Codigo] IS NULL');
     ALTER TABLE [Productos] ALTER COLUMN [Codigo] nvarchar(30) NOT NULL;
     ALTER TABLE [Productos] ADD DEFAULT ('PRD-' + RIGHT('000000' + CAST(NEXT VALUE FOR dbo.SecuenciaProductos AS varchar(10)), 6)) FOR [Codigo];
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1419,7 +1329,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Productos] ADD [ImagenClave] nvarchar(200) NULL;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1428,7 +1337,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Categorias] ADD [Codigo] nvarchar(30) NULL;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1437,24 +1345,22 @@ IF NOT EXISTS (
 BEGIN
     UPDATE dbo.Categorias SET Codigo = 'CAT-' + RIGHT('000000' + CAST(Id AS varchar(10)), 6)
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
     WHERE [MigrationId] = N'20261026163850_AgregarCodigosEImagenes'
 )
 BEGIN
-    DECLARE @var1 sysname;
-    SELECT @var1 = [d].[name]
+    DECLARE @var1 nvarchar(max);
+    SELECT @var1 = QUOTENAME([d].[name])
     FROM [sys].[default_constraints] [d]
     INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
     WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Categorias]') AND [c].[name] = N'Codigo');
-    IF @var1 IS NOT NULL EXEC(N'ALTER TABLE [Categorias] DROP CONSTRAINT [' + @var1 + '];');
+    IF @var1 IS NOT NULL EXEC(N'ALTER TABLE [Categorias] DROP CONSTRAINT ' + @var1 + ';');
     EXEC(N'UPDATE [Categorias] SET [Codigo] = ''CAT-'' + RIGHT(''000000'' + CAST(NEXT VALUE FOR dbo.SecuenciaCategorias AS varchar(10)), 6) WHERE [Codigo] IS NULL');
     ALTER TABLE [Categorias] ALTER COLUMN [Codigo] nvarchar(30) NOT NULL;
     ALTER TABLE [Categorias] ADD DEFAULT ('CAT-' + RIGHT('000000' + CAST(NEXT VALUE FOR dbo.SecuenciaCategorias AS varchar(10)), 6)) FOR [Codigo];
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1463,7 +1369,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Categorias] ADD [ImagenClave] nvarchar(200) NULL;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1472,7 +1377,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX [IX_Productos_Codigo] ON [Productos] ([Codigo]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1481,7 +1385,6 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX [IX_Categorias_Codigo] ON [Categorias] ([Codigo]);
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1489,16 +1392,13 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261026163850_AgregarCodigosEImagenes', N'8.0.11');
+    VALUES (N'20261026163850_AgregarCodigosEImagenes', N'10.0.15');
 END;
-GO
 
 COMMIT;
 GO
 
 BEGIN TRANSACTION;
-GO
-
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
     WHERE [MigrationId] = N'20261118064105_AgregarConfirmacionDePedido'
@@ -1506,7 +1406,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [Pedidos] ADD [ConfirmadoPorClienteEn] datetimeoffset(0) NULL;
 END;
-GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
@@ -1514,9 +1413,29 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261118064105_AgregarConfirmacionDePedido', N'8.0.11');
+    VALUES (N'20261118064105_AgregarConfirmacionDePedido', N'10.0.15');
 END;
+
+COMMIT;
 GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261118230839_AgregarTelefonoSecundarioCliente'
+)
+BEGIN
+    ALTER TABLE [Clientes] ADD [TelefonoSecundario] nvarchar(20) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261118230839_AgregarTelefonoSecundarioCliente'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261118230839_AgregarTelefonoSecundarioCliente', N'10.0.15');
+END;
 
 COMMIT;
 GO

@@ -34,7 +34,7 @@
 | **EventCallback** | Delegado de Blazor para que un componente hijo avise a su padre |
 | **Delegado** | Tipo que referencia métodos con una firma concreta |
 | **JWT** | Token de sesión firmado y de corta duración (60 minutos en este proyecto) |
-| **Blazor Web App** | Plantilla de .NET 8 para aplicaciones web con componentes Razor y modos de render de servidor, WebAssembly o automático |
+| **Blazor Web App** | Plantilla de .NET (8 o superior) para aplicaciones web con componentes Razor y modos de render de servidor, WebAssembly o automático |
 | **RBAC** | Control de acceso basado en roles (aquí con permisos por rol) |
 | **Baja lógica** | Marcar un registro como inactivo en lugar de borrarlo |
 | **Procedimiento almacenado** | Rutina SQL guardada en la base de datos que recibe parámetros |

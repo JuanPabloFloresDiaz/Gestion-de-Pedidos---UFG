@@ -5,6 +5,13 @@ const CLAVE_INICIAL = process.env.E2E_ADMIN_INICIAL ?? 'Admin_Dev_Password_123!'
 const CLAVE_ADMIN = process.env.E2E_ADMIN_CLAVE ?? 'Admin_E2E_Segura_2026';
 const captura = (page: Page, nombre: string) => page.screenshot({ path: `capturas/${nombre}.png` });
 
+/** Confirma la baja de un usuario: el diálogo exige una justificación de 10 a 500 caracteres. */
+async function confirmarBajaUsuario(page: Page) {
+  const dialogo = page.getByRole('alertdialog');
+  await dialogo.getByLabel('Justificación de la baja').fill('Baja de prueba automatizada E2E');
+  await dialogo.getByRole('button', { name: 'Dar de baja' }).click();
+}
+
 async function entrar(page: Page, usuario: string, clave: string) {
   await page.goto('/ingresar');
   await page.getByLabel('Usuario o correo').fill(usuario);
@@ -102,7 +109,7 @@ test('varios módulos abiertos a la vez (pestañas), alta de usuario con notific
     await page.getByRole('button', { name: 'Buscar', exact: true }).click();
   };
   await fila.getByRole('button', { name: /Activo/ }).click();
-  await page.getByRole('alertdialog').getByRole('button', { name: 'Dar de baja' }).click();
+  await confirmarBajaUsuario(page);
   await expect(page.locator('.aviso').last()).toContainText('dado de baja');
   await expect(fila).toHaveCount(0);
 
@@ -115,7 +122,7 @@ test('varios módulos abiertos a la vez (pestañas), alta de usuario con notific
   await verEstado('Activos');
   await expect(fila.getByRole('button', { name: /Activo/ })).toBeVisible();
   await fila.getByRole('button', { name: 'Dar de baja', exact: true }).click();
-  await page.getByRole('alertdialog').getByRole('button', { name: 'Dar de baja' }).click();
+  await confirmarBajaUsuario(page);
   await verEstado('Inactivos');
   await expect(fila.getByRole('button', { name: /Inactivo/ })).toBeVisible();
 
@@ -183,13 +190,14 @@ test('roles y permisos, historial, catálogos, pestañas nuevas y apariencia', a
   await page.getByRole('radio', { name: /Azul/ }).click();
   await page.keyboard.press('Escape');
 
-  // Tarjetas con ícono, nombre y descripción; los apartados que arman los integrantes están "en progreso"
+  // Tarjetas con ícono, nombre y descripción; cada una abre su módulo en una pestaña
   await expect(page.locator('.atajo .atajo-icono svg').first()).toBeVisible();
   await expect(page.locator('.atajo-desc').first()).not.toBeEmpty();
   await captura(page, '33-bienvenida-tarjetas');
   await page.locator('.atajo', { hasText: 'Clientes' }).click();
-  await expect(page.getByText('Apartado en progreso')).toBeVisible();
-  await captura(page, '32-apartado-en-progreso');
+  await expect(page.getByRole('heading', { name: 'Clientes', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '+ Nuevo cliente' })).toBeVisible();
+  await captura(page, '32-clientes');
   await page.getByRole('button', { name: 'Cerrar Clientes' }).click();
   await expect(page.getByRole('tab')).toHaveCount(0);
 

@@ -65,7 +65,7 @@ public sealed class UsuariosViewModel : ViewModelBase
         get => _correo;
         set { _correo = value; ErroresCampos.Remove(nameof(Correo)); }
     }
-    private int? _rolId = null;
+    private int? _rolId;
     /// <summary>Campo: rol. Al cambiarlo se quita su mensaje de error.</summary>
     public int? RolId
     {

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -32,7 +33,7 @@ public sealed class EmisorTokens : IEmisorTokens
         var expira = ahora.AddMinutes(_opciones.MinutosDeVida);
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
+            new(JwtRegisteredClaimNames.Sub, usuario.Id.ToString(CultureInfo.InvariantCulture)),
             new(JwtRegisteredClaimNames.Name, usuario.NombreUsuario),
             new("nombre_completo", usuario.NombreCompleto),
             new(ClaimTypes.Role, usuario.Rol),

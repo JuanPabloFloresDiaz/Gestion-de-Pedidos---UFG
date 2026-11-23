@@ -16,8 +16,13 @@ public sealed class HasherClave : IHasherClave
     public string Hashear(string clave) => _hasher.HashPassword("usuario", clave);
 
     /// <inheritdoc/>
-    public bool Verificar(string hash, string clave) =>
-        _hasher.VerifyHashedPassword("usuario", hash, clave) is not PasswordVerificationResult.Failed;
+    public ResultadoVerificacion Verificar(string hash, string clave) =>
+        _hasher.VerifyHashedPassword("usuario", hash, clave) switch
+        {
+            PasswordVerificationResult.Success => ResultadoVerificacion.Correcta,
+            PasswordVerificationResult.SuccessRehashNeeded => ResultadoVerificacion.CorrectaConHashObsoleto,
+            _ => ResultadoVerificacion.Incorrecta,
+        };
 
     /// <inheritdoc/>
     public void GastarTiempo() => _hasher.VerifyHashedPassword("falso", _hashFalso, "no-es-la-clave");

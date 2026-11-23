@@ -3,8 +3,8 @@
 # Corre dentro de Docker (no requiere el SDK en el equipo): ./scripts/generar-script-sql.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
-docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -e DOTNET_CLI_HOME=/tmp -e DOTNET_NOLOGO=1 \
-  -v "$PWD":/repo -w /repo mcr.microsoft.com/dotnet/sdk:8.0 bash -c '
+docker run --rm -e HOME=/tmp -e DOTNET_CLI_HOME=/tmp -e DOTNET_NOLOGO=1 \
+  -v "$PWD":/repo -v gestionpedidos-nuget:/tmp/.nuget -e NUGET_PACKAGES=/tmp/.nuget/packages -w /repo mcr.microsoft.com/dotnet/sdk:10.0 bash -c '
     dotnet tool restore >/dev/null &&
     dotnet ef migrations script --idempotent \
       --project src/GestionPedidos.Infrastructure --startup-project src/GestionPedidos.Infrastructure \

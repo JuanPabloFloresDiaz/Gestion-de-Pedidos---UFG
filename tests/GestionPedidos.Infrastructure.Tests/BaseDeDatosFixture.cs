@@ -7,8 +7,7 @@ namespace GestionPedidos.Infrastructure.Tests;
 /// <summary>Levanta UN SQL Server real en Docker por ejecución y aplica las migraciones reales (sin SQLite ni InMemory).</summary>
 public sealed class BaseDeDatosFixture : IAsyncLifetime
 {
-    private readonly MsSqlContainer _contenedor = new MsSqlBuilder()
-        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+    private readonly MsSqlContainer _contenedor = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest")
         .WithPassword("Pruebas_Password_123!")
         .Build();
 

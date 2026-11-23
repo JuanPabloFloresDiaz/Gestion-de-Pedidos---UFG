@@ -7,7 +7,7 @@
 | Para qué | Qué se necesita |
 |---|---|
 | API, web, base de datos y pruebas | **Docker Desktop** (o Docker Engine con Compose v2). SQL Server pide **≥ 2 GB de RAM** libres para su contenedor |
-| Escritorio (MAUI Blazor Hybrid) | **Windows 10/11**, **SDK de .NET 8**, carga de trabajo `maui` y **WebView2** (viene con Windows 11 y casi siempre con Windows 10 actualizado) |
+| Escritorio (MAUI Blazor Hybrid) | **Windows 10/11**, **SDK de .NET 10**, carga de trabajo `maui` y **WebView2** (viene con Windows 11 y casi siempre con Windows 10 actualizado) |
 | Editar código | **Visual Studio 2022** ([§4.1](#41-paso-a-paso-con-visual-studio-2022-o-2026)) o **VS Code** con *C# Dev Kit* y *.NET MAUI* (se recomiendan solas al abrir la carpeta: `.vscode/extensions.json`) |
 
 No hace falta instalar SQL Server, Node ni navegadores de pruebas: todo eso vive en contenedores.
@@ -69,17 +69,17 @@ Detalle y reglas en [Testing.md](../Especificaciones/Testing.md).
 
 ## 4. Escritorio en Windows
 
-> ✅ **Estado (25/10/2026)**: `src/GestionPedidos.Desktop` **compila sin advertencias y abre el login** en Windows 11 (SDK 8.0.427, Visual Studio 18). Falta confirmar a mano el flujo completo (iniciar sesión, pestañas, cerrar sesión) en los equipos de todos los integrantes; si aparece algún error, se anota aquí. Con **Visual Studio** sigan el [§4.1](#41-paso-a-paso-con-visual-studio-2022-o-2026).
+> ⚠️ **Tras migrar a .NET 10 el escritorio aún no se ha validado en Windows.** Estado histórico con .NET 8 (25/10/2026): `src/GestionPedidos.Desktop` **compila sin advertencias y abre el login** en Windows 11 (SDK 8.0.427, Visual Studio 18). Falta confirmar a mano (con .NET 10) el flujo completo (iniciar sesión, pestañas, cerrar sesión) en los equipos de todos los integrantes; si aparece algún error, se anota aquí. Con **Visual Studio** sigan el [§4.1](#41-paso-a-paso-con-visual-studio-2022-o-2026).
 
 1. Con el entorno levantado (§2), en **PowerShell** o la terminal de VS Code:
    ```powershell
    dotnet workload install maui          # solo la primera vez
-   dotnet run -f net8.0-windows10.0.19041.0 --project src/GestionPedidos.Desktop
+   dotnet run -f net10.0-windows10.0.19041.0 --project src/GestionPedidos.Desktop
    ```
 2. Se abre la ventana "Gestión de Pedidos — UFG" con el login. Solo entra el **personal** (administrador u operador); un usuario "Cliente" recibe "usuario o contraseña incorrectos".
 3. La dirección de la API sale de `GESTIONPEDIDOS_API_URL` (variable de entorno), luego de `appsettings.json` junto al `.exe`, y por defecto es `http://localhost:4390`.
 4. Si Docker corre dentro de **WSL**, los puertos también se ven desde Windows en `localhost`.
-5. Para generar un `.exe` que no necesite instalar nada: `dotnet publish -f net8.0-windows10.0.19041.0 -c Release` (queda autocontenido, con el runtime de Windows App SDK incluido).
+5. Para generar un `.exe` que no necesite instalar nada: `dotnet publish -f net10.0-windows10.0.19041.0 -c Release` (queda autocontenido, con el runtime de Windows App SDK incluido).
 6. Si la ventana sale en blanco: falta **WebView2** (instalar el *Evergreen Runtime* de Microsoft) o la API no está levantada.
 7. Si la ventana **desaparece sola, sin mensaje**, justo después de compilar: volver a lanzarla. Se observó una vez (error de Windows `0xc0000374`) y los cinco lanzamientos siguientes funcionaron; la causa no está confirmada (posiblemente el antivirus escaneando el `.exe` recién creado). Solo si se repite de forma constante, avisar al equipo con el detalle del *Visor de eventos*.
 
@@ -93,7 +93,7 @@ Sirve para ejecutar y depurar el **escritorio** (y también la API y la web) des
    * **"Desarrollo de la interfaz de usuario de aplicaciones multiplataforma de .NET"** (.NET MAUI);
    * **"ASP.NET y desarrollo web"**.
 
-   Debe estar el **SDK de .NET 8** (viene en ambas; se comprueba con `dotnet --list-sdks`).
+   Debe estar el **SDK de .NET 10** (viene en ambas; se comprueba con `dotnet --list-sdks`).
 2. **Instalar la carga de trabajo de MAUI también por consola — es obligatorio aunque ya la haya marcado Visual Studio.** El instalador de Visual Studio solo trae `maui-windows`, y sin el resto la compilación falla. En una terminal (si pide permisos, como administrador):
    ```powershell
    dotnet workload install maui
@@ -103,7 +103,7 @@ Sirve para ejecutar y depurar el **escritorio** (y también la API y la web) des
 
    > Si se omite, `dotnet build` o Visual Studio muestran: `error NETSDK1147: para compilar este proyecto, deben estar instaladas las siguientes cargas de trabajo: maui-tizen`. Aunque nombra `maui-tizen` (que ni siquiera aparece en la lista), **la solución es la misma: `dotnet workload install maui`**.
    >
-   > Si hay **varios SDK** instalados a la vez (por ejemplo 8.0.x y 10.0.x), no es problema: `global.json` fuerza el 8 (`rollForward: latestFeature`) y se usa el SDK 8 más reciente.
+   > Si hay **varios SDK** instalados a la vez (por ejemplo 8.0.x y 10.0.x), no es problema: `global.json` fija el 10 (`rollForward: latestFeature`) y se usa el SDK 10 más reciente.
 3. **Instalar Docker Desktop** y dejarlo iniciado (la API y la base corren ahí).
 4. **WebView2**: ya viene con Windows 11 y casi siempre con Windows 10 actualizado. Si la ventana sale en blanco, instalar el *Evergreen Runtime* de Microsoft.
 5. **Clonar el repositorio** (Git → Clonar repositorio, o `git clone`) y abrir **`GestionPedidos.sln`** (la solución completa, con `Desktop`). No abrir el `.slnf`: ese filtro es para Linux y excluye el escritorio.
@@ -146,8 +146,8 @@ Con la API en Docker ya levantada, para depurar la web: detener el servicio de D
 | La aplicación se cierra sola al abrirla | Ver el punto 7 del [§4](#4-escritorio-en-windows): volver a lanzarla; lanzarla siempre **normalmente** (F5, Ctrl+F5 o `dotnet run` desde una terminal normal), sin redirigir su salida ni ocultar la ventana |
 | "No se pudo conectar con el servidor" | La API no está levantada o el puerto 4390 lo usa otra aplicación; revisar `docker compose ps` |
 | "Usuario o contraseña incorrectos" con un usuario *Cliente* | Es lo esperado: el escritorio solo permite administradores y operadores |
-| Visual Studio sugiere actualizar paquetes NuGet | No actualizar: las versiones están fijadas a propósito en `Directory.Packages.props` (compatibles con .NET 8) |
-| Pide instalar .NET 9 o 10 | No: el proyecto usa **.NET 8** (`global.json`) |
+| Visual Studio sugiere actualizar paquetes NuGet | No actualizar: las versiones están fijadas a propósito en `Directory.Packages.props` (compatibles con .NET 10) |
+| Pide instalar otro SDK de .NET | Solo el **SDK 10** que fija `global.json`; no hace falta .NET 8, 9 ni 11 |
 
 La interfaz del escritorio es **la misma** que la de la web: casi todo se desarrolla y se prueba en el navegador (http://localhost:4392) y solo se verifica en el escritorio antes de cada entrega.
 

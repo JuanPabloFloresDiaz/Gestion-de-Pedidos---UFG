@@ -22,6 +22,7 @@ using GestionPedidos.Infrastructure.Correo;
 using GestionPedidos.Infrastructure.Persistence;
 using GestionPedidos.Infrastructure.Persistence.Seed;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -45,6 +46,11 @@ if (jwt.SigningKey.Length < 32)
     throw new InvalidOperationException("Jwt:SigningKey debe tener al menos 32 caracteres (256 bits).");
 builder.Services.AddSingleton<IEmisorTokens, EmisorTokens>();
 builder.Services.AddMemoryCache();
+
+// Claves de Data Protection en una carpeta persistente (en Docker, un volumen): sin esto cada redespliegue las pierde y se invalida
+// lo que protegieron (en la web, la sesión guardada en ProtectedSessionStorage) y no se podrían usar varias réplicas.
+if (config["DataProtection:Ruta"] is { Length: > 0 } rutaClaves)
+    builder.Services.AddDataProtection().SetApplicationName("GestionPedidos.Api").PersistKeysToFileSystem(new DirectoryInfo(rutaClaves));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
 {
@@ -92,6 +98,7 @@ builder.Services.AddRateLimiter(o =>
         _ => new FixedWindowRateLimiterOptions { PermitLimit = registro, Window = TimeSpan.FromHours(1) }));
 });
 
+builder.Services.AddProxyConfiable(config);   // IP real detrás de un proxy (ver ConfiguracionProxy)
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
@@ -108,6 +115,9 @@ builder.Services.AddSwaggerGen(o =>
 var app = builder.Build();
 
 // --- Pipeline -------------------------------------------------------------------------------
+// Primero: así el límite de tasa, los registros y el resto ven la IP real de quien llama, no la del proxy.
+if (ConfiguracionProxy.Habilitado(config)) app.UseForwardedHeaders();
+
 app.UseExceptionHandler(errores => errores.Run(async ctx =>
 {
     var ex = ctx.Features.Get<IExceptionHandlerFeature>()?.Error;

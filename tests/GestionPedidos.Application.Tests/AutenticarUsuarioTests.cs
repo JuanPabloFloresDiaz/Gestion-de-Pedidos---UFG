@@ -41,6 +41,30 @@ public class AutenticarUsuarioTests
     }
 
     [Fact]
+    public async Task Login_ConHashObsoleto_LoActualizaSinCambiarElRestoDeLaCuenta()
+    {
+        var usuario = Fabrica.Usuario(2, "luis", Fabrica.Operador, clave: HasherFake.PrefijoObsoleto + "Clave_Valida_123");
+        usuario.CambiarClave(usuario.ClaveHash, debeCambiarClave: true);   // sigue obligado a cambiarla
+        _usuarios.Datos.Add(usuario);
+
+        var r = await Login("luis", "Clave_Valida_123");
+
+        Assert.True(r.Exito);
+        Assert.Equal("hash:Clave_Valida_123", usuario.ClaveHash);   // hash vigente
+        Assert.True(usuario.DebeCambiarClave);                      // la obligación de cambiarla se conserva
+        Assert.True(r.Valor!.DebeCambiarClave);
+        Assert.Equal(1, _uow.Guardados);                            // se guardó en el mismo acceso
+    }
+
+    [Fact]
+    public async Task Login_ConHashAlDia_NoLoReescribe()
+    {
+        var antes = _usuarios.Datos[0].ClaveHash;
+        await Login("ana", "Clave_Valida_123");
+        Assert.Equal(antes, _usuarios.Datos[0].ClaveHash);
+    }
+
+    [Fact]
     public async Task Login_PorCorreo_Funciona() =>
         Assert.True((await Login("ANA@ejemplo.com", "Clave_Valida_123")).Exito);
 

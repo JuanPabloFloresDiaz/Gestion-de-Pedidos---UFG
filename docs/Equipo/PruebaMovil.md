@@ -8,7 +8,7 @@ El proyecto `src/GestionPedidos.Desktop` (MAUI Blazor Hybrid) ahora tiene **dos 
 
 | Archivo | Qué cambió |
 |---|---|
-| `GestionPedidos.Desktop.csproj` | `TargetFrameworks` = `net8.0-android` (+ `net8.0-windows10.0.19041.0` solo en Windows). Lo propio de Windows y de Android va en grupos con condición. |
+| `GestionPedidos.Desktop.csproj` | `TargetFrameworks` = `net10.0-android` (+ `net10.0-windows10.0.19041.0` solo en Windows). Lo propio de Windows y de Android va en grupos con condición. |
 | `Platforms/Android/` | `AndroidManifest.xml` (permiso de Internet y tráfico `http` para desarrollo), `MainActivity.cs`, `MainApplication.cs` y `Resources/values/colors.xml`. |
 | `appsettings.android.json` | Dirección de la API **dentro del APK**. Por defecto `http://10.0.2.2:4390` (el equipo visto desde el **emulador**). |
 | `MauiProgram.cs` | En Android la app se comporta como la **web** (tienda para el cliente y administración para el personal), no como el escritorio (solo personal). Lee la API de `appsettings.android.json`. |
@@ -18,7 +18,7 @@ El proyecto `src/GestionPedidos.Desktop` (MAUI Blazor Hybrid) ahora tiene **dos 
 | `TiendaLayout.razor`, `tienda.css` | En pantallas de hasta 640 px las categorías van en un menú desplegable; el panel de Apariencia ya no se sale de la pantalla; la foto del carrito no se encima con el texto. |
 | `Directory.Packages.props` | `Microsoft.AspNetCore.Components.Web` sube de 8.0.11 a 8.0.29 (lo exige `Blazicons`). |
 
-**Verificado (en Linux/WSL, 2026-11-18):** el destino Android **compila** (`dotnet build -f net8.0-android`) y genera un APK firmado de depuración (150 MB, 4 arquitecturas). Se comprobó dentro del APK: paquete `sv.edu.ufg.gestionpedidos`, nombre «NoviXtore», Android 5.0+, permisos de Internet, la interfaz (`_content/GestionPedidos.Ui/...`) y `appsettings.json` con `10.0.2.2:4390`. Tras el cambio de `Ui`, las pruebas de Domain, Application, Architecture y Ui y la compilación de la web (Docker) siguen en verde.
+**Verificado con .NET 8 (en Linux/WSL, 2026-11-18; con .NET 10 aún sin validar):** el destino Android **compila** (`dotnet build -f net10.0-android`, antes `net8.0-android`) y genera un APK firmado de depuración (150 MB, 4 arquitecturas). Se comprobó dentro del APK: paquete `sv.edu.ufg.gestionpedidos`, nombre «NoviXtore», Android 5.0+, permisos de Internet, la interfaz (`_content/GestionPedidos.Ui/...`) y `appsettings.json` con `10.0.2.2:4390`. Tras el cambio de `Ui`, las pruebas de Domain, Application, Architecture y Ui y la compilación de la web (Docker) siguen en verde.
 
 **NO verificado:** que el destino **Windows** siga compilando (no hay Windows aquí), y **nunca se ha ejecutado** la app en un emulador ni en un celular. Es posible que aparezcan detalles en el primer arranque; por eso esta guía incluye qué hacer si falla.
 
@@ -31,11 +31,11 @@ adb install -r NoviXtore-debug-emulador.apk
 
 ## 2. Requisitos (Windows)
 
-1. **SDK de .NET 8** (`dotnet --version` ≥ 8.0.4xx; el repo fija la versión en `global.json`).
+1. **SDK de .NET 10** (`dotnet --version` ≥ 10.0.4xx; el repo fija la versión en `global.json`).
 2. **Carga de trabajo de MAUI para Android:** `dotnet workload install maui-android` (o Visual Studio 2022 17.8+ con la carga «Desarrollo de interfaz de usuario multiplataforma de .NET (MAUI)»).
 3. **JDK 17** y el **SDK de Android** (plataforma API 34 + herramientas). Lo más simple es dejar que .NET los descargue:
    ```powershell
-   dotnet build src\GestionPedidos.Desktop -f net8.0-android -t:InstallAndroidDependencies -p:AndroidSdkDirectory="C:\Android\sdk" -p:AcceptAndroidSDKLicenses=True
+   dotnet build src\GestionPedidos.Desktop -f net10.0-android -t:InstallAndroidDependencies -p:AndroidSdkDirectory="C:\Android\sdk" -p:AcceptAndroidSDKLicenses=True
    ```
 4. Un **emulador** (Android Studio → Device Manager, o `avdmanager`) con Android 10 o superior, **o** un celular con la depuración USB activada.
 5. **La API y la base en marcha** (Docker): `./scripts/up.sh` (en WSL o Git Bash). Compruebe `http://localhost:4390/health` desde Windows. La API publica en todas las interfaces (`4390`), así que el emulador la alcanza.
@@ -46,13 +46,13 @@ Desde la raíz del repositorio:
 
 ```powershell
 # 1) Que lo de Windows no se haya roto (debe compilar sin errores, como antes)
-dotnet build src\GestionPedidos.Desktop -f net8.0-windows10.0.19041.0
+dotnet build src\GestionPedidos.Desktop -f net10.0-windows10.0.19041.0
 
 # 2) Android: compilar
-dotnet build src\GestionPedidos.Desktop -f net8.0-android
+dotnet build src\GestionPedidos.Desktop -f net10.0-android
 
 # 3) Android: instalar y abrir en el emulador o celular conectado
-dotnet build src\GestionPedidos.Desktop -f net8.0-android -t:Run
+dotnet build src\GestionPedidos.Desktop -f net10.0-android -t:Run
 ```
 
 ### Dirección de la API según dónde se ejecute
@@ -85,7 +85,7 @@ Marque cada punto y anote lo que falle (con captura y el mensaje de `adb logcat 
 ## 5. Si algo falla al compilar o ejecutar
 
 1. **Arregle lo mínimo** en la rama `feat/maui-movil` y repita el paso que falló. Cada arreglo, un commit corto en español.
-2. **No rompa Windows:** después de cada arreglo, `dotnet build ... -f net8.0-windows10.0.19041.0` debe seguir compilando.
+2. **No rompa Windows:** después de cada arreglo, `dotnet build ... -f net10.0-windows10.0.19041.0` debe seguir compilando.
 3. Si el cambio toca código compartido (`GestionPedidos.Ui`), corra también las pruebas: `./scripts/test-docker.sh` (en WSL).
 4. Reglas del repositorio: `AGENTS.md` (comentarios XML en español, sin lógica en las páginas, nada exclusivo de un hospedaje dentro de `Ui`). **Sin marcas de IA ni `Co-Authored-By` en commits o PRs.**
 5. Al terminar, deje en este archivo (§6) el resultado de la lista de verificación.

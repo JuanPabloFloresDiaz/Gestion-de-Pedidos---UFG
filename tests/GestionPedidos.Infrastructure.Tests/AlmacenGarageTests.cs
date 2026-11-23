@@ -20,9 +20,8 @@ public sealed class GarageFixture : IAsyncLifetime
         // La misma configuración que usa docker-compose (docker/garage/garage.toml)
         var raiz = AppContext.BaseDirectory;
         while (!File.Exists(Path.Combine(raiz, "docker", "garage", "garage.toml"))) raiz = Path.GetDirectoryName(raiz)!;
-        _contenedor = new ContainerBuilder()
-            .WithImage("dxflrs/garage:v2.5.0")
-            .WithResourceMapping(await File.ReadAllBytesAsync(Path.Combine(raiz, "docker", "garage", "garage.toml")), "/etc/garage.toml")
+        _contenedor = new ContainerBuilder("dxflrs/garage:v2.5.0")
+            .WithResourceMapping(await File.ReadAllBytesAsync(Path.Combine(raiz, "docker", "garage", "garage.toml")), FilePath.Of("/etc/garage.toml"))
             .WithEnvironment("GARAGE_DEFAULT_ACCESS_KEY", Acceso).WithEnvironment("GARAGE_DEFAULT_SECRET_KEY", Secreto).WithEnvironment("GARAGE_DEFAULT_BUCKET", "gp-imagenes-pruebas")
             .WithCommand("/garage", "server", "--single-node", "--default-bucket")
             .WithPortBinding(3900, true)

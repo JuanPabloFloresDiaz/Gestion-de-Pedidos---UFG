@@ -46,5 +46,9 @@ public abstract class ViewModelBase : IDisposable
     protected virtual bool InterpretarError(ApiException ex) => false;
 
     /// <summary>Cancela lo pendiente al cerrar la pantalla.</summary>
-    public virtual void Dispose() => _cts?.Cancel();
+    public virtual void Dispose()
+    {
+        _cts?.Cancel();
+        GC.SuppressFinalize(this);
+    }
 }

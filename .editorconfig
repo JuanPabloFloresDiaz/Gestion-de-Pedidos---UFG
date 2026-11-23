@@ -22,6 +22,17 @@ dotnet_naming_symbols.campos_privados.applicable_accessibilities = private
 dotnet_naming_style.guion_bajo.required_prefix = _
 dotnet_naming_style.guion_bajo.capitalization = camel_case
 
+# Reglas de calidad (CA) que se bajan a sugerencia: son de rendimiento o de nombres, no de corrección, y no compensan el ruido.
+[*.{cs,razor}]
+dotnet_diagnostic.CA1848.severity = suggestion   # LoggerMessage: optimización de registros, el proyecto usa los de texto simple
+dotnet_diagnostic.CA1873.severity = suggestion   # evaluar argumentos de registro solo si el nivel está activo
+dotnet_diagnostic.CA1859.severity = suggestion   # usar el tipo concreto en vez de la interfaz (privados): optimización menor
+dotnet_diagnostic.CA1822.severity = suggestion   # miembro que podría ser estático: los usan los .razor mediante la instancia
+dotnet_diagnostic.CA1000.severity = suggestion   # miembros estáticos en tipos genéricos (Resultado<T>.Ok): diseño intencional
+dotnet_diagnostic.CA1711.severity = suggestion   # sufijos de nombres (EventArgs, Collection…): se respetan las pautas del proyecto
+dotnet_diagnostic.CA1716.severity = suggestion   # IAvisos.Error: renombrarlo cambiaría la API pública de la interfaz de usuario
+dotnet_diagnostic.CA1725.severity = suggestion   # nombre del parámetro 'b' en las configuraciones de EF: solo estilo
+
 # Código generado por EF Core: sin exigir comentarios XML
 [**/Migrations/*.cs]
 generated_code = true

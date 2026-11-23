@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Claims;
 using GestionPedidos.Domain.Seguridad;
 using Microsoft.AspNetCore.Authorization;
@@ -40,5 +41,5 @@ public static class AutorizacionExtensions
 
     /// <summary>Identificador del usuario autenticado (claim <c>sub</c>).</summary>
     public static int IdUsuario(this ClaimsPrincipal usuario) =>
-        int.Parse(usuario.FindFirstValue("sub") ?? throw new InvalidOperationException("Token sin claim sub."));
+        int.Parse(usuario.FindFirstValue("sub") ?? throw new InvalidOperationException("Token sin claim sub."), CultureInfo.InvariantCulture);
 }

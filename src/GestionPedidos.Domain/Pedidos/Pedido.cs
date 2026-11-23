@@ -98,7 +98,7 @@ public class Pedido : IAuditable
     public void AgregarLinea(Producto producto, int cantidad)
     {
         AsegurarEditable();
-        if (producto is null) throw new ArgumentNullException(nameof(producto));
+        ArgumentNullException.ThrowIfNull(producto);
         if (!producto.Activo) throw new InvalidOperationException($"El producto '{producto.Nombre}' está inactivo.");
         if (cantidad <= 0) throw new ArgumentOutOfRangeException(nameof(cantidad), "La cantidad debe ser mayor que cero.");
         if (Detalles.Any(d => d.ProductoId == producto.Id))
@@ -305,7 +305,7 @@ public class DetallePedido
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="cantidad"/> no es positiva.</exception>
     public static DetallePedido Crear(Producto producto, int cantidad)
     {
-        if (producto is null) throw new ArgumentNullException(nameof(producto));
+        ArgumentNullException.ThrowIfNull(producto);
         if (cantidad <= 0) throw new ArgumentOutOfRangeException(nameof(cantidad), "La cantidad debe ser mayor que cero.");
 
         return new DetallePedido
